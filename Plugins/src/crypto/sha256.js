@@ -25,6 +25,9 @@
 // =============================================================================
 //
 
+//! require <crypto-js/core.js> (https://github.com/brix/crypto-js)
+//! require <crypto-js/sha256.js>
+
 //! require <crypto.js>
 
 !function (ns) {
@@ -39,9 +42,10 @@
     };
     sha256.inherits(Hash);
     sha256.prototype.digest = function (data) {
-        console.assert(data != null, 'data empty');
-        console.assert(false, 'SHA256 not implemented');
-        return null;
+        var hex = ns.format.Hex.encode(data);
+        var array = CryptoJS.enc.Hex.parse(hex);
+        var result = CryptoJS.SHA256(array).toString();
+        return ns.format.Hex.decode(result);
     };
 
     //-------- register --------

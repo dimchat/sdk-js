@@ -25,6 +25,9 @@
 // =============================================================================
 //
 
+//! require <crypto-js/core.js> (https://github.com/brix/crypto-js)
+//! require <crypto-js/ripemd160.js>
+
 //! require <crypto.js>
 
 !function (ns) {
@@ -39,9 +42,10 @@
     };
     ripemd160.inherits(Hash);
     ripemd160.prototype.digest = function (data) {
-        console.assert(data != null, 'data empty');
-        console.assert(false, 'RIPEMD160 not implemented');
-        return null;
+        var hex = ns.format.Hex.encode(data);
+        var array = CryptoJS.enc.Hex.parse(hex);
+        var result = CryptoJS.RIPEMD160(array).toString();
+        return ns.format.Hex.decode(result);
     };
 
     //-------- register --------
