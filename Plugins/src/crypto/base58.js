@@ -31,6 +31,10 @@
     'use strict';
 
     //-------- Base algorithm begin --------
+    //
+    //  See: https://github.com/cryptocoinjs/base-x
+    //
+
     function base(ALPHABET) {
         if (ALPHABET.length >= 255) {
             throw new TypeError("Alphabet too long")
@@ -161,6 +165,7 @@
         }
     }
     var bs58 = base('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
+
     //-------- Base algorithm end --------
 
     var BaseCoder = ns.format.BaseCoder;

@@ -30,6 +30,93 @@
 !function (ns) {
     'use strict';
 
+    //-------- PEM functions begin --------
+
+    var Base64 = ns.format.Base64;
+
+    var MIME_LINE_MAX_LEN = 76;
+    var CR_LF = '\r\n';
+    var rfc2045 = function (data) {
+        var base64 = Base64.encode(data);
+        var length = base64.length;
+        if (length > MIME_LINE_MAX_LEN && base64.indexOf(CR_LF) < 0) {
+            var sb = '';
+            var start = 0, end;
+            for (; start < length; start += MIME_LINE_MAX_LEN) {
+                end = start + MIME_LINE_MAX_LEN;
+                if (end < length) {
+                    sb += base64.substring(start, end);
+                    sb += CR_LF;
+                } else {
+                    sb += base64.substring(start, length);
+                    break;
+                }
+            }
+            base64 = sb;
+        }
+        return base64;
+    };
+
+    var encode_key = function (key, left, right) {
+        var content = rfc2045(key);
+        return left + CR_LF + content + CR_LF + right;
+    };
+
+    var decode_key = function (pem, left, right) {
+        var start = pem.indexOf(left);
+        if (start < 0) {
+            return null;
+        }
+        start += left.length;
+        var end = pem.indexOf(right, start);
+        if (end < start) {
+            return null;
+        }
+        return Base64.decode(pem.substring(start, end));
+    };
+
+    var encode_public = function (key) {
+        return encode_key(key,
+            '-----BEGIN PUBLIC KEY-----',
+            '-----END RSA PRIVATE KEY-----');
+    };
+    var encode_rsa_private = function (key) {
+        return encode_key(key,
+            '-----BEGIN RSA PRIVATE KEY-----',
+            '-----END RSA PRIVATE KEY-----');
+    };
+
+    var decode_public = function (pem) {
+        var data = decode_key(pem,
+            '-----BEGIN PUBLIC KEY-----',
+            '-----END RSA PRIVATE KEY-----');
+        if (data) {
+            return data;
+        }
+        if (pem.indexOf('PRIVATE KEY') > 0) {
+            throw TypeError('this is a private key content');
+        } else {
+            // key content without wrapper
+            return Base64.decode(pem);
+        }
+    };
+    var decode_rsa_private = function (pem) {
+        var data = decode_key(pem,
+            '-----BEGIN RSA PRIVATE KEY-----',
+            '-----END RSA PRIVATE KEY-----');
+        if (data) {
+            return data;
+        }
+        if (pem.indexOf('PUBLIC KEY') > 0) {
+            throw TypeError('this is not a RSA private key content');
+        } else {
+            // key content without wrapper
+            return Base64.decode(pem);
+        }
+    };
+
+    //-------- PEM functions end --------
+
     var KeyParser = ns.format.KeyParser;
 
     //
@@ -38,29 +125,17 @@
     var pem = function () {
     };
     pem.inherits(KeyParser);
-
     pem.prototype.encodePublicKey = function (key) {
-        console.assert(key != null, 'public key content empty');
-        console.assert(false, 'PEM parser not implemented');
-        return null;
+        return encode_public(key);
     };
-
     pem.prototype.encodePrivateKey = function (key) {
-        console.assert(key != null, 'private key content empty');
-        console.assert(false, 'PEM parser not implemented');
-        return null;
+        return encode_rsa_private(key);
     };
-
     pem.prototype.decodePublicKey = function (pem) {
-        console.assert(pem != null, 'pem content empty');
-        console.assert(false, 'PEM parser not implemented');
-        return null;
+        return decode_public(pem);
     };
-    
     pem.prototype.decodePrivateKey = function (pem) {
-        console.assert(pem != null, 'pem content empty');
-        console.assert(false, 'PEM parser not implemented');
-        return null;
+        return decode_rsa_private(pem);
     };
 
     //-------- register --------
