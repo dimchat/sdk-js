@@ -147,7 +147,21 @@
         } else {
             // generate key
             var bits = this.getSize() * 8;
+            var pem = generate.call(this, bits);
+            return PEM.decodePrivateKey(pem);
         }
+    };
+
+    var generate = function (bits) {
+        var cipher = new JSEncrypt({default_key_size: bits});
+        // create a new private key
+        var key = cipher.getKey();
+        var pem = key.getPublicKey() + '\r\n' + key.getPrivateKey();
+        this.setValue('data', pem);
+        this.setValue('mode', 'ECB');
+        this.setValue('padding', 'PKCS1');
+        this.setValue('digest', 'SHA256');
+        return pem;
     };
 
     RSAPrivateKey.prototype.getSize = function () {
