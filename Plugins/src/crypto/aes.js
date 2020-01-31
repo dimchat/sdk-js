@@ -25,6 +25,10 @@
 // =============================================================================
 //
 
+//! require <crypto-js/core.js> (https://github.com/brix/crypto-js)
+//! require <crypto-js/cipher-core.js>
+//! require <crypto-js/aes.js>
+
 //! require <crypto.js>
 
 !function (ns) {
@@ -32,6 +36,34 @@
 
     var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
+
+    var Base64 = ns.format.Base64;
+    var Hex = ns.format.Hex;
+
+    var bytes2words = function (data) {
+        var string = Hex.encode(data);
+        return CryptoJS.enc.Hex.parse(string);
+    };
+    var words2bytes = function (array) {
+        var result = array.toString();
+        return Hex.decode(result);
+    };
+
+    var random_data = function (size) {
+        var data = [];
+        for (var i = 0; i < size; ++i) {
+            data.push(Math.floor(Math.random()*256));
+        }
+        return data;
+    };
+
+    var zero_data = function (size) {
+        var data = [];
+        for (var i = 0; i < size; ++i) {
+            data.push(0);
+        }
+        return data;
+    };
 
     /**
      *  AES Key
@@ -51,26 +83,93 @@
     };
     AESKey.inherits(Dictionary, SymmetricKey);
 
-    AESKey.prototype.getData = function () {
-        console.assert(false, 'implement me!');
-        return null;
+    AESKey.prototype.getSize = function () {
+        var size = this.getValue('keySize');
+        if (size) {
+            return Number(size);
+        } else {
+            return 32;
+        }
     };
 
-    AESKey.prototype.getSize = function () {
-        console.assert(false, 'implement me!');
-        return 0;
+    AESKey.prototype.getBlockSize = function () {
+        // TODO: get from iv data
+        var size = this.getValue('blockSize');
+        if (size) {
+            return Number(size);
+        } else {
+            return 16;
+        }
+    };
+
+    AESKey.prototype.getData = function () {
+        var data = this.getValue('data');
+        if (data) {
+            return Base64.decode(data);
+        }
+
+        //
+        // TODO: key data empty? generate new key info
+        //
+
+        // random key data
+        var keySize = this.getSize();
+        var pwd = random_data(keySize);
+        this.setValue('data', Base64.encode(pwd));
+
+        // random initialization vector
+        var blockSize = this.getBlockSize();
+        var iv = random_data(blockSize);
+        this.setValue('iv', Base64.encode(iv));
+
+        // // other parameters
+        // this.setValue('mode', 'CBC');
+        // this.setValue('padding', 'PKCS7');
+
+        return pwd;
+    };
+
+    AESKey.prototype.getInitVector = function () {
+        var iv = this.getValue('iv');
+        if (iv) {
+            return Base64.decode(iv);
+        }
+        // zero iv
+        var zeros = zero_data(this.getBlockSize());
+        this.setValue(Base64.encode(zeros));
+        return zeros;
     };
 
     AESKey.prototype.encrypt = function (plaintext) {
-        console.assert(plaintext !== null, 'plaintext empty');
-        console.assert(false, 'implement me!');
-        return null;
+
+        var data = this.getData();
+        var iv = this.getInitVector();
+
+        var keyWordArray = bytes2words(data);
+        var ivWordArray = bytes2words(iv);
+
+        var message = bytes2words(plaintext);
+        var cipher = CryptoJS.AES.encrypt(message, keyWordArray, { iv: ivWordArray });
+        if (cipher.hasOwnProperty('ciphertext')) {
+            return words2bytes(cipher.ciphertext);
+        } else {
+            throw TypeError('failed to encrypt message with key: ' + this);
+        }
     };
 
     AESKey.prototype.decrypt = function (ciphertext) {
-        console.assert(ciphertext !== null, 'ciphertext empty');
-        console.assert(false, 'implement me!');
-        return null;
+
+        var data = this.getData();
+        var iv = this.getInitVector();
+
+        var keyWordArray = bytes2words(data);
+        var ivWordArray = bytes2words(iv);
+
+        var cipher = {
+            ciphertext: bytes2words(ciphertext)
+        };
+        var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
+        return words2bytes(plaintext);
     };
 
     //-------- register --------

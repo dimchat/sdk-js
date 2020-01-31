@@ -42,10 +42,12 @@
     };
     ripemd160.inherits(Hash);
     ripemd160.prototype.digest = function (data) {
+        // bytes2words
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
-        var result = CryptoJS.RIPEMD160(array).toString();
-        return ns.format.Hex.decode(result);
+        var result = CryptoJS.RIPEMD160(array);
+        // words2bytes
+        return ns.format.Hex.decode(result.toString());
     };
 
     //-------- register --------

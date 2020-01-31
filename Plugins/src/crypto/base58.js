@@ -171,11 +171,9 @@
     var base58 = function () {
     };
     base58.inherits(BaseCoder);
-
     base58.prototype.encode = function (data) {
         return bs58.encode(data);
     };
-
     base58.prototype.decode = function (string) {
         return bs58.decode(string);
     };
