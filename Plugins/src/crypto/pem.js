@@ -78,7 +78,7 @@
     var encode_public = function (key) {
         return encode_key(key,
             '-----BEGIN PUBLIC KEY-----',
-            '-----END RSA PRIVATE KEY-----');
+            '-----END PUBLIC KEY-----');
     };
     var encode_rsa_private = function (key) {
         return encode_key(key,
@@ -89,7 +89,7 @@
     var decode_public = function (pem) {
         var data = decode_key(pem,
             '-----BEGIN PUBLIC KEY-----',
-            '-----END RSA PRIVATE KEY-----');
+            '-----END PUBLIC KEY-----');
         if (data) {
             return data;
         }

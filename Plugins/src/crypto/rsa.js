@@ -124,6 +124,7 @@
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
+    var PublicKey = ns.crypto.PublicKey;
 
     /**
      *  RSA Private Key
@@ -161,8 +162,19 @@
     };
 
     RSAPrivateKey.prototype.getPublicKey = function () {
-        console.assert(false, 'implement me!');
-        return null;
+        // create cipher
+        var key = Base64.encode(this.getData());
+        var cipher = new JSEncrypt();
+        cipher.setPrivateKey(key);
+        var pem = cipher.getPublicKey();
+        var info = {
+            algorithm: this.getValue('algorithm'),
+            data: pem,
+            mode: 'ECB',
+            padding: 'PKCS1',
+            digest: 'SHA256'
+        };
+        return PublicKey.getInstance(info);
     };
 
     RSAPrivateKey.prototype.sign = function (data) {
