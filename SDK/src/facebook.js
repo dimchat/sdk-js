@@ -31,6 +31,12 @@
 //
 
 //! require <dimp.js>
+//! require 'group/polylogue.js'
+//! require 'group/chatroom.js'
+//! require 'network/robot.js'
+//! require 'network/station.js'
+//! require 'network/provider.js'
+//! require 'ans.js'
 
 !function (ns) {
     'use strict';
