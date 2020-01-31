@@ -357,7 +357,7 @@
             }
         };
         var data = this.serializeMessage(msg);
-        return this.delete().sendPackage(data, handler);
+        return this.delegate.sendPackage(data, handler);
     };
 
     //
