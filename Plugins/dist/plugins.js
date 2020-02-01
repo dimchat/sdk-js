@@ -532,7 +532,7 @@
             throw Error("address check code error: " + string)
         }
         this.network = new NetworkType(data[0]);
-        this.code = user_number(cc)
+        this.code = search_number(cc)
     };
     DefaultAddress.inherits(Address);
     DefaultAddress.prototype.getNetwork = function() {
@@ -568,8 +568,8 @@
         }
         return cc
     };
-    var user_number = function(cc) {
-        return (cc[3] & 255) << 24 | (cc[2] & 255) << 16 | (cc[1] & 255) << 8 | (cc[0] & 255)
+    var search_number = function(cc) {
+        return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 16777216
     };
     Address.register(DefaultAddress);
     if (typeof ns.plugins !== "object") {

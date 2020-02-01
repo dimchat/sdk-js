@@ -79,7 +79,7 @@
             throw Error('address check code error: ' + string);
         }
         this.network = new NetworkType(data[0]);
-        this.code = user_number(cc);
+        this.code = search_number(cc);
     };
     DefaultAddress.inherits(Address);
 
@@ -131,8 +131,13 @@
         return cc;
     };
 
-    var user_number = function (cc) {
-        return (cc[3] & 0xFF) << 24 | (cc[2] & 0xFF) << 16 | (cc[1] & 0xFF) << 8 | (cc[0] & 0xFF);
+    var search_number = function (cc) {
+        // return (cc[0] & 0xFF)
+        //     | ((cc[1] & 0xFF) << 8)
+        //     | ((cc[2] & 0xFF) << 16)
+        //     | ((cc[3] & 0xFF) << 24);
+        return (cc[0] | cc[1] << 8 | cc[2] << 16)
+            + cc[3] * 0x1000000;
     };
 
     //-------- register --------

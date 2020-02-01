@@ -59,7 +59,7 @@
             return true;
         }
         var owner = facebook.getOwner(group);
-        return owner === null;
+        return !owner;
     };
 
     // check whether need to update group

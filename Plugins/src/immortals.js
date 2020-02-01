@@ -49,6 +49,11 @@
     var Profile = ns.Profile;
     var User = ns.User;
 
+    // Immortal Hulk (195-183-9394)
+    var HULK = ID.getInstance('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
+    // Monkey King (184-083-9527)
+    var MOKI = ID.getInstance('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
+
     var accounts = {
         'hulk': {
             meta: {
@@ -102,8 +107,6 @@
             }
         }
     };
-    var HULK = ID.getInstance('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
-    var MOKI = ID.getInstance('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
 
     var UserDataSource = ns.UserDataSource;
 

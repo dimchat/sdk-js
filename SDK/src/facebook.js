@@ -446,7 +446,7 @@
             var now = new Date();
             var timestamp = now.getTime() / 1000 + this.EXPIRES;
             var expires = profile.getValue(EXPIRES_KEY);
-            if (expires === null) {
+            if (!expires) {
                 // set expired time
                 profile.setValue(EXPIRES_KEY, timestamp);
                 return profile;

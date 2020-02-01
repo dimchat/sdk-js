@@ -757,7 +757,7 @@
             var now = new Date();
             var timestamp = now.getTime() / 1000 + this.EXPIRES;
             var expires = profile.getValue(EXPIRES_KEY);
-            if (expires === null) {
+            if (!expires) {
                 profile.setValue(EXPIRES_KEY, timestamp);
                 return profile
             } else {
@@ -916,7 +916,7 @@
             return true
         }
         var owner = facebook.getOwner(group);
-        return owner === null
+        return !owner
     };
     var check_group = function(content, sender) {
         var facebook = this.getFacebook();
