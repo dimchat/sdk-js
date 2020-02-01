@@ -1419,7 +1419,7 @@
     ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor
 }(DIMP);
 ! function(ns) {
-    var Content = ns.protocol.Content;
+    var ContentType = ns.protocol.ContentType;
     var ContentProcessor = ns.cpu.ContentProcessor;
     var CommandProcessor = ns.cpu.CommandProcessor;
     var HistoryCommandProcessor = function(messenger) {
@@ -1443,7 +1443,7 @@
     HistoryCommandProcessor.register = function(command, clazz) {
         CommandProcessor.register.call(this, command, clazz)
     };
-    ContentProcessor.register(Content.HISTORY, HistoryCommandProcessor);
+    ContentProcessor.register(ContentType.HISTORY, HistoryCommandProcessor);
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor
 }(DIMP);
 ! function(ns) {

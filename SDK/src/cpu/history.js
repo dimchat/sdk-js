@@ -36,7 +36,7 @@
 !function (ns) {
     'use strict';
 
-    var Content = ns.protocol.Content;
+    var ContentType = ns.protocol.ContentType;
 
     var ContentProcessor = ns.cpu.ContentProcessor;
     var CommandProcessor = ns.cpu.CommandProcessor;
@@ -79,7 +79,7 @@
     };
 
     //-------- register --------
-    ContentProcessor.register(Content.HISTORY, HistoryCommandProcessor);
+    ContentProcessor.register(ContentType.HISTORY, HistoryCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;
