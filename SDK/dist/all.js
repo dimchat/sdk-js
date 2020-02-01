@@ -1179,6 +1179,9 @@ if (typeof DIMP !== "object") {
     };
     var meta_classes = {};
     Meta.register = function(version, clazz) {
+        if (version instanceof MetaType) {
+            version = version.value
+        }
         meta_classes[version] = clazz
     };
     Meta.getInstance = function(meta) {
@@ -1190,6 +1193,9 @@ if (typeof DIMP !== "object") {
             }
         }
         var version = meta["version"];
+        if (version instanceof MetaType) {
+            version = version.value
+        }
         var clazz = meta_classes[version];
         if (typeof clazz !== "function") {
             throw TypeError("meta not supported: " + meta)
@@ -1685,6 +1691,9 @@ if (typeof DIMP !== "object") {
     };
     var content_classes = {};
     Content.register = function(type, clazz) {
+        if (type instanceof ContentType) {
+            type = type.value
+        }
         content_classes[type] = clazz
     };
     Content.getInstance = function(content) {
@@ -1696,6 +1705,9 @@ if (typeof DIMP !== "object") {
             }
         }
         var type = content["type"];
+        if (type instanceof ContentType) {
+            type = type.value
+        }
         var clazz = content_classes[type];
         if (typeof clazz === "function") {
             return Content.createInstance(clazz, content)
@@ -2966,7 +2978,7 @@ if (typeof DIMP !== "object") {
     var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PlainKey = function(key) {
-        Dictionary.call(key)
+        Dictionary.call(this, key)
     };
     PlainKey.inherits(Dictionary, SymmetricKey);
     PlainKey.prototype.encrypt = function(data) {
@@ -3290,9 +3302,9 @@ if (typeof DIMP !== "object") {
         var group = this.entityDelegate.getIdentifier(msg.content.getGroup());
         var password;
         if (group) {
-            password = get_key.call(sender, group)
+            password = get_key.call(this, sender, group)
         } else {
-            password = get_key.call(sender, receiver)
+            password = get_key.call(this, sender, receiver)
         }
         if (msg.delegate === null) {
             msg.delegate = this
@@ -5904,7 +5916,7 @@ if (typeof DIMP !== "object") {
     var load_account = function(identifier) {
         this.idMap[identifier.toString()] = identifier;
         this.metaMap[identifier] = load_meta.call(this, identifier);
-        this.privateKey[identifier] = load_private_key.call(this, identifier);
+        this.privateKeyMap[identifier] = load_private_key.call(this, identifier);
         this.profileMap[identifier] = load_profile.call(this, identifier)
     };
     var load_meta = function(identifier) {

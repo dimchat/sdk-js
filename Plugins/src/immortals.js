@@ -126,7 +126,7 @@
         // meta
         this.metaMap[identifier] = load_meta.call(this, identifier);
         // private key
-        this.privateKey[identifier] = load_private_key.call(this, identifier);
+        this.privateKeyMap[identifier] = load_private_key.call(this, identifier);
         // profile
         this.profileMap[identifier] = load_profile.call(this, identifier);
     };
