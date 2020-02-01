@@ -31,94 +31,78 @@
 //
 
 //! require <dimp.js>
+//! require 'content.js'
 
 !function (ns) {
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
 
-    /**
-     *  Content/Command Processing Units
-     */
-    var ContentProcessor = function (messenger) {
-        this.messenger = messenger;
-        // CPU pool (ContentType -> ContentProcessor)
-        this.contentProcessors = {};
-    };
-
-    //
-    //  Environment variables as context
-    //
-    ContentProcessor.prototype.getContext = function (key) {
-        return this.messenger.getContext(key);
-    };
-    ContentProcessor.prototype.setContext = function (key, value) {
-        this.messenger.setContext(key, value);
-    };
-
-    //
-    //  Data source for getting entity info
-    //
-    ContentProcessor.prototype.getFacebook = function () {
-        return this.messenger.getFacebook();
-    };
+    var ContentProcessor = ns.cpu.ContentProcessor;
 
     /**
-     *  Main function for process message content
-     *
-     * @param content - content received
-     * @param sender - sender ID
-     * @param msg - instant message
-     * @returns {Content|null} - responding to sender
+     *  Default Command Processor
      */
-    ContentProcessor.prototype.process = function (content, sender, msg) {
-        // process content by type
-        var cpu = this.getCPU(content.type);
+    var CommandProcessor = function (messenger) {
+        ContentProcessor.call(this, messenger);
+        // CPU pool (String -> CommandProcessor)
+        this.commandProcessors = {};
+    };
+    CommandProcessor.inherits(ContentProcessor);
+
+    //
+    //  Main
+    //
+    CommandProcessor.prototype.process = function (cmd, sender, msg) {
+        // process command content by name
+        var cpu = this.getCPU(cmd.getCommand());
         // if (!cpu) {
-        //     throw TypeError('failed to get CPU for content: ' + content);
+        //     throw TypeError('failed to get CPU for command: ' + cmd);
         // } else if (cpu === this) {
         //     throw Error('Dead cycle!');
         // }
-        return cpu.process(content, sender, msg);
+        return cpu.process(cmd, sender, msg);
     };
 
     //-------- Runtime --------
 
-    ContentProcessor.prototype.getCPU = function (type) {
+    CommandProcessor.prototype.getCPU = function (command) {
         // 1. get from pool
-        var cpu = this.contentProcessors[type];
+        var cpu = this.commandProcessors[command];
         if (cpu) {
             return cpu;
         }
-        // 2. get CPU class by content type
-        var clazz = cpu_classes[type];
+        // 2. get CPU class by command name
+        var clazz = cpu_classes[command];
         if (!clazz) {
             // default CPU
-            clazz = cpu_classes[ContentType.UNKNOWN];
+            clazz = cpu_classes[CommandProcessor.UNKNOWN];
             // if (!clazz) {
-            //     throw TypeError('failed to get CPU for content type: ' + type);
+            //     throw TypeError('failed to get CPU for command: ' + command);
             // }
         }
         // 3. create CPU with messenger
         cpu = new clazz(this.messenger);
-        this.contentProcessors[type] = cpu;
+        this.commandProcessors[command] = cpu;
         return cpu;
     };
 
-    var cpu_classes = {}; // ContentType -> Class
+    var cpu_classes = {}; // String -> Class
 
-    ContentProcessor.register = function (type, clazz) {
+    CommandProcessor.register = function (command, clazz) {
         if (clazz) {
-            cpu_classes[type] = clazz;
+            cpu_classes[command] = clazz;
         } else {
-            delete cpu_classes[type];
+            delete cpu_classes[command];
         }
     };
 
+    CommandProcessor.UNKNOWN = 'unknown';
+
+    //-------- register --------
+    ContentProcessor.register(ContentType.COMMAND, CommandProcessor);
+
     //-------- namespace --------
-    if (typeof ns.cpu !== 'object') {
-        ns.cpu = {};
-    }
-    ns.cpu.ContentProcessor = ContentProcessor;
+    ns.cpu.CommandProcessor = CommandProcessor;
 
 }(DIMP);

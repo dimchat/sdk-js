@@ -22,15 +22,11 @@
     ContentProcessor.prototype.getFacebook = function() {
         return this.messenger.getFacebook()
     };
-    var cpu_classes = {};
-    ContentProcessor.register = function(type, clazz) {
-        if (clazz) {
-            cpu_classes[type] = clazz
-        } else {
-            delete cpu_classes[type]
-        }
+    ContentProcessor.prototype.process = function(content, sender, msg) {
+        var cpu = this.getCPU(content.type);
+        return cpu.process(content, sender, msg)
     };
-    var get_cpu = function(type) {
+    ContentProcessor.prototype.getCPU = function(type) {
         var cpu = this.contentProcessors[type];
         if (cpu) {
             return cpu
@@ -39,22 +35,17 @@
         if (!clazz) {
             clazz = cpu_classes[ContentType.UNKNOWN]
         }
-        if (clazz) {
-            return new clazz(this.messenger)
-        } else {
-            throw TypeError("failed to get CPU for content type: " + type)
-        }
+        cpu = new clazz(this.messenger);
+        this.contentProcessors[type] = cpu;
+        return cpu
     };
-    ContentProcessor.prototype.process = function(content, sender, msg) {
-        var cpu = get_cpu.call(this, content.type);
-        if (!cpu) {
-            throw TypeError("failed to get CPU for content: " + content)
+    var cpu_classes = {};
+    ContentProcessor.register = function(type, clazz) {
+        if (clazz) {
+            cpu_classes[type] = clazz
         } else {
-            if (cpu === this) {
-                throw Error("Dead cycle!")
-            }
+            delete cpu_classes[type]
         }
-        return cpu.process(content, sender, msg)
     };
     if (typeof ns.cpu !== "object") {
         ns.cpu = {}
@@ -1138,4 +1129,539 @@
         return this.processor.process(msg)
     };
     ns.Messenger = Messenger
+}(DIMP);
+! function(ns) {
+    var ContentType = ns.protocol.ContentType;
+    var ContentProcessor = ns.cpu.ContentProcessor;
+    var CommandProcessor = function(messenger) {
+        ContentProcessor.call(this, messenger);
+        this.commandProcessors = {}
+    };
+    CommandProcessor.inherits(ContentProcessor);
+    CommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var cpu = this.getCPU(cmd.getCommand());
+        return cpu.process(cmd, sender, msg)
+    };
+    CommandProcessor.prototype.getCPU = function(command) {
+        var cpu = this.commandProcessors[command];
+        if (cpu) {
+            return cpu
+        }
+        var clazz = cpu_classes[command];
+        if (!clazz) {
+            clazz = cpu_classes[CommandProcessor.UNKNOWN]
+        }
+        cpu = new clazz(this.messenger);
+        this.commandProcessors[command] = cpu;
+        return cpu
+    };
+    var cpu_classes = {};
+    CommandProcessor.register = function(command, clazz) {
+        if (clazz) {
+            cpu_classes[command] = clazz
+        } else {
+            delete cpu_classes[command]
+        }
+    };
+    CommandProcessor.UNKNOWN = "unknown";
+    ContentProcessor.register(ContentType.COMMAND, CommandProcessor);
+    ns.cpu.CommandProcessor = CommandProcessor
+}(DIMP);
+! function(ns) {
+    var ContentType = ns.protocol.ContentType;
+    var TextContent = ns.protocol.TextContent;
+    var ContentProcessor = ns.cpu.ContentProcessor;
+    var DefaultContentProcessor = function(messenger) {
+        ContentProcessor.call(this, messenger)
+    };
+    DefaultContentProcessor.inherits(ContentProcessor);
+    DefaultContentProcessor.prototype.process = function(content, sender, msg) {
+        var type = content.type.toString();
+        var text = "Content (type: " + type + ") not support yet!";
+        var res = new TextContent(text);
+        var group = content.getGroup();
+        if (group) {
+            res.setGroup(group)
+        }
+        return res
+    };
+    ContentProcessor.register(ContentType.UNKNOWN, DefaultContentProcessor);
+    ns.cpu.DefaultContentProcessor = DefaultContentProcessor
+}(DIMP);
+! function(ns) {
+    var TextContent = ns.protocol.TextContent;
+    var CommandProcessor = ns.cpu.CommandProcessor;
+    var DefaultCommandProcessor = function(messenger) {
+        CommandProcessor.call(this, messenger)
+    };
+    DefaultCommandProcessor.inherits(CommandProcessor);
+    DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var name = cmd.getCommand();
+        var text = "Command (name: " + name + ") not support yet!";
+        var res = new TextContent(text);
+        var group = cmd.getGroup();
+        if (group) {
+            res.setGroup(group)
+        }
+        return res
+    };
+    CommandProcessor.register(CommandProcessor.UNKNOWN, DefaultCommandProcessor);
+    ns.cpu.DefaultCommandProcessor = DefaultCommandProcessor
+}(DIMP);
+! function(ns) {
+    var TextContent = ns.protocol.TextContent;
+    var Command = ns.protocol.Command;
+    var MetaCommand = ns.protocol.MetaCommand;
+    var CommandProcessor = ns.cpu.CommandProcessor;
+    var MetaCommandProcessor = function(messenger) {
+        CommandProcessor.call(this, messenger)
+    };
+    MetaCommandProcessor.inherits(CommandProcessor);
+    var get_meta = function(identifier) {
+        var facebook = this.getFacebook();
+        var meta = facebook.getMeta(identifier);
+        if (!meta) {
+            var text = "Sorry, meta not found for ID: " + identifier;
+            return new TextContent(text)
+        }
+        return MetaCommand.response(identifier, meta)
+    };
+    var put_meta = function(identifier, meta) {
+        var facebook = this.getFacebook();
+        if (!facebook.verifyMeta(meta, identifier)) {
+            return new TextContent("Meta not match ID: " + identifier)
+        }
+        if (!facebook.saveMeta(meta, identifier)) {
+            return new TextContent("Meta not accept: " + identifier)
+        }
+        return new ReceiptCommand("Meta received: " + identifier)
+    };
+    MetaCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var identifier = cmd.getIdentifier();
+        identifier = facebook.getIdentifier(identifier);
+        var meta = cmd.getMeta();
+        if (meta) {
+            return put_meta.call(this, identifier, meta)
+        } else {
+            return get_meta.call(this, identifier)
+        }
+    };
+    CommandProcessor.register(Command.META, MetaCommandProcessor);
+    ns.cpu.MetaCommandProcessor = MetaCommandProcessor
+}(DIMP);
+! function(ns) {
+    var TextContent = ns.protocol.TextContent;
+    var Command = ns.protocol.Command;
+    var ProfileCommand = ns.protocol.ProfileCommand;
+    var CommandProcessor = ns.cpu.CommandProcessor;
+    var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
+    var ProfileCommandProcessor = function(messenger) {
+        MetaCommandProcessor.call(this, messenger)
+    };
+    ProfileCommandProcessor.inherits(MetaCommandProcessor);
+    var get_profile = function(identifier) {
+        var facebook = this.getFacebook();
+        var profile = facebook.getProfile(identifier);
+        if (!profile) {
+            var text = "Sorry, profile not found for ID: " + identifier;
+            return new TextContent(text)
+        }
+        return ProfileCommand.response(identifier, profile)
+    };
+    var put_profile = function(identifier, profile, meta) {
+        var facebook = this.getFacebook();
+        if (meta) {
+            if (!facebook.verifyMeta(meta, identifier)) {
+                return new TextContent("Meta not match ID: " + identifier)
+            }
+            if (!facebook.saveMeta(meta, identifier)) {
+                return new TextContent("Meta not accept: " + identifier)
+            }
+        }
+        if (!facebook.verifyProfile(profile, identifier)) {
+            return new TextContent("Profile not match ID: " + identifier)
+        }
+        if (!facebook.saveProfile(profile, identifier)) {
+            return new TextContent("Profile not accept: " + identifier)
+        }
+        return new ReceiptCommand("Profile received: " + identifier)
+    };
+    ProfileCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var identifier = cmd.getIdentifier();
+        identifier = facebook.getIdentifier(identifier);
+        var profile = cmd.getProfile();
+        if (profile) {
+            var meta = cmd.getMeta();
+            return put_profile.call(this, identifier, profile, meta)
+        } else {
+            return get_profile.call(this, identifier)
+        }
+    };
+    CommandProcessor.register(Command.PROFILE, ProfileCommandProcessor);
+    ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor
+}(DIMP);
+! function(ns) {
+    var Content = ns.protocol.Content;
+    var ContentProcessor = ns.cpu.ContentProcessor;
+    var CommandProcessor = ns.cpu.CommandProcessor;
+    var HistoryCommandProcessor = function(messenger) {
+        CommandProcessor.call(this, messenger);
+        this.gpu = null
+    };
+    HistoryCommandProcessor.inherits(CommandProcessor);
+    HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var cpu;
+        if (cmd.getGroup()) {
+            if (!this.gpu) {
+                this.gpu = new ns.cpu.GroupCommandProcessor(this.messenger)
+            }
+            cpu = this.gpu
+        } else {
+            var name = cmd.getCommand();
+            cpu = this.getCPU(name)
+        }
+        return cpu.process(cmd, sender, msg)
+    };
+    HistoryCommandProcessor.register = function(command, clazz) {
+        CommandProcessor.register.call(this, command, clazz)
+    };
+    ContentProcessor.register(Content.HISTORY, HistoryCommandProcessor);
+    ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor
+}(DIMP);
+! function(ns) {
+    var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
+    var GroupCommandProcessor = function(messenger) {
+        HistoryCommandProcessor.call(this, messenger)
+    };
+    GroupCommandProcessor.inherits(HistoryCommandProcessor);
+    var convert_id_list = function(list) {
+        var facebook = this.getFacebook();
+        var array = [];
+        var identifier;
+        for (var i = 0; i < list.length; ++i) {
+            identifier = facebook.getIdentifier(list[i]);
+            if (!identifier) {
+                continue
+            }
+            array.push(identifier)
+        }
+        return array
+    };
+    GroupCommandProcessor.prototype.getMembers = function(cmd) {
+        var members = cmd.getMembers();
+        if (!members) {
+            var member = cmd.getMember();
+            if (!member) {
+                return null
+            }
+            members = [member]
+        }
+        return convert_id_list.call(this, members)
+    };
+    GroupCommandProcessor.prototype.containsOwner = function(members, group) {
+        var facebook = this.getFacebook();
+        var identifier;
+        for (var i = 0; i < members.length; ++i) {
+            identifier = facebook.getIdentifier(members[i]);
+            if (facebook.isOwner(identifier, group)) {
+                return true
+            }
+        }
+        return false
+    };
+    GroupCommandProcessor.prototype.isEmpty = function(group) {
+        var facebook = this.getFacebook();
+        var members = facebook.getMembers(group);
+        if (!members || members.length === 0) {
+            return true
+        }
+        var owner = facebook.getOwner(group);
+        return !owner
+    };
+    GroupCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var name = cmd.getCommand();
+        var cpu = this.getCPU(name);
+        return cpu.process(cmd, sender, msg)
+    };
+    GroupCommandProcessor.register = function(command, clazz) {
+        HistoryCommandProcessor.register.call(this, command, clazz)
+    };
+    if (typeof ns.cpu.group !== "object") {
+        ns.cpu.group = {}
+    }
+    ns.cpu.GroupCommandProcessor = GroupCommandProcessor
+}(DIMP);
+! function(ns) {
+    var TextContent = ns.protocol.TextContent;
+    var GroupCommand = ns.protocol.GroupCommand;
+    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var InviteCommandProcessor = function(messenger) {
+        GroupCommandProcessor.call(this, messenger)
+    };
+    InviteCommandProcessor.inherits(GroupCommandProcessor);
+    var is_reset = function(inviteList, sender, group) {
+        var facebook = this.getFacebook();
+        if (this.containsOwner(inviteList, group)) {
+            return facebook.isOwner(sender, group)
+        }
+        return false
+    };
+    var reset = function(cmd, sender, msg) {
+        var cpu = this.getCPU(GroupCommand.RESET);
+        return cpu.process(cmd, sender, msg)
+    };
+    var invite = function(inviteList, group) {
+        var facebook = this.getFacebook();
+        var members = facebook.getMembers(group);
+        if (!members) {
+            members = []
+        }
+        var addedList = [];
+        var item;
+        for (var i = 0; i < inviteList.length; ++i) {
+            item = inviteList[i];
+            if (members.contains(item)) {
+                continue
+            }
+            addedList.push(item);
+            members.push(item)
+        }
+        if (addedList.length > 0) {
+            if (facebook.saveMembers(members, group)) {
+                return addedList
+            }
+        }
+        return null
+    };
+    InviteCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var group = cmd.getGroup();
+        group = facebook.getIdentifier(group);
+        if (this.isEmpty(group)) {
+            return reset.call(this, cmd, sender, msg)
+        }
+        if (!facebook.existsMember(sender, group)) {
+            if (!facebook.existsAssistant(sender, group)) {
+                if (!facebook.isOwner(sender, group)) {
+                    throw Error(sender + " is not a member of group: " + group)
+                }
+            }
+        }
+        var inviteList = this.getMembers(cmd);
+        if (!inviteList || inviteList.length === 0) {
+            throw Error("Invite command error: " + cmd)
+        }
+        if (is_reset.call(this, inviteList, sender, group)) {
+            return reset.call(this, cmd, sender, msg)
+        }
+        var added = invite.call(this, inviteList, group);
+        if (added) {
+            cmd.setValue("added", added)
+        }
+        return null
+    };
+    GroupCommandProcessor.register(GroupCommand.INVITE, InviteCommandProcessor);
+    ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor
+}(DIMP);
+! function(ns) {
+    var GroupCommand = ns.protocol.GroupCommand;
+    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var ExpelCommandProcessor = function(messenger) {
+        GroupCommandProcessor.call(this, messenger)
+    };
+    ExpelCommandProcessor.inherits(GroupCommandProcessor);
+    ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var group = cmd.getGroup();
+        group = facebook.getIdentifier(group);
+        if (!facebook.isOwner(sender, group)) {
+            if (!facebook.existsAssistant(sender, group)) {
+                throw Error(sender + " is not the owner/admin of group: " + group)
+            }
+        }
+        var expelList = this.getMembers(cmd);
+        if (!expelList || expelList.length === 0) {
+            throw Error("Expel command error: " + cmd)
+        }
+        var members = facebook.getMembers(group);
+        if (!members || members.length === 0) {
+            throw Error("Group members not found: " + group)
+        }
+        var removedList = [];
+        var item;
+        for (var i = 0; i < expelList.length; ++i) {
+            item = expelList[i];
+            if (!members.contains(item)) {
+                continue
+            }
+            removedList.push(item);
+            members.remove(item)
+        }
+        if (removedList.length > 0) {
+            if (facebook.saveMembers(members, group)) {
+                cmd.setValue("removed", removedList)
+            }
+        }
+        return null
+    };
+    GroupCommandProcessor.register(GroupCommand.EXPEL, ExpelCommandProcessor);
+    ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor
+}(DIMP);
+! function(ns) {
+    var GroupCommand = ns.protocol.GroupCommand;
+    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var QuitCommandProcessor = function(messenger) {
+        GroupCommandProcessor.call(this, messenger)
+    };
+    QuitCommandProcessor.inherits(GroupCommandProcessor);
+    QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var group = cmd.getGroup();
+        group = facebook.getIdentifier(group);
+        if (facebook.isOwner(sender, group)) {
+            throw Error("owner cannot quit: " + sender + ", " + group)
+        }
+        if (facebook.existsAssistant(sender, group)) {
+            throw Error("assistant cannot quit: " + sender + ", " + group)
+        }
+        var members = facebook.getMembers(group);
+        if (!members || members.length === 0) {
+            throw Error("Group members not found: " + group)
+        }
+        if (!members.contains(sender)) {
+            return
+        }
+        members.remove(sender);
+        facebook.saveMembers(members, group);
+        return null
+    };
+    GroupCommandProcessor.register(GroupCommand.QUIT, QuitCommandProcessor);
+    ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor
+}(DIMP);
+! function(ns) {
+    var TextContent = ns.protocol.TextContent;
+    var GroupCommand = ns.protocol.GroupCommand;
+    var InviteCommand = ns.protocol.InviteCommand;
+    var ResetCommand = ns.protocol.ResetCommand;
+    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var QueryCommandProcessor = function(messenger) {
+        GroupCommandProcessor.call(this, messenger)
+    };
+    QueryCommandProcessor.inherits(GroupCommandProcessor);
+    QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var group = cmd.getGroup();
+        group = facebook.getIdentifier(group);
+        if (!facebook.existsMember(sender, group)) {
+            if (!facebook.existsAssistant(sender, group)) {
+                if (!facebook.isOwner(sender, group)) {
+                    throw Error(sender + " is not a member/assistant of group: " + group)
+                }
+            }
+        }
+        var members = facebook.getMembers(group);
+        if (!members || members.length === 0) {
+            var res = new TextContent("Sorry, members not found in group: " + group);
+            res.setGroup(group);
+            return res
+        }
+        var user = facebook.getCurrentUser();
+        if (facebook.isOwner(user.identifier, group)) {
+            return new ResetCommand(group, members)
+        } else {
+            return new InviteCommand(group, members)
+        }
+    };
+    GroupCommandProcessor.register(GroupCommand.QUERY, QueryCommandProcessor);
+    ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor
+}(DIMP);
+! function(ns) {
+    var GroupCommand = ns.protocol.GroupCommand;
+    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var ResetCommandProcessor = function(messenger) {
+        GroupCommandProcessor.call(this, messenger)
+    };
+    ResetCommandProcessor.inherits(GroupCommandProcessor);
+    var save = function(newMembers, sender, group) {
+        if (!this.containsOwner(newMembers, group)) {
+            return GroupCommand.query(group)
+        }
+        var facebook = this.getFacebook();
+        if (facebook.saveMembers(newMembers, group)) {
+            var owner = facebook.getOwner(group);
+            if (owner && !owner.equals(sender)) {
+                var cmd = GroupCommand.query(group);
+                this.messenger.sendContent(cmd, owner)
+            }
+        }
+        return null
+    };
+    var reset = function(newMembers, group) {
+        var facebook = this.getFacebook();
+        var oldMembers = facebook.getMembers(group);
+        if (!oldMembers) {
+            oldMembers = []
+        }
+        var removedList = [];
+        var i, item;
+        for (i = 0; i < oldMembers.length; ++i) {
+            item = oldMembers[i];
+            if (newMembers.contains(item)) {
+                continue
+            }
+            removedList.push(item)
+        }
+        var addedList = [];
+        for (i = 0; i < newMembers.length; ++i) {
+            item = newMembers[i];
+            if (oldMembers.contains(item)) {
+                continue
+            }
+            addedList.push(item)
+        }
+        var result = {};
+        if (addedList.length > 0 || removedList.length > 0) {
+            if (!facebook.saveMembers(newMembers, group)) {
+                return result
+            }
+            if (addedList.length > 0) {
+                result["added"] = addedList
+            }
+            if (removedList.length > 0) {
+                result["removed"] = removedList
+            }
+        }
+        return result
+    };
+    ResetCommandProcessor.prototype.process = function(cmd, sender, msg) {
+        var facebook = this.getFacebook();
+        var group = cmd.getGroup();
+        group = facebook.getIdentifier(group);
+        var newMembers = this.getMembers(cmd);
+        if (!newMembers || newMembers.length === 0) {
+            throw Error("Reset group command error: " + cmd)
+        }
+        if (this.isEmpty(group)) {
+            return save.call(this, newMembers, sender, group)
+        }
+        if (!facebook.isOwner(sender, group)) {
+            if (!facebook.existsAssistant(sender, group)) {
+                throw Error(sender + " is not the owner/admin of group: " + group)
+            }
+        }
+        var result = reset.call(this, newMembers, group);
+        var added = result["added"];
+        if (added) {
+            cmd.setValue("added", added)
+        }
+        var removed = result["removed"];
+        if (removed) {
+            cmd.setValue("removed", removed)
+        }
+        return null
+    };
+    GroupCommandProcessor.register(GroupCommand.RESET, ResetCommandProcessor);
+    ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor
 }(DIMP);
