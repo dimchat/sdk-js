@@ -30,6 +30,16 @@
 // =============================================================================
 //
 
+/**
+ *  Command message: {
+ *      type : 0x88,
+ *      sn   : 123,
+ *
+ *      command : "block",
+ *      list    : []      // block-list
+ *  }
+ */
+
 //! require <dimp.js>
 
 !function (ns) {
@@ -37,15 +47,6 @@
 
     var Command = ns.protocol.Command;
 
-    /**
-     *  Command message: {
-     *      type : 0x88,
-     *      sn   : 123,
-     *
-     *      command : "block",
-     *      list    : []      // block-list
-     *  }
-     */
     var BlockCommand = function (info) {
         var list = null;
         if (!info) {

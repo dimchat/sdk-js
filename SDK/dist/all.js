@@ -4298,6 +4298,122 @@ if (typeof DIMP !== "object") {
     ns.protocol.ReceiptCommand = ReceiptCommand
 }(DIMP);
 ! function(ns) {
+    var Base64 = ns.format.Base64;
+    var SymmetricKey = ns.crypto.SymmetricKey;
+    var PrivateKey = ns.crypto.PrivateKey;
+    var Command = ns.protocol.Command;
+    var StorageCommand = function(info) {
+        var title = null;
+        if (!info) {
+            info = StorageCommand.STORAGE
+        } else {
+            if (typeof info === "string") {
+                title = info;
+                info = StorageCommand.STORAGE
+            }
+        }
+        Command.call(this, info);
+        if (title) {
+            this.setTitle(title)
+        }
+        this.data = null;
+        this.plaintext = null;
+        this.key = null;
+        this.password = null
+    };
+    StorageCommand.inherits(Command);
+    StorageCommand.prototype.getTitle = function() {
+        var title = this.getValue("title");
+        if (title) {
+            return title
+        } else {
+            return this.getCommand()
+        }
+    };
+    StorageCommand.prototype.setTitle = function(title) {
+        this.setValue("title", title)
+    };
+    StorageCommand.prototype.getIdentifier = function() {
+        return this.getValue("ID")
+    };
+    StorageCommand.prototype.setIdentifier = function(identifier) {
+        this.setValue("ID", identifier)
+    };
+    StorageCommand.prototype.getData = function() {
+        if (!this.data) {
+            var base64 = this.getValue("data");
+            if (base64) {
+                this.data = Base64.decode(base64)
+            }
+        }
+        return this.data
+    };
+    StorageCommand.prototype.setData = function(data) {
+        var base64 = null;
+        if (data) {
+            base64 = Base64.encode(data)
+        }
+        this.setValue("data", base64);
+        this.data = data;
+        this.plaintext = null
+    };
+    StorageCommand.prototype.getKey = function() {
+        if (!this.key) {
+            var base64 = this.getValue("key");
+            if (base64) {
+                this.key = Base64.decode(base64)
+            }
+        }
+        return this.key
+    };
+    StorageCommand.prototype.setKey = function(data) {
+        var base64 = null;
+        if (data) {
+            base64 = Base64.encode(data)
+        }
+        this.setValue("key", base64);
+        this.key = data;
+        this.password = null
+    };
+    StorageCommand.prototype.decrypt = function(key) {
+        if (!this.plaintext) {
+            var pwd = null;
+            if (key.isinstanceof(PrivateKey)) {
+                pwd = this.decryptKey(key);
+                if (!pwd) {
+                    throw Error("failed to decrypt key: " + key)
+                }
+            } else {
+                if (key.isinstanceof(SymmetricKey)) {
+                    pwd = key
+                } else {
+                    throw TypeError("Decryption key error: " + key)
+                }
+            }
+            var data = this.getData();
+            this.plaintext = pwd.decrypt(data)
+        }
+        return this.plaintext
+    };
+    StorageCommand.prototype.decryptKey = function(privateKey) {
+        if (!this.password) {
+            var key = this.getKey();
+            key = privateKey.decrypt(key);
+            var json = new ns.type.String(key, "UTF-8");
+            var dict = ns.format.JSON.decode(json);
+            this.password = SymmetricKey.getInstance(dict)
+        }
+        return this.password
+    };
+    StorageCommand.STORAGE = "storage";
+    StorageCommand.CONTACTS = "contacts";
+    StorageCommand.PRIVATE_KEY = "private_key";
+    Command.register(StorageCommand.STORAGE, StorageCommand);
+    Command.register(StorageCommand.CONTACTS, StorageCommand);
+    Command.register(StorageCommand.PRIVATE_KEY, StorageCommand);
+    ns.protocol.StorageCommand = StorageCommand
+}(DIMP);
+! function(ns) {
     var ID = ns.ID;
     var Address = ns.Address;
     var AddressNameService = function() {
