@@ -4000,7 +4000,7 @@ if (typeof DIMP !== "object") {
             throw Error("address check code error: " + string)
         }
         this.network = new NetworkType(data[0]);
-        this.code = user_number(cc)
+        this.code = search_number(cc)
     };
     DefaultAddress.inherits(Address);
     DefaultAddress.prototype.getNetwork = function() {
@@ -4036,7 +4036,7 @@ if (typeof DIMP !== "object") {
         }
         return cc
     };
-    var user_number = function(cc) {
+    var search_number = function(cc) {
         return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 16777216
     };
     Address.register(DefaultAddress);
@@ -4462,9 +4462,11 @@ if (typeof DIMP !== "object") {
             return false
         }
         if (identifier) {
-            this.caches[name] = identifier
+            this.caches[name] = identifier;
+            return true;
         } else {
-            delete this.caches[name]
+            delete this.caches[name];
+            return false
         }
     };
     AddressNameService.prototype.save = function(name, identifier) {

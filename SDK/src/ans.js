@@ -69,8 +69,10 @@
         }
         if (identifier) {
             this.caches[name] = identifier;
+            return true;
         } else {
             delete this.caches[name];
+            return false;
         }
     };
 
