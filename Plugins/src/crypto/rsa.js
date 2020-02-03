@@ -34,6 +34,7 @@
 !function (ns) {
     'use strict';
 
+    var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
 
@@ -77,14 +78,20 @@
     };
 
     RSAPublicKey.prototype.verify = function (data, signature) {
-        // convert Int8Array to String
-        data = (new ns.type.String(data)).value;
+        // convert Int8Array to WordArray
+        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         // convert Int8Array to Base64
         signature = Base64.encode(signature);
         // create signer
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);
+        //
+        //  verify(data, signature):
+        //    param  WordArray
+        //    param  Base64
+        //    return boolean
+        //
         return cipher.verify(data, signature, CryptoJS.SHA256);
     };
 
@@ -95,9 +102,18 @@
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);
+        //
+        //  encrypt(data):
+        //    param  String
+        //    return Base64|false
+        //
         var base64 = cipher.encrypt(plaintext);
-        // convert Base64 to Int8Array
-        return Base64.decode(base64);
+        if (base64) {
+            // convert Base64 to Int8Array
+            return Base64.decode(base64);
+        } else {
+            throw Error('RSA encrypt error: ' + plaintext);
+        }
     };
 
     //-------- register --------
@@ -116,6 +132,7 @@
 !function (ns) {
     'use strict';
 
+    var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
 
@@ -192,15 +209,24 @@
     };
 
     RSAPrivateKey.prototype.sign = function (data) {
-        // convert Int8Array to String
-        data = (new ns.type.String(data)).value;
+        // convert Int8Array to WordArray
+        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         // create signer
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
+        //
+        //  sign(data):
+        //    param  WordArray
+        //    return Base64|false
+        //
         var base64 = cipher.sign(data, CryptoJS.SHA256, 'sha256');
-        // convert Base64 to Int8Array
-        return Base64.decode(base64);
+        if (base64) {
+            // convert Base64 to Int8Array
+            return Base64.decode(base64);
+        } else {
+            throw Error('RSA sign error: ' + data);
+        }
     };
 
     RSAPrivateKey.prototype.decrypt = function (data) {
@@ -210,9 +236,18 @@
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
+        //
+        //  decrypt(data):
+        //    param  Base64;
+        //    return String|false
+        //
         var string = cipher.decrypt(data);
-        // convert String to Int8Array
-        return (new ns.type.String(string)).getBytes();
+        if (string) {
+            // convert String to Int8Array
+            return (new ns.type.String(string)).getBytes();
+        } else {
+            throw Error('RSA decrypt error: ' + data);
+        }
     };
 
     //-------- register --------

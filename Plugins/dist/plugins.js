@@ -376,6 +376,7 @@
     ns.plugins.AESKey = AESKey
 }(DIMP);
 ! function(ns) {
+    var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
     var Dictionary = ns.type.Dictionary;
@@ -403,7 +404,7 @@
         }
     };
     RSAPublicKey.prototype.verify = function(data, signature) {
-        data = (new ns.type.String(data)).value;
+        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         signature = Base64.encode(signature);
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
@@ -416,7 +417,11 @@
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);
         var base64 = cipher.encrypt(plaintext);
-        return Base64.decode(base64)
+        if (base64) {
+            return Base64.decode(base64)
+        } else {
+            throw Error("RSA encrypt error: " + plaintext)
+        }
     };
     PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
     PublicKey.register("SHA256withRSA", RSAPublicKey);
@@ -427,6 +432,7 @@
     ns.plugins.RSAPublicKey = RSAPublicKey
 }(DIMP);
 ! function(ns) {
+    var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
     var Dictionary = ns.type.Dictionary;
@@ -483,12 +489,16 @@
         return PublicKey.getInstance(info)
     };
     RSAPrivateKey.prototype.sign = function(data) {
-        data = (new ns.type.String(data)).value;
+        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         var base64 = cipher.sign(data, CryptoJS.SHA256, "sha256");
-        return Base64.decode(base64)
+        if (base64) {
+            return Base64.decode(base64)
+        } else {
+            throw Error("RSA sign error: " + data)
+        }
     };
     RSAPrivateKey.prototype.decrypt = function(data) {
         data = Base64.encode(data);
@@ -496,7 +506,11 @@
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         var string = cipher.decrypt(data);
-        return (new ns.type.String(string)).getBytes()
+        if (string) {
+            return (new ns.type.String(string)).getBytes()
+        } else {
+            throw Error("RSA decrypt error: " + data)
+        }
     };
     PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
     PrivateKey.register("SHA256withRSA", RSAPrivateKey);
