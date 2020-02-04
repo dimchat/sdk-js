@@ -51,7 +51,7 @@
         console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
-    Delegate.prototype.onFinishSend = function (request, error, star) {
+    Delegate.prototype.onSent = function (request, error, star) {
         console.assert(request !== null, 'request empty');
         console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
@@ -117,7 +117,7 @@
      *  Send data to the connected server
      *
      * @param payload
-     * @param delegate - completionHandler for callback
+     * @param delegate - StarDelegate
      */
     Star.prototype.send = function (payload, delegate) {
         console.assert(payload !== null, 'payload empty');

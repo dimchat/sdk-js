@@ -87,7 +87,7 @@
             }
             this.ws.send(task.data);
             if (task.delegate) {
-                task.delegate.onFinishSend(task.data, null, this);
+                task.delegate.onSent(task.data, null, this);
             }
         }
     };
@@ -96,7 +96,7 @@
         if (this.isConnected()) {
             this.ws.send(data);
             if (delegate) {
-                delegate.onFinishSend(data, null, this);
+                delegate.onSent(data, null, this);
             }
         } else {
             Fence.prototype.send.call(this, data, delegate);

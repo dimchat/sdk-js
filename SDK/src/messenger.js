@@ -284,6 +284,7 @@
                 content.setPassword(key);
             }
         }
+        return content;
     };
 
     //

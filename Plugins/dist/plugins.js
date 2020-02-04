@@ -412,7 +412,7 @@
         return cipher.verify(data, signature, CryptoJS.SHA256)
     };
     RSAPublicKey.prototype.encrypt = function(plaintext) {
-        plaintext = (new ns.type.String(plaintext)).value;
+        plaintext = (new ns.type.String(plaintext)).toString();
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);

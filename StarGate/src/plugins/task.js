@@ -37,6 +37,13 @@
 
     var Star = ns.Star;
 
+    /**
+     *  Create sending task
+     *
+     * @param data - payload
+     * @param delegate - StarDelegate
+     * @constructor
+     */
     var Task = function (data, delegate) {
         this.data = data;
         this.delegate = delegate;
@@ -44,15 +51,15 @@
     };
 
     Task.prototype.onResponse = function (data) {
-        this.delegate.onReceive(data);
+        this.delegate.onReceived(data);
     };
 
     Task.prototype.onSuccess = function () {
-        this.delegate.onFinishSend(this.data, null, this.star);
+        this.delegate.onSent(this.data, null, this.star);
     };
 
     Task.prototype.onError = function (error) {
-        this.delegate.onFinishSend(this.data, error, this.star);
+        this.delegate.onSent(this.data, error, this.star);
     };
 
     //-------- namespace --------

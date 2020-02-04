@@ -1144,6 +1144,7 @@
                 content.setPassword(key)
             }
         }
+        return content
     };
     Messenger.prototype.sendContent = function(content, receiver, callback, split) {
         var facebook = this.getFacebook();

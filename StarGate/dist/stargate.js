@@ -137,7 +137,7 @@ if (typeof StarGate.plugins !== "object") {
     };
     Machine.prototype.tick = function() {
         if (this.status.equals(Status.Running)) {
-            this.currentState.tick()
+            this.currentState.tick(this)
         }
     };
     Machine.prototype.start = function() {
@@ -245,12 +245,12 @@ if (typeof StarGate.plugins !== "object") {
 }(StarGate);
 ! function(ns) {
     var Storage = {
-        ROOT: "dim.file",
+        ROOT: "/dim/file",
         exists: function(path) {
             return !!this.loadText(path)
         },
         loadText: function(path) {
-            return this.storage.getItem(this.ROOT + "." + path)
+            return this.storage.getItem(this.ROOT + "/" + path)
         },
         loadData: function(path) {
             var base64 = this.loadText(path);
@@ -307,7 +307,7 @@ if (typeof StarGate.plugins !== "object") {
         console.assert(star !== null, "star empty");
         console.assert(false, "implement me!")
     };
-    Delegate.prototype.onFinishSend = function(request, error, star) {
+    Delegate.prototype.onSent = function(request, error, star) {
         console.assert(request !== null, "request empty");
         console.assert(star !== null, "star empty");
         console.assert(false, "implement me!")
@@ -354,13 +354,13 @@ if (typeof StarGate.plugins !== "object") {
         this.star = null
     };
     Task.prototype.onResponse = function(data) {
-        this.delegate.onReceive(data)
+        this.delegate.onReceived(data)
     };
     Task.prototype.onSuccess = function() {
-        this.delegate.onFinishSend(this.data, null, this.star)
+        this.delegate.onSent(this.data, null, this.star)
     };
     Task.prototype.onError = function(error) {
-        this.delegate.onFinishSend(this.data, error, this.star)
+        this.delegate.onSent(this.data, error, this.star)
     };
     ns.plugins.Task = Task;
     ns.plugins.includes("Task")
@@ -479,7 +479,7 @@ if (typeof StarGate.plugins !== "object") {
             }
             this.ws.send(task.data);
             if (task.delegate) {
-                task.delegate.onFinishSend(task.data, null, this)
+                task.delegate.onSent(task.data, null, this)
             }
         }
     };
@@ -487,7 +487,7 @@ if (typeof StarGate.plugins !== "object") {
         if (this.isConnected()) {
             this.ws.send(data);
             if (delegate) {
-                delegate.onFinishSend(data, null, this)
+                delegate.onSent(data, null, this)
             }
         } else {
             Fence.prototype.send.call(this, data, delegate)

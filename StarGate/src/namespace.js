@@ -25,11 +25,11 @@
 // =============================================================================
 //
 
-if (typeof FiniteStateMachine !== "object") {
+if (typeof FiniteStateMachine !== 'object') {
     FiniteStateMachine = {};
 }
 
-if (typeof StarGate !== "object") {
+if (typeof StarGate !== 'object') {
     StarGate = {};
 }
 if (typeof StarGate.plugins !== 'object') {

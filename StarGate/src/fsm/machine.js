@@ -89,7 +89,7 @@
      */
     Machine.prototype.tick = function () {
         if (this.status.equals(Status.Running)) {
-            this.currentState.tick();
+            this.currentState.tick(this);
         }
     };
 

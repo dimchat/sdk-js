@@ -97,7 +97,7 @@
 
     RSAPublicKey.prototype.encrypt = function (plaintext) {
         // convert Int8Array to String
-        plaintext = (new ns.type.String(plaintext)).value;
+        plaintext = (new ns.type.String(plaintext)).toString();
         // create cipher
         var key = Base64.encode(this.getData());
         var cipher = new JSEncrypt();
