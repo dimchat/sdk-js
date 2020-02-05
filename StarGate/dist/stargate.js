@@ -245,12 +245,12 @@ if (typeof StarGate.plugins !== "object") {
 }(StarGate);
 ! function(ns) {
     var Storage = {
-        ROOT: "/dim/file",
+        ROOT: "storage",
         exists: function(path) {
             return !!this.loadText(path)
         },
         loadText: function(path) {
-            return this.storage.getItem(this.ROOT + "/" + path)
+            return this.storage.getItem(this.ROOT + "." + path)
         },
         loadData: function(path) {
             var base64 = this.loadText(path);

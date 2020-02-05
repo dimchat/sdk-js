@@ -38,7 +38,7 @@
 
     var Storage = {
 
-        ROOT: '/dim/file',
+        ROOT: 'storage',
 
         //
         //  Read
@@ -61,7 +61,7 @@
          * @returns {string}
          */
         loadText: function (path) {
-            return this.storage.getItem(this.ROOT + '/' + path);
+            return this.storage.getItem(this.ROOT + '.' + path);
         },
         /**
          *  Load data from file path

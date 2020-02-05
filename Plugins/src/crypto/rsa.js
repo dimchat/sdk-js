@@ -77,15 +77,31 @@
         }
     };
 
+    var x509_header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
+    var parse_key = function () {
+        if (!this.cipher) {
+            var der = this.getData();
+            var key = Base64.encode(der);
+            var cipher = new JSEncrypt();
+            cipher.setPublicKey(key);
+            if (cipher.key.e === 0 || cipher.key.n === null) {
+                // FIXME: PKCS#1 -> X.509
+                der = x509_header.concat(der);
+                key = Base64.encode(der);
+                cipher.setPublicKey(key);
+            }
+            this.cipher = cipher;
+        }
+        return this.cipher;
+    };
+
     RSAPublicKey.prototype.verify = function (data, signature) {
         // convert Int8Array to WordArray
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         // convert Int8Array to Base64
         signature = Base64.encode(signature);
         // create signer
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPublicKey(key);
+        var cipher = parse_key.call(this);
         //
         //  verify(data, signature):
         //    param  WordArray
@@ -99,9 +115,7 @@
         // convert Int8Array to String
         plaintext = (new ns.type.String(plaintext)).toString();
         // create cipher
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPublicKey(key);
+        var cipher = parse_key.call(this);
         //
         //  encrypt(data):
         //    param  String
@@ -208,13 +222,22 @@
         return PublicKey.getInstance(info);
     };
 
+    var parse_key = function () {
+        if (!this.cipher) {
+            var der = this.getData();
+            var key = Base64.encode(der);
+            var cipher = new JSEncrypt();
+            cipher.setPrivateKey(key);
+            this.cipher = cipher;
+        }
+        return this.cipher;
+    };
+
     RSAPrivateKey.prototype.sign = function (data) {
         // convert Int8Array to WordArray
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         // create signer
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
+        var cipher = parse_key.call(this);
         //
         //  sign(data):
         //    param  WordArray
@@ -233,9 +256,7 @@
         // convert Int8Array to Base64
         data = Base64.encode(data);
         // create cipher
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
+        var cipher = parse_key.call(this);
         //
         //  decrypt(data):
         //    param  Base64;

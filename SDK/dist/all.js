@@ -650,7 +650,11 @@ if (typeof DIMP !== "object") {
                 }
             }
             obj.call(this);
-            this.value = value;
+            if (value instanceof enumeration) {
+                this.value = value.value
+            } else {
+                this.value = value
+            }
             this.alias = alias
         };
         enumeration.inherits(obj);
@@ -3931,19 +3935,31 @@ if (typeof DIMP !== "object") {
             return 1024 / 8
         }
     };
+    var x509_header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
+    var parse_key = function() {
+        if (!this.cipher) {
+            var der = this.getData();
+            var key = Base64.encode(der);
+            var cipher = new JSEncrypt();
+            cipher.setPublicKey(key);
+            if (cipher.key.e === 0 || cipher.key.n === null) {
+                der = x509_header.concat(der);
+                key = Base64.encode(der);
+                cipher.setPublicKey(key)
+            }
+            this.cipher = cipher
+        }
+        return this.cipher
+    };
     RSAPublicKey.prototype.verify = function(data, signature) {
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         signature = Base64.encode(signature);
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPublicKey(key);
+        var cipher = parse_key.call(this);
         return cipher.verify(data, signature, CryptoJS.SHA256)
     };
     RSAPublicKey.prototype.encrypt = function(plaintext) {
         plaintext = (new ns.type.String(plaintext)).toString();
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPublicKey(key);
+        var cipher = parse_key.call(this);
         var base64 = cipher.encrypt(plaintext);
         if (base64) {
             return Base64.decode(base64)
@@ -4016,11 +4032,19 @@ if (typeof DIMP !== "object") {
         };
         return PublicKey.getInstance(info)
     };
+    var parse_key = function() {
+        if (!this.cipher) {
+            var der = this.getData();
+            var key = Base64.encode(der);
+            var cipher = new JSEncrypt();
+            cipher.setPrivateKey(key);
+            this.cipher = cipher
+        }
+        return this.cipher
+    };
     RSAPrivateKey.prototype.sign = function(data) {
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
+        var cipher = parse_key.call(this);
         var base64 = cipher.sign(data, CryptoJS.SHA256, "sha256");
         if (base64) {
             return Base64.decode(base64)
@@ -4030,9 +4054,7 @@ if (typeof DIMP !== "object") {
     };
     RSAPrivateKey.prototype.decrypt = function(data) {
         data = Base64.encode(data);
-        var key = Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
+        var cipher = parse_key.call(this);
         var string = cipher.decrypt(data);
         if (string) {
             return (new ns.type.String(string)).getBytes()
@@ -6166,12 +6188,12 @@ if (typeof StarGate.plugins !== "object") {
 }(StarGate);
 ! function(ns) {
     var Storage = {
-        ROOT: "/dim/file",
+        ROOT: "storage",
         exists: function(path) {
             return !!this.loadText(path)
         },
         loadText: function(path) {
-            return this.storage.getItem(this.ROOT + "/" + path)
+            return this.storage.getItem(this.ROOT + "." + path)
         },
         loadData: function(path) {
             var base64 = this.loadText(path);
