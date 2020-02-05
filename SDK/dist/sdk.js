@@ -1332,6 +1332,7 @@
     var TextContent = ns.protocol.TextContent;
     var Command = ns.protocol.Command;
     var MetaCommand = ns.protocol.MetaCommand;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
     var CommandProcessor = ns.cpu.CommandProcessor;
     var MetaCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
@@ -1374,6 +1375,7 @@
     var TextContent = ns.protocol.TextContent;
     var Command = ns.protocol.Command;
     var ProfileCommand = ns.protocol.ProfileCommand;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
     var CommandProcessor = ns.cpu.CommandProcessor;
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
     var ProfileCommandProcessor = function(messenger) {

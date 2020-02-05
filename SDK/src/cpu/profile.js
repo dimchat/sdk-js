@@ -39,6 +39,7 @@
     var TextContent = ns.protocol.TextContent;
     var Command = ns.protocol.Command;
     var ProfileCommand = ns.protocol.ProfileCommand;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
 
     var CommandProcessor = ns.cpu.CommandProcessor;
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
