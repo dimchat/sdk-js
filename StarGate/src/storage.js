@@ -38,7 +38,7 @@
 
     var Storage = {
 
-        ROOT: 'storage',
+        ROOT: 'dim.fs',
 
         //
         //  Read
@@ -101,6 +101,7 @@
          */
         remove: function (path) {
             this.saveText(null, path);
+            return true;
         },
 
         /**
@@ -112,8 +113,10 @@
         saveText: function (text, path) {
             if (text) {
                 this.storage.setItem(this.ROOT + '.' + path, text);
+                return true;
             } else {
                 this.storage.removeItem(this.ROOT + '.' + path);
+                return false;
             }
         },
         /**
@@ -127,7 +130,7 @@
             if (data) {
                 base64 = DIMP.format.Base64.encode(data);
             }
-            this.saveText(base64, path);
+            return this.saveText(base64, path);
         },
         /**
          *  Save Map/List into JSON file
@@ -140,7 +143,7 @@
             if (container) {
                 json = DIMP.format.JSON.encode(container);
             }
-            this.saveText(json, path);
+            return this.saveText(json, path);
         }
     };
 

@@ -197,6 +197,7 @@
             }
         }
         this.profileMap[identifier] = profile;
+        return true;
     };
     /**
      *  Save profile with entity ID (must verify first)

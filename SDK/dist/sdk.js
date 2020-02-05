@@ -619,7 +619,8 @@
                 throw Error("profile ID error: " + profile)
             }
         }
-        this.profileMap[identifier] = profile
+        this.profileMap[identifier] = profile;
+        return true
     };
     Facebook.prototype.saveProfile = function(profile, identifier) {
         console.assert(profile !== null, "profile empty");
