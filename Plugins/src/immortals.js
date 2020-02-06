@@ -274,4 +274,6 @@
     //-------- namespace --------
     ns.Immortals = Immortals;
 
+    // ns.register('Immortals');
+
 }(DIMP);

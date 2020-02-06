@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 !function (ns) {
@@ -57,6 +56,7 @@
 
     //-------- namespace --------
     ns.Transition = Transition;
-    ns.includes('Transition');
+
+    ns.register('Transition');
 
 }(FiniteStateMachine);

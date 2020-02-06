@@ -151,6 +151,7 @@
 
     //-------- namespace --------
     ns.LocalStorage = Storage;
-    ns.includes('LocalStorage');
+
+    ns.register('LocalStorage');
 
 }(StarGate);

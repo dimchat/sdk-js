@@ -35,7 +35,7 @@
 !function (ns) {
     'use strict';
 
-    var KeyCache = ns.KeyCache;
+    var KeyCache = ns.core.KeyCache;
 
     var KeyStore = function() {
         KeyCache.call(this);

@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 !function (ns) {
@@ -64,6 +63,7 @@
 
     //-------- namespace --------
     ns.StateDelegate = Delegate;
-    ns.includes('StateDelegate');
+
+    ns.register('StateDelegate');
 
 }(FiniteStateMachine);

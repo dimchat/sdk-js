@@ -370,9 +370,6 @@
     };
     SymmetricKey.register(SymmetricKey.AES, AESKey);
     SymmetricKey.register("AES/CBC/PKCS7Padding", AESKey);
-    if (typeof ns.plugins !== "object") {
-        ns.plugins = {}
-    }
     ns.plugins.AESKey = AESKey
 }(DIMP);
 ! function(ns) {
@@ -438,9 +435,6 @@
     PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
     PublicKey.register("SHA256withRSA", RSAPublicKey);
     PublicKey.register("RSA/ECB/PKCS1Padding", RSAPublicKey);
-    if (typeof ns.plugins !== "object") {
-        ns.plugins = {}
-    }
     ns.plugins.RSAPublicKey = RSAPublicKey
 }(DIMP);
 ! function(ns) {
@@ -533,9 +527,6 @@
     PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
     PrivateKey.register("SHA256withRSA", RSAPrivateKey);
     PrivateKey.register("RSA/ECB/PKCS1Padding", RSAPrivateKey);
-    if (typeof ns.plugins !== "object") {
-        ns.plugins = {}
-    }
     ns.plugins.RSAPrivateKey = RSAPrivateKey
 }(DIMP);
 ! function(ns) {
@@ -604,9 +595,6 @@
         return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 16777216
     };
     Address.register(DefaultAddress);
-    if (typeof ns.plugins !== "object") {
-        ns.plugins = {}
-    }
     ns.plugins.DefaultAddress = DefaultAddress
 }(DIMP);
 ! function(ns) {

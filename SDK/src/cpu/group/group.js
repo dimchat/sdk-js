@@ -119,7 +119,7 @@
     };
 
     //-------- namespace --------
-    if (typeof ns.cpu.group !== "object") {
+    if (typeof ns.cpu.group !== 'object') {
         ns.cpu.group = {};
     }
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor;

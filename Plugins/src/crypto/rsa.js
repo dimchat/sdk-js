@@ -136,10 +136,9 @@
     PublicKey.register('RSA/ECB/PKCS1Padding', RSAPublicKey);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.RSAPublicKey = RSAPublicKey;
+
+    // ns.plugins.register('RSAPublicKey');
 
 }(DIMP);
 
@@ -277,9 +276,8 @@
     PrivateKey.register('RSA/ECB/PKCS1Padding', RSAPrivateKey);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.RSAPrivateKey = RSAPrivateKey;
+
+    // ns.plugins.register('RSAPrivateKey');
 
 }(DIMP);

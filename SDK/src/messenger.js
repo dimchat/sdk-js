@@ -52,7 +52,8 @@
 
     var ConnectionDelegate = ns.ConnectionDelegate;
 
-    var Transceiver = ns.Transceiver;
+    var Transceiver = ns.core.Transceiver;
+
     var Facebook = ns.Facebook;
     var MessageProcessor = ns.MessageProcessor;
 

@@ -71,8 +71,8 @@
     ns.StarDelegate = Delegate;
     ns.StarStatus = Status;
 
-    ns.includes('StarDelegate');
-    ns.includes('StarStatus');
+    ns.register('StarDelegate');
+    ns.register('StarStatus');
 
 }(StarGate);
 
@@ -128,6 +128,6 @@
     //-------- namespace --------
     ns.Star = Star;
 
-    ns.includes('Star');
+    ns.register('Star');
 
 }(StarGate);

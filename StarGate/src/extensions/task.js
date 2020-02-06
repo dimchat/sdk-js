@@ -63,7 +63,8 @@
     };
 
     //-------- namespace --------
-    ns.plugins.Task = Task;
-    ns.plugins.includes('Task');
+    ns.extensions.Task = Task;
+
+    ns.extensions.register('Task');
 
 }(StarGate);

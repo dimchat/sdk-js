@@ -425,7 +425,7 @@
     ns.AddressNameService = AddressNameService
 }(DIMP);
 ! function(ns) {
-    var KeyCache = ns.KeyCache;
+    var KeyCache = ns.core.KeyCache;
     var KeyStore = function() {
         KeyCache.call(this);
         this.user = null
@@ -521,7 +521,7 @@
     var Polylogue = ns.Polylogue;
     var Chatroom = ns.Chatroom;
     var ServiceProvider = ns.ServiceProvider;
-    var Barrack = ns.Barrack;
+    var Barrack = ns.core.Barrack;
     var Facebook = function() {
         Barrack.call(this);
         this.ans = null;
@@ -987,7 +987,7 @@
     var FileContent = ns.protocol.FileContent;
     var ReceiptCommand = ns.protocol.ReceiptCommand;
     var ConnectionDelegate = ns.ConnectionDelegate;
-    var Transceiver = ns.Transceiver;
+    var Transceiver = ns.core.Transceiver;
     var Facebook = ns.Facebook;
     var MessageProcessor = ns.MessageProcessor;
     var Messenger = function() {

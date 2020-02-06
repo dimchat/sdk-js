@@ -49,7 +49,8 @@
 
     //-------- namespace --------
     ns.Observer = Observer;
-    ns.includes('Observer');
+
+    ns.register('Observer');
 
 }(StarGate);
 
@@ -67,7 +68,8 @@
 
     //-------- namespace --------
     ns.Notification = Notification;
-    ns.includes('Notification');
+
+    ns.register('Notification');
 
 }(StarGate);
 
@@ -157,6 +159,7 @@
 
     //-------- namespace --------
     ns.NotificationCenter = Center;
-    ns.includes('NotificationCenter');
+
+    ns.register('NotificationCenter');
 
 }(StarGate);

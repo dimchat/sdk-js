@@ -35,7 +35,7 @@
 !function (ns) {
     "use strict";
 
-    var Fence = ns.plugins.Fence;
+    var Fence = ns.extensions.Fence;
 
     /**
      *  Simple gate
@@ -104,7 +104,8 @@
     };
 
     //-------- namespace --------
-    ns.plugins.SocketClient = SocketClient;
-    ns.plugins.includes('SocketClient');
+    ns.extensions.SocketClient = SocketClient;
+
+    ns.extensions.register('SocketClient');
 
 }(StarGate);

@@ -144,9 +144,8 @@
     Address.register(DefaultAddress);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.DefaultAddress = DefaultAddress;
+
+    // ns.plugins.register('DefaultAddress');
 
 }(DIMP);

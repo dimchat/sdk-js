@@ -94,4 +94,6 @@
     //-------- register --------
     ns.plugins.DefaultMeta = DefaultMeta;
 
+    // ns.plugins.register('DefaultMeta');
+
 }(DIMP);

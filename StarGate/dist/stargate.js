@@ -12,28 +12,15 @@ if (typeof FiniteStateMachine !== "object") {
 }
 if (typeof StarGate !== "object") {
     StarGate = {}
-}
-if (typeof StarGate.plugins !== "object") {
-    StarGate.plugins = {}
-}! function() {
-    var namespace = function(ns) {
-        ns.__all__ = [];
-        ns.includes = function(name) {
-            this.__all__.push(name)
-        };
-        ns.exports = function(outside) {
-            var all = this.__all__;
-            var name;
-            for (var i = 0; i < all.length; ++i) {
-                name = all[i];
-                outside[name] = this[name]
-            }
-        }
-    };
-    namespace(FiniteStateMachine);
-    namespace(StarGate);
-    namespace(StarGate.plugins)
-}();
+}! function(sg, fsm) {
+    if (typeof StarGate.extensions !== "object") {
+        sg.extensions = {}
+    }
+    DIMP.namespace(fsm);
+    DIMP.namespace(sg);
+    DIMP.namespace(sg.extensions);
+    sg.register("extensions")
+}(StarGate, FiniteStateMachine);
 ! function(ns) {
     var Delegate = function() {};
     Delegate.prototype.enterState = function(state, machine) {
@@ -55,7 +42,7 @@ if (typeof StarGate.plugins !== "object") {
         console.assert(machine !== null, "machine empty")
     };
     ns.StateDelegate = Delegate;
-    ns.includes("StateDelegate")
+    ns.register("StateDelegate")
 }(FiniteStateMachine);
 ! function(ns) {
     var Transition = function(targetStateName) {
@@ -67,7 +54,7 @@ if (typeof StarGate.plugins !== "object") {
         return false
     };
     ns.Transition = Transition;
-    ns.includes("Transition")
+    ns.register("Transition")
 }(FiniteStateMachine);
 ! function(ns) {
     var State = function() {
@@ -104,7 +91,7 @@ if (typeof StarGate.plugins !== "object") {
         console.assert(machine !== null, "machine empty")
     };
     ns.State = State;
-    ns.includes("State")
+    ns.register("State")
 }(FiniteStateMachine);
 ! function(ns) {
     var Status = DIMP.type.Enum({
@@ -135,8 +122,11 @@ if (typeof StarGate.plugins !== "object") {
             state.onEnter(this)
         }
     };
+    Machine.prototype.isRunning = function() {
+        return this.status.equals(Status.Running)
+    };
     Machine.prototype.tick = function() {
-        if (this.status.equals(Status.Running)) {
+        if (this.isRunning()) {
             this.currentState.tick(this)
         }
     };
@@ -171,7 +161,7 @@ if (typeof StarGate.plugins !== "object") {
         this.currentState.onResume(this)
     };
     ns.Machine = Machine;
-    ns.includes("Machine")
+    ns.register("Machine")
 }(FiniteStateMachine);
 ! function(ns) {
     var Observer = function() {};
@@ -180,7 +170,7 @@ if (typeof StarGate.plugins !== "object") {
         console.assert(false, "implement me!")
     };
     ns.Observer = Observer;
-    ns.includes("Observer")
+    ns.register("Observer")
 }(StarGate);
 ! function(ns) {
     var Notification = function(name, sender, userInfo) {
@@ -189,7 +179,7 @@ if (typeof StarGate.plugins !== "object") {
         this.userInfo = userInfo
     };
     ns.Notification = Notification;
-    ns.includes("Notification")
+    ns.register("Notification")
 }(StarGate);
 ! function(ns) {
     var Notification = ns.Notification;
@@ -241,7 +231,7 @@ if (typeof StarGate.plugins !== "object") {
         return s_notification_center
     };
     ns.NotificationCenter = Center;
-    ns.includes("NotificationCenter")
+    ns.register("NotificationCenter")
 }(StarGate);
 ! function(ns) {
     var Storage = {
@@ -296,7 +286,7 @@ if (typeof StarGate.plugins !== "object") {
     };
     Storage.storage = window.localStorage;
     ns.LocalStorage = Storage;
-    ns.includes("LocalStorage")
+    ns.register("LocalStorage")
 }(StarGate);
 ! function(ns) {
     var Delegate = function() {};
@@ -323,8 +313,8 @@ if (typeof StarGate.plugins !== "object") {
     });
     ns.StarDelegate = Delegate;
     ns.StarStatus = Status;
-    ns.includes("StarDelegate");
-    ns.includes("StarStatus")
+    ns.register("StarDelegate");
+    ns.register("StarStatus")
 }(StarGate);
 ! function(ns) {
     var Star = function() {};
@@ -347,7 +337,7 @@ if (typeof StarGate.plugins !== "object") {
         console.assert(false, "implement me!")
     };
     ns.Star = Star;
-    ns.includes("Star")
+    ns.register("Star")
 }(StarGate);
 ! function(ns) {
     var Star = ns.Star;
@@ -365,11 +355,11 @@ if (typeof StarGate.plugins !== "object") {
     Task.prototype.onError = function(error) {
         this.delegate.onSent(this.data, error, this.star)
     };
-    ns.plugins.Task = Task;
-    ns.plugins.includes("Task")
+    ns.extensions.Task = Task;
+    ns.extensions.register("Task")
 }(StarGate);
 ! function(ns) {
-    var Task = ns.plugins.Task;
+    var Task = ns.extensions.Task;
     var StarStatus = ns.StarStatus;
     var Star = ns.Star;
     var Fence = function(delegate) {
@@ -436,11 +426,11 @@ if (typeof StarGate.plugins !== "object") {
         task.star = this;
         this.waitingList.push(task)
     };
-    ns.plugins.Fence = Fence;
-    ns.plugins.includes("Fence")
+    ns.extensions.Fence = Fence;
+    ns.extensions.register("Fence")
 }(StarGate);
 ! function(ns) {
-    var Fence = ns.plugins.Fence;
+    var Fence = ns.extensions.Fence;
     var SocketClient = function(delegate) {
         Fence.call(this, delegate);
         this.ws = null
@@ -496,6 +486,6 @@ if (typeof StarGate.plugins !== "object") {
             Fence.prototype.send.call(this, data, delegate)
         }
     };
-    ns.plugins.SocketClient = SocketClient;
-    ns.plugins.includes("SocketClient")
+    ns.extensions.SocketClient = SocketClient;
+    ns.extensions.register("SocketClient")
 }(StarGate);

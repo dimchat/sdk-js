@@ -67,9 +67,6 @@
     PublicKey.register(PublicKey.ECC, ECCPublicKey);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.ECCPublicKey = ECCPublicKey;
 
 }(DIMP);
@@ -118,9 +115,8 @@
     PrivateKey.register(PrivateKey.ECC, ECCPrivateKey);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.ECCPrivateKey = ECCPrivateKey;
+
+    // ns.plugins.register('ECCPrivateKey');
 
 }(DIMP);

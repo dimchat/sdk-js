@@ -36,7 +36,7 @@
 !function (ns) {
     "use strict";
 
-    var Task = ns.plugins.Task;
+    var Task = ns.extensions.Task;
 
     var StarStatus = ns.StarStatus;
     var Star = ns.Star;
@@ -115,7 +115,8 @@
     };
 
     //-------- namespace --------
-    ns.plugins.Fence = Fence;
-    ns.plugins.includes('Fence');
+    ns.extensions.Fence = Fence;
+
+    ns.extensions.register('Fence');
 
 }(StarGate);

@@ -177,9 +177,8 @@
     SymmetricKey.register('AES/CBC/PKCS7Padding', AESKey);
 
     //-------- namespace --------
-    if (typeof ns.plugins !== 'object') {
-        ns.plugins = {};
-    }
     ns.plugins.AESKey = AESKey;
+
+    // ns.plugins.register('AESKey');
 
 }(DIMP);

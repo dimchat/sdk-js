@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 !function (ns) {
@@ -84,11 +83,15 @@
         }
     };
 
+    Machine.prototype.isRunning = function () {
+        return this.status.equals(Status.Running);
+    };
+
     /**
      *  Drive the machine running forward
      */
     Machine.prototype.tick = function () {
-        if (this.status.equals(Status.Running)) {
+        if (this.isRunning()) {
             this.currentState.tick(this);
         }
     };
@@ -133,6 +136,7 @@
 
     //-------- namespace --------
     ns.Machine = Machine;
-    ns.includes('Machine');
+
+    ns.register('Machine');
 
 }(FiniteStateMachine);

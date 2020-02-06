@@ -9,4 +9,3 @@ if (typeof DIMP.stargate !== 'object') {
     DIMP.stargate = {};
 }
 StarGate.exports(DIMP.stargate);
-StarGate.plugins.exports(DIMP.plugins);

@@ -56,7 +56,7 @@
     var Chatroom = ns.Chatroom;
     var ServiceProvider = ns.ServiceProvider;
 
-    var Barrack = ns.Barrack;
+    var Barrack = ns.core.Barrack;
 
     var Facebook = function() {
         Barrack.call(this);

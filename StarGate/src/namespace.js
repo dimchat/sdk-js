@@ -25,6 +25,8 @@
 // =============================================================================
 //
 
+//! require <dimp.js>
+
 if (typeof FiniteStateMachine !== 'object') {
     FiniteStateMachine = {};
 }
@@ -32,44 +34,19 @@ if (typeof FiniteStateMachine !== 'object') {
 if (typeof StarGate !== 'object') {
     StarGate = {};
 }
-if (typeof StarGate.plugins !== 'object') {
-    StarGate.plugins = {};
-}
 
-!function () {
+!function (sg, fsm) {
     "use strict";
 
-    var namespace = function (ns) {
+    //-------- namespace --------
+    if (typeof StarGate.extensions !== 'object') {
+        sg.extensions = {};
+    }
 
-        ns.__all__ = [];
+    DIMP.namespace(fsm);
+    DIMP.namespace(sg);
+    DIMP.namespace(sg.extensions);
 
-        /**
-         *  Register a class into current namespace with name
-         *
-         * @param name
-         */
-        ns.includes = function (name/*, clazz*/) {
-            this.__all__.push(name);
-            // ns[name] = clazz;
-        };
+    sg.register('extensions');
 
-        /**
-         *  Export from classes in current namespace
-         *
-         * @param outside - namespace
-         */
-        ns.exports = function (outside) {
-            var all = this.__all__;
-            var name;
-            for (var i = 0; i < all.length; ++i) {
-                name = all[i];
-                outside[name] = this[name];
-            }
-        };
-    };
-
-    namespace(FiniteStateMachine);
-    namespace(StarGate);
-    namespace(StarGate.plugins);
-
-}();
+}(StarGate, FiniteStateMachine);
