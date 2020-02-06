@@ -29,7 +29,9 @@ and broadcast only ```meta``` & ```profile``` onto DIM station.
 _Step 1_. generate private key (with asymmetric algorithm)
 
 ```javascript
-var privateKey = PrivateKey.generate(PrivateKey.RSA);
+var PrivateKey = DIMP.crypto.PrivateKey;
+
+var sk = PrivateKey.generate(PrivateKey.RSA);
 ```
 
 **NOTICE**: After registered, the client should save the private key in secret storage.
@@ -37,14 +39,19 @@ var privateKey = PrivateKey.generate(PrivateKey.RSA);
 _Step 2_. generate meta with private key (and meta seed)
 
 ```javascript
+var MetaType = DIMP.protocol.MetaType;
+var Meta     = DIMP.Meta;
+
 var seed = "username";
-var meta = Meta.generate(MetaType.Default, privateKey, seed);
+var meta = Meta.generate(MetaType.Default, sk, seed);
 ```
 
 _Step 3_. generate ID with meta (and network type)
 
 ```javascript
-var identifier = meta.generateID(NetworkType.Main);
+var NetworkType = DIMP.protocol.NetworkType;
+
+var identifier = meta.generateIdentifier(NetworkType.Main);
 ```
 
 ### Create and upload User Profile
@@ -52,10 +59,12 @@ var identifier = meta.generateID(NetworkType.Main);
 _Step 4_. create profile with ID and sign with private key
 
 ```javascript
-var profile = new UserProfile(identifier);
+var Profile = DIMP.Profile;
+
+var profile = new Profile(identifier);
 // set nickname and avatar URL
 profile.setName("Albert Moky");
-profile.setAvatar("https://secure.gravatar.com/avatar/34aa0026f924d017dcc7a771f495c086");
+profile.setProperty("avatar", "https://secure.gravatar.com/avatar/34aa0026f924d017dcc7a771f495c086");
 // sign
 profile.sign(privateKey);
 ```
@@ -63,6 +72,8 @@ profile.sign(privateKey);
 _Step 5_. send meta & profile to station
 
 ```javascript
+var ProfileCommand = DIMP.protocol.ProfileCommand;
+
 var messenger = Messenger.getInstance();
 
 var cmd = ProfileCommand.response(identifier, profile, meta);
@@ -93,6 +104,8 @@ _Step 3_. send first **handshake** command
 (1) create handshake command
 
 ```javascript
+var HandshakeCommand = DIMP.protocol.HandshakeCommand;
+
 // first handshake will have no session key
 var cmd = HandshakeCommand.start();
 ```
@@ -100,6 +113,9 @@ var cmd = HandshakeCommand.start();
 (2) pack, encrypt and sign
 
 ```javascript
+var Envelope       = DIMP.Envelope;
+var InstantMessage = DIMP.InstantMessage;
+
 var env = Envelope.newEnvelope(userId, stationId);
 var iMsg = InstantMessage.newMessage(cmd, env);
 var sMsg = messenger.encryptMessage(iMsg);
@@ -133,6 +149,8 @@ The CPU (Command Processing Units) will catch the handshake command response fro
 * Text message
 
 ```javascript
+var TextContent = DIMP.protocol.TextContent;
+
 var content = new TextContent("Hey, girl!");
 ```
 
@@ -145,12 +163,16 @@ where the file data (encrypted with the same symmetric key) be stored.
 * Query meta with contact ID
 
 ```javascript
+var MetaCommand = DIMP.protocol.MetaCommand;
+
 var cmd = new MetaCommand(identifier);
 ```
 
 * Query profile with contact ID
 
 ```javascript
+var ProfileCommand = DIMP.protocol.ProfileCommand;
+
 var cmd = new ProfileCommand(identifier);
 ```
 
@@ -178,6 +200,8 @@ You can send a customized command (such as **search command**) and prepare a pro
 ### Search command processor
 
 ```javascript
+var CommandProcessor = DIMP.cpu.CommandProcessor;
+
 /**
  *  Search Command Processor
  */
