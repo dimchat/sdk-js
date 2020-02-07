@@ -249,10 +249,10 @@ if (typeof StarGate !== "object") {
         this.storage.setItem(key, value)
     };
     Storage.prototype.removeItem = function(key) {
-        return this.storage.removeItem(key)
+        this.storage.removeItem(key)
     };
     Storage.prototype.clear = function() {
-        return this.storage.clear()
+        this.storage.clear()
     };
     Storage.prototype.getLength = function() {
         return this.storage.length
@@ -461,7 +461,11 @@ if (typeof StarGate !== "object") {
     };
     SocketClient.inherits(Fence);
     SocketClient.prototype.connect = function(host, port) {
-        var url = "ws://" + host + ":" + port;
+        var protocol = "ws";
+        if ("https" === window.location.protocol.split(":")[0]) {
+            protocol = "wss"
+        }
+        var url = protocol + "://" + host + ":" + port;
         var ws = new WebSocket(url);
         ws.client = this;
         ws.onopen = function(ev) {

@@ -54,10 +54,10 @@
         this.storage.setItem(key, value);
     };
     Storage.prototype.removeItem = function (key) {
-        return this.storage.removeItem(key);
+        this.storage.removeItem(key);
     };
     Storage.prototype.clear = function () {
-        return this.storage.clear();
+        this.storage.clear();
     };
 
     Storage.prototype.getLength = function () {

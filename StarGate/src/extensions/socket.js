@@ -50,7 +50,11 @@
     SocketClient.inherits(Fence);
 
     SocketClient.prototype.connect = function (host, port) {
-        var url = 'ws://' + host + ':' + port;
+        var protocol = 'ws';
+        if ('https' === window.location.protocol.split(':')[0]) {
+            protocol = 'wss';
+        }
+        var url = protocol + '://' + host + ':' + port;
         var ws = new WebSocket(url);
         ws.client = this;
         ws.onopen = function (ev) {
