@@ -599,7 +599,7 @@
                     return false
                 }
             } else {
-                if (members && members.contains(owner)) {
+                if (members && members.indexOf(owner) >= 0) {
                     return false
                 } else {
                     meta = this.getMeta(owner)
@@ -879,7 +879,7 @@
     };
     Facebook.prototype.existsMember = function(member, group) {
         var list = this.getMembers(group);
-        if (list && list.contains(member)) {
+        if (list && list.indexOf(member) >= 0) {
             return true
         }
         var owner = this.getOwner(group);
@@ -900,7 +900,7 @@
     Facebook.prototype.existsAssistant = function(user, group) {
         var assistants = this.getAssistants(group);
         if (assistants) {
-            return assistants.contains(user)
+            return assistants.indexOf(user) >= 0
         }
         return false
     };
@@ -1037,7 +1037,7 @@
                 return null
             }
             for (var i = 0; i < users.length; ++i) {
-                if (members.contains(users[i].identifier)) {
+                if (members.indexOf(users[i].identifier) >= 0) {
                     return users[i]
                 }
             }
@@ -1550,7 +1550,7 @@
         var item;
         for (var i = 0; i < inviteList.length; ++i) {
             item = inviteList[i];
-            if (members.contains(item)) {
+            if (members.indexOf(item) >= 0) {
                 continue
             }
             addedList.push(item);
@@ -1621,7 +1621,7 @@
         var item;
         for (var i = 0; i < expelList.length; ++i) {
             item = expelList[i];
-            if (!members.contains(item)) {
+            if (members.indexOf(item) < 0) {
                 continue
             }
             removedList.push(item);
@@ -1658,7 +1658,7 @@
         if (!members || members.length === 0) {
             throw Error("Group members not found: " + group)
         }
-        if (!members.contains(sender)) {
+        if (members.indexOf(sender) < 0) {
             return
         }
         ns.type.Arrays.remove(members, sender);
@@ -1736,7 +1736,7 @@
         var i, item;
         for (i = 0; i < oldMembers.length; ++i) {
             item = oldMembers[i];
-            if (newMembers.contains(item)) {
+            if (newMembers.indexOf(item) >= 0) {
                 continue
             }
             removedList.push(item)
@@ -1744,7 +1744,7 @@
         var addedList = [];
         for (i = 0; i < newMembers.length; ++i) {
             item = newMembers[i];
-            if (oldMembers.contains(item)) {
+            if (oldMembers.indexOf(item) >= 0) {
                 continue
             }
             addedList.push(item)

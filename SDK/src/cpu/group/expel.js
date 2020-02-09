@@ -75,7 +75,7 @@
         var item;
         for (var i = 0; i < expelList.length; ++i) {
             item = expelList[i];
-            if (!members.contains(item)) {
+            if (members.indexOf(item) < 0) {
                 // this user is not a member not
                 continue;
             }

@@ -64,7 +64,7 @@ if (typeof StarGate !== "object") {
     };
     DIMP.type.Class(State);
     State.prototype.addTransition = function(transition) {
-        if (this.transitions.contains(transition)) {
+        if (this.transitions.indexOf(transition) >= 0) {
             throw Error("transition exists: " + transition)
         }
         this.transitions.push(transition)
@@ -196,7 +196,7 @@ if (typeof StarGate !== "object") {
     Center.prototype.addObserver = function(observer, name) {
         var list = this.observerMap[name];
         if (list) {
-            if (list.contains(observer)) {
+            if (list.indexOf(observer) >= 0) {
                 return
             }
         } else {

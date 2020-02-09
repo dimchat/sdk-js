@@ -112,7 +112,7 @@
                 return null;
             }
             for (var i = 0; i < users.length; ++i) {
-                if (members.contains(users[i].identifier)) {
+                if (members.indexOf(users[i].identifier) >= 0) {
                     // set this item to be current user?
                     return users[i];
                 }

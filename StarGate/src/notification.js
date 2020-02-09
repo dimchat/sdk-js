@@ -97,7 +97,7 @@
     Center.prototype.addObserver = function (observer, name) {
         var list = this.observerMap[name];
         if (list) {
-            if (list.contains(observer)) {
+            if (list.indexOf(observer) >= 0) {
                 // already exists
                 return;
             }

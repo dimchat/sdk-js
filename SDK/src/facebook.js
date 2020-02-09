@@ -169,7 +169,7 @@
                     // FIXME: owner not found for this group
                     return false;
                 }
-            } else if (members && members.contains(owner)) {
+            } else if (members && members.indexOf(owner) >= 0) {
                 // already checked
                 return false;
             } else {
@@ -596,7 +596,7 @@
 
     Facebook.prototype.existsMember = function (member, group) {
         var list = this.getMembers(group);
-        if (list && list.contains(member)) {
+        if (list && list.indexOf(member) >= 0) {
             return true;
         }
         var owner = this.getOwner(group);
@@ -624,7 +624,7 @@
     Facebook.prototype.existsAssistant = function (user, group) {
         var assistants = this.getAssistants(group);
         if (assistants) {
-            return assistants.contains(user);
+            return assistants.indexOf(user) >= 0;
         }
         return false;
     };

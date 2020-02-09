@@ -77,7 +77,7 @@
         var item;
         for (var i = 0; i < inviteList.length; ++i) {
             item = inviteList[i];
-            if (members.contains(item)) {
+            if (members.indexOf(item) >= 0) {
                 continue;
             }
             // adding member found

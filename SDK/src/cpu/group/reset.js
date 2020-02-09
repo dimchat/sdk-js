@@ -82,7 +82,7 @@
         var i, item;
         for (i = 0; i < oldMembers.length; ++i) {
             item = oldMembers[i];
-            if (newMembers.contains(item)) {
+            if (newMembers.indexOf(item) >= 0) {
                 continue;
             }
             // removing member found
@@ -92,7 +92,7 @@
         var addedList = [];
         for (i = 0; i < newMembers.length; ++i) {
             item = newMembers[i];
-            if (oldMembers.contains(item)) {
+            if (oldMembers.indexOf(item) >= 0) {
                 continue;
             }
             // adding member found

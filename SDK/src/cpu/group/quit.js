@@ -67,7 +67,7 @@
         if (!members || members.length === 0) {
             throw Error('Group members not found: ' + group);
         }
-        if (!members.contains(sender)) {
+        if (members.indexOf(sender) < 0) {
             // throw Error('sender (' + sender + ') is not a member of group: ' + group);
             return;
         }

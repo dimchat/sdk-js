@@ -44,7 +44,7 @@
     DIMP.type.Class(State);
 
     State.prototype.addTransition = function (transition) {
-        if (this.transitions.contains(transition)) {
+        if (this.transitions.indexOf(transition) >= 0) {
             throw Error('transition exists: ' + transition);
         }
         this.transitions.push(transition);
