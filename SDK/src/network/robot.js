@@ -43,7 +43,7 @@
     var Robot = function (identifier) {
         User.call(this, identifier);
     };
-    Robot.inherits(User);
+    ns.type.Class(Robot, User);
 
     //-------- namespace --------
     ns.Robot = Robot;

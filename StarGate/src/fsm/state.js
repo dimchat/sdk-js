@@ -41,6 +41,7 @@
     var State = function () {
         this.transitions = [];
     };
+    DIMP.type.Class(State);
 
     State.prototype.addTransition = function (transition) {
         if (this.transitions.contains(transition)) {

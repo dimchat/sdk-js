@@ -57,6 +57,7 @@
         this.reserved = reserved;
         this.caches = caches;
     };
+    ns.type.Class(AddressNameService);
 
     AddressNameService.prototype.isReserved = function (name) {
         return this.reserved[name] === true;

@@ -91,7 +91,7 @@
             this.envelope = null;
         }
     };
-    ReceiptCommand.inherits(Command);
+    ns.type.Class(ReceiptCommand, Command);
 
     //-------- setter/getter --------
 

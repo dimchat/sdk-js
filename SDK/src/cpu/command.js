@@ -48,7 +48,7 @@
         // CPU pool (String -> CommandProcessor)
         this.commandProcessors = {};
     };
-    CommandProcessor.inherits(ContentProcessor);
+    ns.type.Class(CommandProcessor, ContentProcessor);
 
     //
     //  Main

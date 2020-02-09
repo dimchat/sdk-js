@@ -41,6 +41,7 @@
     var Transition = function (targetStateName) {
         this.target = targetStateName;
     };
+    DIMP.type.Class(Transition);
 
     /**
      *  Evaluate the current state

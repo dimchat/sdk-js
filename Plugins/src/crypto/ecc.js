@@ -44,7 +44,7 @@
     var ECCPublicKey = function (key) {
         Dictionary.call(this, key);
     };
-    ECCPublicKey.inherits(Dictionary, PublicKey);
+    ns.type.Class(ECCPublicKey, Dictionary, PublicKey);
 
     ECCPublicKey.prototype.getData = function () {
         console.assert(false, 'implement me!');
@@ -88,7 +88,7 @@
     var ECCPrivateKey = function (key) {
         Dictionary.call(this, key);
     };
-    ECCPrivateKey.inherits(Dictionary, PrivateKey);
+    ns.type.Class(ECCPrivateKey, Dictionary, PrivateKey);
 
     ECCPrivateKey.prototype.getData = function () {
         console.assert(false, 'implement me!');

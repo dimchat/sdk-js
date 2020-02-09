@@ -45,7 +45,7 @@
         this.host = host;
         this.port = port;
     };
-    Station.inherits(User);
+    ns.type.Class(Station, User);
 
     //-------- namespace --------
     ns.Station = Station;

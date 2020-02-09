@@ -140,7 +140,7 @@
     var bs58 = base("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
     var BaseCoder = ns.format.BaseCoder;
     var base58 = function() {};
-    base58.inherits(BaseCoder);
+    ns.type.Class(base58, null, BaseCoder);
     base58.prototype.encode = function(data) {
         return bs58.encode(data)
     };
@@ -152,7 +152,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var md5 = function() {};
-    md5.inherits(Hash);
+    ns.type.Class(md5, null, Hash);
     md5.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -164,7 +164,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var sha256 = function() {};
-    sha256.inherits(Hash);
+    ns.type.Class(sha256, null, Hash);
     sha256.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -176,7 +176,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var ripemd160 = function() {};
-    ripemd160.inherits(Hash);
+    ns.type.Class(ripemd160, null, Hash);
     ripemd160.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -256,7 +256,7 @@
     };
     var KeyParser = ns.format.KeyParser;
     var pem = function() {};
-    pem.inherits(KeyParser);
+    ns.type.Class(pem, null, KeyParser);
     pem.prototype.encodePublicKey = function(key) {
         return encode_public(key)
     };
@@ -301,7 +301,7 @@
     var AESKey = function(key) {
         Dictionary.call(this, key)
     };
-    AESKey.inherits(Dictionary, SymmetricKey);
+    ns.type.Class(AESKey, Dictionary, SymmetricKey);
     AESKey.prototype.getSize = function() {
         var size = this.getValue("keySize");
         if (size) {
@@ -383,7 +383,7 @@
     var RSAPublicKey = function(key) {
         Dictionary.call(this, key)
     };
-    RSAPublicKey.inherits(Dictionary, PublicKey, EncryptKey);
+    ns.type.Class(RSAPublicKey, Dictionary, PublicKey, EncryptKey);
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -449,7 +449,7 @@
     var RSAPrivateKey = function(key) {
         Dictionary.call(this, key)
     };
-    RSAPrivateKey.inherits(Dictionary, PrivateKey, DecryptKey);
+    ns.type.Class(RSAPrivateKey, Dictionary, PrivateKey, DecryptKey);
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -557,7 +557,7 @@
         this.network = new NetworkType(data[0]);
         this.code = search_number(cc)
     };
-    DefaultAddress.inherits(Address);
+    ns.type.Class(DefaultAddress, Address);
     DefaultAddress.prototype.getNetwork = function() {
         return this.network
     };
@@ -605,7 +605,7 @@
         Meta.call(this, meta);
         this.idMap = {}
     };
-    DefaultMeta.inherits(Meta);
+    ns.type.Class(DefaultMeta, Meta);
     DefaultMeta.prototype.generateIdentifier = function(network) {
         var identifier = this.idMap[network];
         if (!identifier) {

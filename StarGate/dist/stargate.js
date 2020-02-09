@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 3, 2020
+ * @date      Feb. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -23,6 +23,7 @@ if (typeof StarGate !== "object") {
 }(StarGate, FiniteStateMachine);
 ! function(ns) {
     var Delegate = function() {};
+    DIMP.type.Interface(Delegate);
     Delegate.prototype.enterState = function(state, machine) {
         console.assert(state !== null, "state empty");
         console.assert(machine !== null, "machine empty");
@@ -48,6 +49,7 @@ if (typeof StarGate !== "object") {
     var Transition = function(targetStateName) {
         this.target = targetStateName
     };
+    DIMP.type.Class(Transition);
     Transition.prototype.evaluate = function(machine) {
         console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!");
@@ -60,6 +62,7 @@ if (typeof StarGate !== "object") {
     var State = function() {
         this.transitions = []
     };
+    DIMP.type.Class(State);
     State.prototype.addTransition = function(transition) {
         if (this.transitions.contains(transition)) {
             throw Error("transition exists: " + transition)
@@ -106,6 +109,7 @@ if (typeof StarGate !== "object") {
         this.status = Status.Stopped;
         this.delegate = null
     };
+    DIMP.type.Class(Machine);
     Machine.prototype.addState = function(state, name) {
         this.stateMap[name] = state
     };
@@ -165,6 +169,7 @@ if (typeof StarGate !== "object") {
 }(FiniteStateMachine);
 ! function(ns) {
     var Observer = function() {};
+    DIMP.type.Interface(Observer);
     Observer.prototype.onReceiveNotification = function(notification) {
         console.assert(notification !== null, "notification empty");
         console.assert(false, "implement me!")
@@ -178,6 +183,7 @@ if (typeof StarGate !== "object") {
         this.sender = sender;
         this.userInfo = userInfo
     };
+    DIMP.type.Class(Notification);
     ns.Notification = Notification;
     ns.register("Notification")
 }(StarGate);
@@ -186,6 +192,7 @@ if (typeof StarGate !== "object") {
     var Center = function() {
         this.observerMap = {}
     };
+    DIMP.type.Class(Center);
     Center.prototype.addObserver = function(observer, name) {
         var list = this.observerMap[name];
         if (list) {
@@ -202,7 +209,7 @@ if (typeof StarGate !== "object") {
         if (name) {
             var list = this.observerMap[name];
             if (list) {
-                list.remove(observer)
+                DIMP.type.Arrays.remove(list, observer)
             }
         } else {
             var names = Object.keys(this.observerMap);
@@ -242,6 +249,7 @@ if (typeof StarGate !== "object") {
             this.ROOT = "dim"
         }
     };
+    DIMP.type.Class(Storage);
     Storage.prototype.getItem = function(key) {
         return this.storage.getItem(key)
     };
@@ -314,6 +322,7 @@ if (typeof StarGate !== "object") {
 }(StarGate);
 ! function(ns) {
     var Delegate = function() {};
+    DIMP.type.Interface(Delegate);
     Delegate.prototype.onReceived = function(response, star) {
         console.assert(response !== null, "response empty");
         console.assert(star !== null, "star empty");
@@ -342,6 +351,7 @@ if (typeof StarGate !== "object") {
 }(StarGate);
 ! function(ns) {
     var Star = function() {};
+    DIMP.type.Interface(Star);
     Star.prototype.getStatus = function() {
         console.assert(false, "implement me!");
         return null
@@ -370,6 +380,7 @@ if (typeof StarGate !== "object") {
         this.delegate = delegate;
         this.star = null
     };
+    DIMP.type.Class(Task);
     Task.prototype.onResponse = function(data) {
         this.delegate.onReceived(data)
     };
@@ -391,7 +402,7 @@ if (typeof StarGate !== "object") {
         this.status = StarStatus.Init;
         this.waitingList = []
     };
-    Fence.inherits(Star);
+    DIMP.type.Class(Fence, null, Star);
     Fence.prototype.onReceived = function(data) {
         this.delegate.onReceived(data, this)
     };
@@ -459,7 +470,7 @@ if (typeof StarGate !== "object") {
         Fence.call(this, delegate);
         this.ws = null
     };
-    SocketClient.inherits(Fence);
+    DIMP.type.Class(SocketClient, Fence);
     SocketClient.prototype.connect = function(host, port) {
         var protocol = "ws";
         if ("https" === window.location.protocol.split(":")[0]) {

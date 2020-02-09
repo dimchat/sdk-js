@@ -46,7 +46,7 @@
     var ExpelCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ExpelCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(ExpelCommandProcessor, GroupCommandProcessor);
 
     //
     //  Main
@@ -81,7 +81,7 @@
             }
             // removing member found
             removedList.push(item);
-            members.remove(item);
+            ns.type.Arrays.remove(members, item);
         }
         if (removedList.length > 0) {
             if (facebook.saveMembers(members, group)) {

@@ -46,6 +46,7 @@
         this.messenger = messenger;
         this.cpu = null;
     };
+    ns.type.Class(MessageProcessor);
 
     MessageProcessor.prototype.getFacebook = function () {
         return this.messenger.getFacebook();

@@ -41,6 +41,8 @@
      */
     var Delegate = function () {
     };
+    DIMP.type.Interface(Delegate);
+
     Delegate.prototype.onReceived = function (response, star) {
         console.assert(response !== null, 'response empty');
         console.assert(star !== null, 'star empty');
@@ -81,6 +83,7 @@
 
     var Star = function () {
     };
+    DIMP.type.Interface(Star);
 
     /**
      * Get connection status

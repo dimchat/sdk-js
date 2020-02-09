@@ -50,7 +50,7 @@
     var ProfileCommandProcessor = function (messenger) {
         MetaCommandProcessor.call(this, messenger);
     };
-    ProfileCommandProcessor.inherits(MetaCommandProcessor);
+    ns.type.Class(ProfileCommandProcessor, MetaCommandProcessor);
 
     // query profile for ID
     var get_profile = function (identifier) {

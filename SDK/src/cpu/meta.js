@@ -49,7 +49,7 @@
     var MetaCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
     };
-    MetaCommandProcessor.inherits(CommandProcessor);
+    ns.type.Class(MetaCommandProcessor, CommandProcessor);
 
     // query meta for ID
     var get_meta = function (identifier) {

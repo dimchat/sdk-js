@@ -46,7 +46,7 @@
         this.status = StarStatus.Init;
         this.waitingList = [];
     };
-    Fence.inherits(Star);
+    DIMP.type.Class(Fence, null, Star);
 
     Fence.prototype.onReceived = function (data) {
         this.delegate.onReceived(data, this);

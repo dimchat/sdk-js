@@ -47,7 +47,7 @@
         Fence.call(this, delegate);
         this.ws = null;
     };
-    SocketClient.inherits(Fence);
+    DIMP.type.Class(SocketClient, Fence);
 
     SocketClient.prototype.connect = function (host, port) {
         var protocol = 'ws';

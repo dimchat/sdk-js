@@ -36,7 +36,6 @@
 !function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
     var GroupCommand = ns.protocol.GroupCommand;
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
@@ -47,7 +46,7 @@
     var InviteCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    InviteCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(InviteCommandProcessor, GroupCommandProcessor);
 
     // check whether this is a Reset command
     var is_reset = function (inviteList, sender, group) {

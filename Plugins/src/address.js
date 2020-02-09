@@ -81,7 +81,7 @@
         this.network = new NetworkType(data[0]);
         this.code = search_number(cc);
     };
-    DefaultAddress.inherits(Address);
+    ns.type.Class(DefaultAddress, Address);
 
     DefaultAddress.prototype.getNetwork = function () {
         return this.network;

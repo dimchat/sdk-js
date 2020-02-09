@@ -46,7 +46,7 @@
     var QuitCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    QuitCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(QuitCommandProcessor, GroupCommandProcessor);
 
     //
     //  Main
@@ -71,7 +71,7 @@
             // throw Error('sender (' + sender + ') is not a member of group: ' + group);
             return;
         }
-        members.remove(sender);
+        ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
         // 3. response (no need to response this group command)
         return null;

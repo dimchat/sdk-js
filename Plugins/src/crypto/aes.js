@@ -81,7 +81,7 @@
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
     };
-    AESKey.inherits(Dictionary, SymmetricKey);
+    ns.type.Class(AESKey, Dictionary, SymmetricKey);
 
     AESKey.prototype.getSize = function () {
         var size = this.getValue('keySize');

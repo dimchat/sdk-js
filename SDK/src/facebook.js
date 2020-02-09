@@ -68,7 +68,7 @@
         this.contactsMap   = {};  // ID -> List<ID>
         this.membersMap    = {};  // ID -> List<ID>
     };
-    Facebook.inherits(Barrack);
+    ns.type.Class(Facebook, Barrack);
 
     Facebook.prototype.ansGet = function (name) {
         if (!this.ans) {
@@ -504,7 +504,7 @@
         // DIMP v1.0:
         //     decrypt key and the sign key are the same keys
         var sKey = this.getPrivateKeyForSignature(identifier);
-        if (sKey && sKey.isinstanceof(DecryptKey)) {
+        if (sKey && ns.type.Object.isinstance(sKey, DecryptKey)) {
             keys.push(sKey);
         }
         // TODO: support profile.key

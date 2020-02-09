@@ -41,6 +41,7 @@
      */
     var Observer = function () {
     };
+    DIMP.type.Interface(Observer);
 
     Observer.prototype.onReceiveNotification = function (notification) {
         console.assert(notification !== null, 'notification empty');
@@ -65,6 +66,7 @@
         this.sender = sender;
         this.userInfo = userInfo;
     };
+    DIMP.type.Class(Notification);
 
     //-------- namespace --------
     ns.Notification = Notification;
@@ -84,6 +86,7 @@
     var Center = function () {
         this.observerMap = {};
     };
+    DIMP.type.Class(Center);
 
     /**
      *  Add observer with notification name
@@ -116,7 +119,7 @@
             // Remove observer for notification name
             var list = this.observerMap[name];
             if (list/* instanceof Array*/) {
-                list.remove(observer);
+                DIMP.type.Arrays.remove(list, observer);
             }
         } else {
             // Remove observer from notification center, no mather what names

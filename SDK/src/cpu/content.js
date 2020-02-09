@@ -45,6 +45,7 @@
         // CPU pool (ContentType -> ContentProcessor)
         this.contentProcessors = {};
     };
+    ns.type.Class(ContentProcessor);
 
     //
     //  Environment variables as context

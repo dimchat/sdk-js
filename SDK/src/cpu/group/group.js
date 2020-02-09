@@ -44,7 +44,7 @@
     var GroupCommandProcessor = function (messenger) {
         HistoryCommandProcessor.call(this, messenger);
     };
-    GroupCommandProcessor.inherits(HistoryCommandProcessor);
+    ns.type.Class(GroupCommandProcessor, HistoryCommandProcessor);
 
     // convert String list to ID list
     var convert_id_list = function (list) {

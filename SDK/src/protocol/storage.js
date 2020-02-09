@@ -78,7 +78,7 @@
         this.key = null;       // encrypted symmetric key data
         this.password = null;  // symmetric key for data
     };
-    StorageCommand.inherits(Command);
+    ns.type.Class(StorageCommand, Command);
 
     //-------- setter/getter --------
 
@@ -162,13 +162,13 @@
         if (!this.plaintext) {
             // 1. get password for decrypting data
             var pwd = null;
-            if (key.isinstanceof(PrivateKey)) {
+            if (ns.type.Object.isinstance(key, PrivateKey)) {
                 // decrypt password with private key
                 pwd = this.decryptKey(key);
                 if (!pwd) {
                     throw Error('failed to decrypt key: ' + key);
                 }
-            } else if (key.isinstanceof(SymmetricKey)) {
+            } else if (ns.type.Object.isinstance(key, SymmetricKey)) {
                 pwd = key;
             } else {
                 throw TypeError('Decryption key error: ' + key);

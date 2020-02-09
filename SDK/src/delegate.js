@@ -37,6 +37,7 @@
 
     var Callback = function () {
     };
+    ns.type.Interface(Callback);
 
     Callback.prototype.onFinished = function (result, error) {
         console.assert(result || error, 'result empty');
@@ -53,6 +54,7 @@
 
     var CompletionHandler = function () {
     };
+    ns.type.Interface(CompletionHandler);
 
     CompletionHandler.prototype.onSuccess = function () {
         console.assert(false, 'implement me!');
@@ -73,6 +75,7 @@
 
     var ConnectionDelegate = function () {
     };
+    ns.type.Interface(ConnectionDelegate);
 
     /**
      *  Receive data package
@@ -96,6 +99,7 @@
 
     var MessengerDelegate = function () {
     };
+    ns.type.Interface(MessengerDelegate);
 
     /**
      *  Upload encrypted data to CDN

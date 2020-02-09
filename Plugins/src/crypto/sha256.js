@@ -40,7 +40,7 @@
     //
     var sha256 = function () {
     };
-    sha256.inherits(Hash);
+    ns.type.Class(sha256, null, Hash);
     sha256.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);

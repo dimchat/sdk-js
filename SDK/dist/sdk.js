@@ -13,6 +13,7 @@
         this.messenger = messenger;
         this.contentProcessors = {}
     };
+    ns.type.Class(ContentProcessor);
     ContentProcessor.prototype.getContext = function(key) {
         return this.messenger.getContext(key)
     };
@@ -57,7 +58,7 @@
     var Polylogue = function(identifier) {
         Group.call(this, identifier)
     };
-    Polylogue.inherits(Group);
+    ns.type.Class(Polylogue, Group);
     Polylogue.prototype.getOwner = function() {
         var owner = Group.prototype.getOwner.call(this);
         if (owner) {
@@ -70,7 +71,7 @@
 ! function(ns) {
     var GroupDataSource = ns.GroupDataSource;
     var ChatroomDataSource = function() {};
-    ChatroomDataSource.inherits(GroupDataSource);
+    ns.type.Interface(ChatroomDataSource, GroupDataSource);
     ChatroomDataSource.prototype.getAdmins = function() {
         console.assert(false, "implement me!");
         return null
@@ -82,7 +83,7 @@
     var Chatroom = function(identifier) {
         Group.call(this, identifier)
     };
-    Chatroom.inherits(Group);
+    ns.type.Class(Chatroom, Group);
     Chatroom.prototype.getAdmins = function() {
         return this.delegate.getAdmins(this.identifier)
     };
@@ -93,7 +94,7 @@
     var Robot = function(identifier) {
         User.call(this, identifier)
     };
-    Robot.inherits(User);
+    ns.type.Class(Robot, User);
     ns.Robot = Robot
 }(DIMP);
 ! function(ns) {
@@ -103,7 +104,7 @@
         this.host = host;
         this.port = port
     };
-    Station.inherits(User);
+    ns.type.Class(Station, User);
     ns.Station = Station
 }(DIMP);
 ! function(ns) {
@@ -111,7 +112,7 @@
     var ServiceProvider = function(identifier) {
         Group.call(this, identifier)
     };
-    ServiceProvider.inherits(Group);
+    ns.type.Class(ServiceProvider, Group);
     ServiceProvider.prototype.getStations = function() {
         return this.delegate.getMembers(this.identifier)
     };
@@ -134,7 +135,7 @@
             this.setBlockCList(list)
         }
     };
-    BlockCommand.inherits(Command);
+    ns.type.Class(BlockCommand, Command);
     BlockCommand.BLOCK = "block";
     BlockCommand.prototype.getBlockCList = function() {
         return this.getValue("list")
@@ -162,7 +163,7 @@
             this.setMuteCList(list)
         }
     };
-    MuteCommand.inherits(Command);
+    ns.type.Class(MuteCommand, Command);
     MuteCommand.MUTE = "mute";
     MuteCommand.prototype.getMuteCList = function() {
         return this.getValue("list")
@@ -211,7 +212,7 @@
             this.envelope = null
         }
     };
-    ReceiptCommand.inherits(Command);
+    ns.type.Class(ReceiptCommand, Command);
     ReceiptCommand.prototype.setSerialNumber = function(sn) {
         this.setValue("sn", sn);
         this.sn = sn
@@ -273,7 +274,7 @@
         this.key = null;
         this.password = null
     };
-    StorageCommand.inherits(Command);
+    ns.type.Class(StorageCommand, Command);
     StorageCommand.prototype.getTitle = function() {
         var title = this.getValue("title");
         if (title) {
@@ -330,13 +331,13 @@
     StorageCommand.prototype.decrypt = function(key) {
         if (!this.plaintext) {
             var pwd = null;
-            if (key.isinstanceof(PrivateKey)) {
+            if (ns.type.Object.isinstance(key, PrivateKey)) {
                 pwd = this.decryptKey(key);
                 if (!pwd) {
                     throw Error("failed to decrypt key: " + key)
                 }
             } else {
-                if (key.isinstanceof(SymmetricKey)) {
+                if (ns.type.Object.isinstance(key, SymmetricKey)) {
                     pwd = key
                 } else {
                     throw TypeError("Decryption key error: " + key)
@@ -384,6 +385,7 @@
         this.reserved = reserved;
         this.caches = caches
     };
+    ns.type.Class(AddressNameService);
     AddressNameService.prototype.isReserved = function(name) {
         return this.reserved[name] === true
     };
@@ -430,7 +432,7 @@
         KeyCache.call(this);
         this.user = null
     };
-    KeyStore.inherits(KeyCache);
+    ns.type.Class(KeyStore, KeyCache);
     KeyStore.prototype.getUser = function() {
         return this.user
     };
@@ -462,6 +464,7 @@
 }(DIMP);
 ! function(ns) {
     var Callback = function() {};
+    ns.type.Interface(Callback);
     Callback.prototype.onFinished = function(result, error) {
         console.assert(result || error, "result empty");
         console.assert(false, "implement me!")
@@ -470,6 +473,7 @@
 }(DIMP);
 ! function(ns) {
     var CompletionHandler = function() {};
+    ns.type.Interface(CompletionHandler);
     CompletionHandler.prototype.onSuccess = function() {
         console.assert(false, "implement me!")
     };
@@ -481,6 +485,7 @@
 }(DIMP);
 ! function(ns) {
     var ConnectionDelegate = function() {};
+    ns.type.Interface(ConnectionDelegate);
     ConnectionDelegate.prototype.onReceivePackage = function(data) {
         console.assert(data !== null, "data empty");
         console.assert(false, "implement me!");
@@ -490,6 +495,7 @@
 }(DIMP);
 ! function(ns) {
     var MessengerDelegate = function() {};
+    ns.type.Interface(MessengerDelegate);
     MessengerDelegate.prototype.uploadData = function(data, msg) {
         console.assert(data !== null, "data empty");
         console.assert(msg !== null, "msg empty");
@@ -530,7 +536,7 @@
         this.contactsMap = {};
         this.membersMap = {}
     };
-    Facebook.inherits(Barrack);
+    ns.type.Class(Facebook, Barrack);
     Facebook.prototype.ansGet = function(name) {
         if (!this.ans) {
             return null
@@ -803,7 +809,7 @@
     Facebook.prototype.getPrivateKeysForDecryption = function(identifier) {
         var keys = [];
         var sKey = this.getPrivateKeyForSignature(identifier);
-        if (sKey && sKey.isinstanceof(DecryptKey)) {
+        if (sKey && ns.type.Object.isinstance(sKey, DecryptKey)) {
             keys.push(sKey)
         }
         return keys
@@ -909,6 +915,7 @@
         this.messenger = messenger;
         this.cpu = null
     };
+    ns.type.Class(MessageProcessor);
     MessageProcessor.prototype.getFacebook = function() {
         return this.messenger.getFacebook()
     };
@@ -996,7 +1003,7 @@
         this.processor = null;
         this.delegate = null
     };
-    Messenger.inherits(Transceiver, ConnectionDelegate);
+    ns.type.Class(Messenger, Transceiver, ConnectionDelegate);
     Messenger.prototype.getContext = function(key) {
         return this.context[key]
     };
@@ -1257,7 +1264,7 @@
         ContentProcessor.call(this, messenger);
         this.commandProcessors = {}
     };
-    CommandProcessor.inherits(ContentProcessor);
+    ns.type.Class(CommandProcessor, ContentProcessor);
     CommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu = this.getCPU(cmd.getCommand());
         return cpu.process(cmd, sender, msg)
@@ -1294,7 +1301,7 @@
     var DefaultContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
     };
-    DefaultContentProcessor.inherits(ContentProcessor);
+    ns.type.Class(DefaultContentProcessor, ContentProcessor);
     DefaultContentProcessor.prototype.process = function(content, sender, msg) {
         var type = content.type.toString();
         var text = "Content (type: " + type + ") not support yet!";
@@ -1314,7 +1321,7 @@
     var DefaultCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    DefaultCommandProcessor.inherits(CommandProcessor);
+    ns.type.Class(DefaultCommandProcessor, CommandProcessor);
     DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var name = cmd.getCommand();
         var text = "Command (name: " + name + ") not support yet!";
@@ -1337,7 +1344,7 @@
     var MetaCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    MetaCommandProcessor.inherits(CommandProcessor);
+    ns.type.Class(MetaCommandProcessor, CommandProcessor);
     var get_meta = function(identifier) {
         var facebook = this.getFacebook();
         var meta = facebook.getMeta(identifier);
@@ -1381,7 +1388,7 @@
     var ProfileCommandProcessor = function(messenger) {
         MetaCommandProcessor.call(this, messenger)
     };
-    ProfileCommandProcessor.inherits(MetaCommandProcessor);
+    ns.type.Class(ProfileCommandProcessor, MetaCommandProcessor);
     var get_profile = function(identifier) {
         var facebook = this.getFacebook();
         var profile = facebook.getProfile(identifier);
@@ -1432,7 +1439,7 @@
         CommandProcessor.call(this, messenger);
         this.gpu = null
     };
-    HistoryCommandProcessor.inherits(CommandProcessor);
+    ns.type.Class(HistoryCommandProcessor, CommandProcessor);
     HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu;
         if (cmd.getGroup()) {
@@ -1457,7 +1464,7 @@
     var GroupCommandProcessor = function(messenger) {
         HistoryCommandProcessor.call(this, messenger)
     };
-    GroupCommandProcessor.inherits(HistoryCommandProcessor);
+    ns.type.Class(GroupCommandProcessor, HistoryCommandProcessor);
     var convert_id_list = function(list) {
         var facebook = this.getFacebook();
         var array = [];
@@ -1516,13 +1523,12 @@
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor
 }(DIMP);
 ! function(ns) {
-    var TextContent = ns.protocol.TextContent;
     var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
     var InviteCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    InviteCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(InviteCommandProcessor, GroupCommandProcessor);
     var is_reset = function(inviteList, sender, group) {
         var facebook = this.getFacebook();
         if (this.containsOwner(inviteList, group)) {
@@ -1593,7 +1599,7 @@
     var ExpelCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ExpelCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(ExpelCommandProcessor, GroupCommandProcessor);
     ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -1619,7 +1625,7 @@
                 continue
             }
             removedList.push(item);
-            members.remove(item)
+            ns.type.Arrays.remove(members, item)
         }
         if (removedList.length > 0) {
             if (facebook.saveMembers(members, group)) {
@@ -1637,7 +1643,7 @@
     var QuitCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    QuitCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(QuitCommandProcessor, GroupCommandProcessor);
     QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -1655,7 +1661,7 @@
         if (!members.contains(sender)) {
             return
         }
-        members.remove(sender);
+        ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
         return null
     };
@@ -1671,7 +1677,7 @@
     var QueryCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    QueryCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(QueryCommandProcessor, GroupCommandProcessor);
     QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -1705,7 +1711,7 @@
     var ResetCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ResetCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(ResetCommandProcessor, GroupCommandProcessor);
     var save = function(newMembers, sender, group) {
         if (!this.containsOwner(newMembers, group)) {
             return GroupCommand.query(group)

@@ -40,7 +40,7 @@
     var ServiceProvider = function (identifier) {
         Group.call(this, identifier);
     };
-    ServiceProvider.inherits(Group);
+    ns.type.Class(ServiceProvider, Group);
 
     ServiceProvider.prototype.getStations = function () {
         return this.delegate.getMembers(this.identifier);

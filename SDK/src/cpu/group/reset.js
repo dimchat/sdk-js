@@ -46,7 +46,7 @@
     var ResetCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ResetCommandProcessor.inherits(GroupCommandProcessor);
+    ns.type.Class(ResetCommandProcessor, GroupCommandProcessor);
 
     // temporary save
     var save = function (newMembers, sender, group) {

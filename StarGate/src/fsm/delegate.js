@@ -40,6 +40,7 @@
      */
     var Delegate = function () {
     };
+    DIMP.type.Interface(Delegate);
 
     Delegate.prototype.enterState = function (state, machine) {
         console.assert(state !== null, 'state empty');

@@ -55,6 +55,7 @@
 
         this.delegate = null;
     };
+    DIMP.type.Class(Machine);
 
     /**
      *  add state with name

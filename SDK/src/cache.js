@@ -42,7 +42,7 @@
         // current user
         this.user = null;
     };
-    KeyStore.inherits(KeyCache);
+    ns.type.Class(KeyStore, KeyCache);
 
     KeyStore.prototype.getUser = function () {
         return this.user;
