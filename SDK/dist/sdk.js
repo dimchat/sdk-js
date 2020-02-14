@@ -1610,7 +1610,7 @@
     Messenger.prototype.encryptMessage = function(msg) {
         var sMsg = Transceiver.prototype.encryptMessage.call(this, msg);
         var group = msg.content.getGroup();
-        if (!group) {
+        if (group) {
             sMsg.envelope.setGroup(group)
         }
         sMsg.envelope.setType(msg.content.type);

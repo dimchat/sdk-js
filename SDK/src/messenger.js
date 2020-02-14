@@ -253,7 +253,7 @@
     Messenger.prototype.encryptMessage = function (msg) {
         var sMsg = Transceiver.prototype.encryptMessage.call(this, msg);
         var group = msg.content.getGroup();
-        if (!group) {
+        if (group) {
             // NOTICE: this help the receiver knows the group ID
             //         when the group message separated to multi-messages,
             //         if don't want the others know you are the group members,
