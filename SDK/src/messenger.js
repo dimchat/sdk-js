@@ -34,7 +34,6 @@
 //! require 'protocol/receipt.js'
 //! require 'delegate.js'
 //! require 'facebook.js'
-//! require 'processor.js'
 
 !function (ns) {
     'use strict';
@@ -45,24 +44,29 @@
 
     var Envelope = ns.Envelope;
     var InstantMessage = ns.InstantMessage;
-    var ForwardContent = ns.protocol.ForwardContent;
-    var TextContent = ns.protocol.TextContent;
+    var SecureMessage = ns.SecureMessage;
+    var ReliableMessage = ns.ReliableMessage;
+
     var FileContent = ns.protocol.FileContent;
-    var ReceiptCommand = ns.protocol.ReceiptCommand;
+
+    var GroupCommand = ns.protocol.GroupCommand;
+    var InviteCommand = ns.protocol.group.InviteCommand;
+    var ResetCommand = ns.protocol.group.ResetCommand;
+
+    var ContentProcessor = ns.cpu.ContentProcessor;
 
     var ConnectionDelegate = ns.ConnectionDelegate;
 
     var Transceiver = ns.core.Transceiver;
 
     var Facebook = ns.Facebook;
-    var MessageProcessor = ns.MessageProcessor;
 
     var Messenger = function () {
         Transceiver.call(this);
         // Environment variables as context
         this.context = {};
-        // Message processor
-        this.processor = null;
+        // Content processing unit
+        this.cpu = new ContentProcessor(this);
         // Messenger delegate for sending data
         this.delegate = null;
     };
@@ -145,6 +149,77 @@
         return msg;
     };
 
+    // check whether group info empty
+    var is_empty = function (group) {
+        var facebook = this.getFacebook();
+        var members = facebook.getMembers(group);
+        if (!members || members.length === 0) {
+            return true;
+        }
+        var owner = facebook.getOwner(group);
+        return !owner;
+    };
+
+    // check whether need to update group
+    var check_group = function (content, sender) {
+        // Check if it is a group message,
+        // and whether the group members info needs update
+        var facebook = this.getFacebook();
+        var group = facebook.getIdentifier(content.getGroup());
+        if (!group || group.isBroadcast()) {
+            // 1. personal message
+            // 2. broadcast message
+            return false;
+        }
+        // check meta for new group ID
+        var meta = facebook.getMeta(group);
+        if (!meta) {
+            // NOTICE: if meta for group not found,
+            //         facebook should query it from DIM network automatically
+            // TODO: insert the message to a temporary queue to wait meta
+            //throw new NullPointerException("group meta not found: " + group);
+            return true;
+        }
+        // query group info
+        if (is_empty.call(this, group)) {
+            // NOTICE: if the group info not found, and this is not an 'invite' command
+            //         query group info from the sender
+            if ((content instanceof InviteCommand) || (content instanceof ResetCommand)) {
+                // FIXME: can we trust this stranger?
+                //        may be we should keep this members list temporary,
+                //        and send 'query' to the owner immediately.
+                // TODO: check whether the members list is a full list,
+                //       it should contain the group owner(owner)
+                return false;
+            } else {
+                this.sendContent(GroupCommand.query(group), sender);
+            }
+        } else if (facebook.existsMember(sender, group)
+            || facebook.existsAssistant(sender, group)
+            || facebook.isOwner(sender, group)) {
+            // normal membership
+            return false;
+        } else {
+            var cmd = GroupCommand.query(group);
+            var checking = false;
+            // if assistants exists, query them
+            var assistants = facebook.getAssistants(group);
+            if (assistants) {
+                for (var i = 0; i < assistants.length; ++i) {
+                    if (this.sendContent(cmd, assistants[i])) {
+                        checking = true;
+                    }
+                }
+            }
+            // if owner found, query it too
+            var owner = facebook.getOwner(group);
+            if (owner && this.sendContent(cmd, owner)) {
+                checking = true;
+            }
+            return checking;
+        }
+    };
+
     //
     //  Transform
     //
@@ -192,36 +267,23 @@
     };
 
     Messenger.prototype.decryptMessage = function (msg) {
-        // 0. trim message
-        msg = trim.call(this, msg);
-        if (!msg) {
+        // trim message
+        var sMsg = trim.call(this, msg);
+        if (!sMsg) {
             // not for you?
+            throw Error('receiver error:' + msg);
+        }
+        // decrypt message
+        return Transceiver.prototype.decryptMessage.call(this, sMsg);
+    };
+
+    //-------- De/serialize message, content and symmetric key
+
+    Messenger.prototype.deserializeMessage = function (data) {
+        if (!data) {
             return null;
         }
-        // 1. decrypt message
-        var iMsg = Transceiver.prototype.decryptMessage.call(this, msg);
-        if (!iMsg) {
-            throw Error('failed to decrypt message: ' + msg);
-        }
-        // 2. check top-secret message
-        if (iMsg.content instanceof ForwardContent) {
-            // [Forward Protocol]
-            // do it again to drop the wrapper,
-            // the secret inside the content is the real message
-            var sMsg = this.verifyMessage(iMsg.content.getMessage());
-            if (sMsg) {
-                // verify OK, try to decrypt
-                var secret = this.decryptMessage(sMsg);
-                if (secret) {
-                    // decrypt success!
-                    return secret;
-                }
-                // NOTICE: decrypt failed, not for you?
-                //         check content type in subclass, if it's a 'forward' message,
-                //         it means you are asked to re-pack and forward this message
-            }
-        }
-        return iMsg;
+        return Transceiver.prototype.deserializeMessage.call(this, data);
     };
 
     //
@@ -230,8 +292,8 @@
 
     Messenger.prototype.encryptContent = function (content, pwd, msg) {
         var key = SymmetricKey.getInstance(pwd);
+        // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
-            // check attachment for File/Image/Audio/Video message content
             var data = content.getData();
             // encrypt and upload file data onto CDN and save the URL in message content
             data = key.encrypt(data);
@@ -271,8 +333,8 @@
         if (!content) {
             throw Error('failed to decrypt message content: ' + msg);
         }
+        // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
-            // check attachment for File/Image/Audio/Video message content
             var iMsg = InstantMessage.newMessage(content, msg.envelope);
             // download from CDN
             var fileData = this.delegate.downloadData(content.getURL(), iMsg);
@@ -346,6 +408,11 @@
             ok = send_message.call(this, rMsg, callback);
         }
         // TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
+        /*
+        if (!this.saveMessage(msg)) {
+            return false;
+        }
+         */
         return ok;
     };
 
@@ -365,49 +432,6 @@
     //
     //  Message
     //
-
-    /**
-     *  Re-pack and deliver (Top-Secret) message to the real receiver
-     *
-     * @param msg - Top-Secret message
-     * @returns {ReceiptCommand}
-     */
-    Messenger.prototype.forwardMessage = function (msg) {
-        var facebook = this.getFacebook();
-        var receiver = facebook.getIdentifier(msg.envelope.receiver);
-        var content = new ForwardContent(msg);
-        if (this.sendContent(content, receiver)) {
-            return new ReceiptCommand('message forwarded');
-        } else {
-            return new TextContent('failed to forward your message');
-        }
-    };
-    /**
-     *  Deliver message to everyone@everywhere, including all neighbours
-     *
-     * @param msg - broadcast message
-     * @returns {ReceiptCommand}
-     */
-    Messenger.prototype.broadcastMessage = function (msg) {
-        // NOTICE: this function is for Station
-        //         if the receiver is a grouped broadcast ID,
-        //         split and deliver to everyone
-        console.assert(msg !== null, 'message empty');
-        return null;
-    };
-    /**
-     *  Deliver message to the receiver, or to neighbours
-     *
-     * @param msg
-     * @returns {ReceiptCommand}
-     */
-    Messenger.prototype.deliverMessage = function (msg) {
-        // NOTICE: this function is for Station
-        //         if the station cannot decrypt this message,
-        //         it means you should deliver it to the receiver
-        console.assert(msg !== null, 'message empty');
-        return null;
-    };
     /**
      *  Save the message into local storage
      *
@@ -420,7 +444,9 @@
         return false;
     };
     /**
-     *  Suspend the received/sending message for the contact's meta
+     *  Suspend the received reliable message for the sender's meta,
+     *  or received instant message for group's meta,
+     *  or sending instant message for receiver's meta.
      *
      * @param msg - ReliableMessage|InstantMessage
      * @returns {boolean}
@@ -438,6 +464,10 @@
     Messenger.prototype.onReceivePackage = function (data) {
         // 1. deserialize message
         var rMsg = this.deserializeMessage(data);
+        if (!rMsg) {
+            // no message received
+            return null;
+        }
         // 2. process message
         var response = this.process(rMsg);
         if (!response) {
@@ -464,12 +494,39 @@
         return this.serializeMessage(nMsg);
     };
 
-    // NOTICE: if you want to filter the response, override me
     Messenger.prototype.process = function (msg) {
-        if (!this.processor) {
-            this.processor = new MessageProcessor(this);
+        if (msg instanceof ReliableMessage) {
+            var sMsg = this.verifyMessage(msg);
+            if (!sMsg) {
+                // waiting for sender's meta if not exists
+                return null;
+            }
+            // TODO: override to check broadcast message before calling it
+            // TODO: override to deliver to the receiver when catch exception "receiver error ..."
+            // continue to process it
+            return this.process(sMsg);
+        } else if (msg instanceof SecureMessage) {
+            // try to decrypt
+            var iMsg = this.decryptMessage(msg);
+            // continue to process it
+            return this.process(iMsg);
+        } else if (msg instanceof InstantMessage) {
+            var content = msg.content;
+            var sender = msg.envelope.sender;
+            sender = this.getFacebook().getIdentifier(sender);
+            if (check_group.call(this, content, sender)) {
+                // save this message in a queue to wait group meta response
+                this.suspendMessage(msg);
+                return null;
+            }
+            var res = this.cpu.process(content, sender, msg);
+            if (!this.saveMessage(msg)) {
+                // error
+                return null;
+            }
+            // TODO: override to filter the response
+            return res;
         }
-        return this.processor.process(msg);
     };
 
     //-------- namespace --------
