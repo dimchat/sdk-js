@@ -53,18 +53,7 @@
     //
     ForwardContentProcessor.prototype.process = function (content, sender, msg) {
         var rMsg = content.getMessage();
-        // [Forward Protocol]
-        // do it again to drop the wrapper,
-        // the secret inside the content is the real message
-        var sMsg = this.messenger.verifyMessage(rMsg);
-        if (!sMsg) {
-            // TODO: save this message in a queue to wait meta response
-            //messenger.suspendMessage(rMsg);
-            //throw Error('failed to verify message: ' + rMsg);
-            return null;
-        }
-        return this.messenger.process(sMsg);
-
+        return this.messenger.processReliableMessage(rMsg);
         // NOTICE: decrypt failed, not for you?
         //         check content type in subclass, if it's a 'forward' message,
         //         it means you are asked to re-pack and forward this message
