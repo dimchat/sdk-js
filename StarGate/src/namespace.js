@@ -42,11 +42,16 @@ if (typeof StarGate !== 'object') {
     if (typeof StarGate.extensions !== 'object') {
         sg.extensions = {};
     }
+    if (typeof StarGate.network !== 'object') {
+        sg.network = {};
+    }
 
     DIMP.namespace(fsm);
     DIMP.namespace(sg);
     DIMP.namespace(sg.extensions);
+    DIMP.namespace(sg.network);
 
     sg.register('extensions');
+    sg.register('network');
 
 }(StarGate, FiniteStateMachine);

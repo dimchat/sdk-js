@@ -80,8 +80,8 @@
     /**
      *  Receive data package
      *
-     * @param data - package from network connection
-     * @returns {*[]} data response to sender
+     * @param data - package from network connection (Uint8Array)
+     * @returns {Uint8Array} data response to sender
      */
     ConnectionDelegate.prototype.onReceivePackage = function (data) {
         console.assert(data !== null, 'data empty');
@@ -104,7 +104,7 @@
     /**
      *  Upload encrypted data to CDN
      *
-     * @param data - encrypted file data
+     * @param data - encrypted file data (Uint8Array)
      * @param msg - instant message
      * @returns {String} - download URL
      */
@@ -120,7 +120,7 @@
      *
      * @param url - download URL
      * @param msg - instant message
-     * @returns {*[]} - encrypted file data
+     * @returns {Uint8Array} - encrypted file data
      */
     MessengerDelegate.prototype.downloadData = function (url, msg) {
         console.assert(url !== null, 'URL empty');
@@ -132,7 +132,7 @@
     /**
      *  Send out a data package onto network
      *
-     * @param data - package data
+     * @param data - package data (Uint8Array)
      * @param handler - completion handler
      * @returns {boolean}
      */

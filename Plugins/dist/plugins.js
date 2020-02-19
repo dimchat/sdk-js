@@ -127,7 +127,7 @@
         function decode(string) {
             var buffer = decodeUnsafe(string);
             if (buffer) {
-                return buffer
+                return ns.type.Data.from(buffer).getBytes()
             }
             throw new Error("Non-base" + BASE + " character")
         }
@@ -272,6 +272,7 @@
     ns.format.PEM.parser = new pem()
 }(DIMP);
 ! function(ns) {
+    var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var Base64 = ns.format.Base64;
@@ -285,18 +286,15 @@
         return Hex.decode(result)
     };
     var random_data = function(size) {
-        var data = [];
+        var data = new Data(size);
         for (var i = 0; i < size; ++i) {
             data.push(Math.floor(Math.random() * 256))
         }
-        return data
+        return data.getBytes()
     };
     var zero_data = function(size) {
-        var data = [];
-        for (var i = 0; i < size; ++i) {
-            data.push(0)
-        }
-        return data
+        var data = new Data(size);
+        return data.getBytes()
     };
     var AESKey = function(key) {
         Dictionary.call(this, key)
@@ -530,6 +528,7 @@
     ns.plugins.RSAPrivateKey = RSAPrivateKey
 }(DIMP);
 ! function(ns) {
+    var Data = ns.type.Data;
     var SHA256 = ns.digest.SHA256;
     var RIPEMD160 = ns.digest.RIPEMD160;
     var Base58 = ns.format.Base58;
@@ -541,8 +540,8 @@
         if (data.length !== 25) {
             throw RangeError("address length error: " + string)
         }
-        var prefix = [];
-        var suffix = [];
+        var prefix = new Data(21);
+        var suffix = new Data(4);
         var i;
         for (i = 0; i < 21; ++i) {
             prefix.push(data[i])
@@ -550,8 +549,8 @@
         for (i = 21; i < 25; ++i) {
             suffix.push(data[i])
         }
-        var cc = check_code(prefix);
-        if (!ns.type.Arrays.equals(cc, suffix)) {
+        var cc = check_code(prefix.getBytes());
+        if (!ns.type.Arrays.equals(cc, suffix.getBytes())) {
             throw Error("address check code error: " + string)
         }
         this.network = new NetworkType(data[0]);
@@ -566,30 +565,30 @@
     };
     DefaultAddress.generate = function(fingerprint, network) {
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
-        var head = [];
+        var head = new Data(21);
         head.push(network.value);
         var i;
         for (i = 0; i < 20; ++i) {
             head.push(digest[i])
         }
-        var cc = check_code(head);
-        var data = [];
+        var cc = check_code(head.getBytes());
+        var data = new Data(25);
         for (i = 0; i < 21; ++i) {
-            data.push(head[i])
+            data.push(head.getByte(i))
         }
         for (i = 0; i < 4; ++i) {
             data.push(cc[i])
         }
-        return new DefaultAddress(Base58.encode(data))
+        return new DefaultAddress(Base58.encode(data.getBytes()))
     };
     var check_code = function(data) {
         var sha256d = SHA256.digest(SHA256.digest(data));
-        var cc = [];
+        var cc = new Data(4);
         var i;
         for (i = 0; i < 4; ++i) {
             cc.push(sha256d[i])
         }
-        return cc
+        return cc.getBytes()
     };
     var search_number = function(cc) {
         return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 16777216

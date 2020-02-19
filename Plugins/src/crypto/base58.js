@@ -154,7 +154,7 @@
         function decode(string) {
             var buffer = decodeUnsafe(string);
             if (buffer) {
-                return buffer
+                return ns.type.Data.from(buffer).getBytes();
             }
             throw new Error("Non-base" + BASE + " character")
         }

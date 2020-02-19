@@ -16,10 +16,15 @@ if (typeof StarGate !== "object") {
     if (typeof StarGate.extensions !== "object") {
         sg.extensions = {}
     }
+    if (typeof StarGate.network !== "object") {
+        sg.network = {}
+    }
     DIMP.namespace(fsm);
     DIMP.namespace(sg);
     DIMP.namespace(sg.extensions);
-    sg.register("extensions")
+    DIMP.namespace(sg.network);
+    sg.register("extensions");
+    sg.register("network")
 }(StarGate, FiniteStateMachine);
 ! function(ns) {
     var Delegate = function() {};
@@ -527,4 +532,205 @@ if (typeof StarGate !== "object") {
     };
     ns.extensions.SocketClient = SocketClient;
     ns.extensions.register("SocketClient")
+}(StarGate);
+! function(ns) {
+    var Host = function(ip, port, data) {
+        this.ip = ip;
+        this.port = port;
+        this.data = data
+    };
+    Host.prototype.valueOf = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Host.prototype.toString = function() {
+        return this.valueOf()
+    };
+    Host.prototype.toLocaleString = function() {
+        return this.valueOf()
+    };
+    Host.prototype.toArray = function(default_port) {
+        var data = this.data;
+        var port = this.port;
+        var len = data.length;
+        var array, index;
+        if (!port || port === default_port) {
+            array = new Uint8Array(len);
+            for (index = 0; index < len; ++index) {
+                array[index] = data[index]
+            }
+        } else {
+            array = new Uint8Array(len + 2);
+            for (index = 0; index < len; ++index) {
+                array[index] = data[index]
+            }
+            array[len] = port >> 8;
+            array[len + 1] = port & 255
+        }
+        return array
+    };
+    ns.network.Host = Host;
+    ns.network.register("Host")
+}(StarGate);
+! function(ns) {
+    var Host = ns.network.Host;
+    var IPv4 = function(ip, port, data) {
+        if (data) {
+            if (!ip) {
+                ip = data[0] + "." + data[1] + "." + data[2] + "." + data[3];
+                if (data.length === 6) {
+                    port = (data[4] << 8) | data[5]
+                }
+            }
+        } else {
+            if (ip) {
+                data = new Uint8Array(4);
+                var array = ip.split(".");
+                for (var index = 0; index < 4; ++index) {
+                    data[index] = parseInt(array[index], 10)
+                }
+            } else {
+                throw URIError("IP data empty: " + data + ", " + ip + ", " + port)
+            }
+        }
+        Host.call(this, ip, port, data)
+    };
+    DIMP.type.Class(IPv4, Host);
+    IPv4.prototype.valueOf = function() {
+        if (this.port === 0) {
+            return this.ip
+        } else {
+            return this.ip + ":" + this.port
+        }
+    };
+    IPv4.patten = /^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/;
+    IPv4.parse = function(host) {
+        if (!this.patten.test(host)) {
+            return null
+        }
+        var pair = host.split(":");
+        var ip = pair[0],
+            port = 0;
+        if (pair.length === 2) {
+            port = parseInt(pair[1])
+        }
+        return new IPv4(ip, port)
+    };
+    ns.network.IPv4 = IPv4;
+    ns.network.register("IPv4")
+}(StarGate);
+! function(ns) {
+    var Host = ns.network.Host;
+    var parse_v4 = function(data, array) {
+        var item, index = data.byteLength;
+        for (var i = array.length - 1; i >= 0; --i) {
+            item = array[i];
+            data[--index] = item
+        }
+        return data
+    };
+    var parse_v6 = function(data, ip, count) {
+        var array, item, index;
+        var pos = ip.indexOf("::");
+        if (pos < 0) {
+            array = ip.split(":");
+            index = -1;
+            for (var i = 0; i < count; ++i) {
+                item = parseInt(array[i], 16);
+                data[++index] = item >> 8;
+                data[++index] = item & 255
+            }
+        } else {
+            var left = ip.substring(0, pos).split(":");
+            index = -1;
+            for (var j = 0; j < left.length; ++j) {
+                item = parseInt(left[j], 16);
+                data[++index] = item >> 8;
+                data[++index] = item & 255
+            }
+            var right = ip.substring(pos + 2).split(":");
+            index = count * 2;
+            for (var k = right.length - 1; k >= 0; --k) {
+                item = parseInt(right[k], 16);
+                data[--index] = item & 255;
+                data[--index] = item >> 8
+            }
+        }
+        return data
+    };
+    var hex_encode = function(hi, lo) {
+        if (hi > 0) {
+            if (lo >= 16) {
+                return Number(hi).toString(16) + Number(lo).toString(16)
+            }
+            return Number(hi).toString(16) + "0" + Number(lo).toString(16)
+        } else {
+            return Number(lo).toString(16)
+        }
+    };
+    var IPv6 = function(ip, port, data) {
+        if (data) {
+            if (!ip) {
+                ip = hex_encode(data[0], data[1]);
+                for (var index = 2; index < 16; index += 2) {
+                    ip += ":" + hex_encode(data[index], data[index + 1])
+                }
+                ip = ip.replace(/:(0:){2,}/, "::");
+                ip = ip.replace(/^(0::)/, "::");
+                ip = ip.replace(/(::0)$/, "::");
+                if (data.length === 18) {
+                    port = (data[16] << 8) | data[17]
+                }
+            }
+        } else {
+            if (ip) {
+                data = new Uint8Array(16);
+                var array = ip.split(".");
+                if (array.length === 1) {
+                    data = parse_v6(data, ip, 8)
+                } else {
+                    if (array.length === 4) {
+                        var prefix = array[0];
+                        var pos = prefix.lastIndexOf(":");
+                        array[0] = prefix.substring(pos + 1);
+                        prefix = prefix.substring(0, pos);
+                        data = parse_v6(data, prefix, 6);
+                        data = parse_v4(data, array)
+                    } else {
+                        throw URIError("IPv6 format error: " + ip)
+                    }
+                }
+            } else {
+                throw URIError("IP data empty: " + data + ", " + ip + ", " + port)
+            }
+        }
+        Host.call(this, ip, port, data)
+    };
+    DIMP.type.Class(IPv6, Host);
+    IPv6.prototype.valueOf = function() {
+        if (this.port === 0) {
+            return this.ip
+        } else {
+            return "[" + this.ip + "]:" + this.port
+        }
+    };
+    IPv6.patten = /^\[?([0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(]:\d{1,5})?$/;
+    IPv6.patten_compat = /^\[?([0-9A-Fa-f]{0,4}:){2,6}(\d{1,3}.){3}\d{1,3}(]:\d{1,5})?$/;
+    IPv6.parse = function(host) {
+        if (!this.patten.test(host) && !this.patten_compat.test(host)) {
+            return null
+        }
+        var ip, port;
+        if (host.charAt(0) === "[") {
+            var pos = host.indexOf("]");
+            ip = host.substring(1, pos);
+            port = parseInt(host.substring(pos + 2))
+        } else {
+            ip = host;
+            port = 0
+        }
+        return new IPv6(ip, port)
+    };
+    ns.network.IPv6 = IPv6;
+    ns.network.register("IPv6")
 }(StarGate);
