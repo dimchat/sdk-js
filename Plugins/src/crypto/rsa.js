@@ -38,6 +38,7 @@
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
 
+    var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
@@ -86,7 +87,9 @@
             cipher.setPublicKey(key);
             if (cipher.key.e === 0 || cipher.key.n === null) {
                 // FIXME: PKCS#1 -> X.509
+                der = Data.from(der).toArray();
                 der = x509_header.concat(der);
+                der = Data.from(der).getBytes();
                 key = Base64.encode(der);
                 cipher.setPublicKey(key);
             }
