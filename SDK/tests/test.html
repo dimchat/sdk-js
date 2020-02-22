@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>DIM-SDK Test Cases</title>
+    <link href="test.css" type="text/css" rel="stylesheet" />
+    <script src="../libs/loader.js"></script>
+    <script src="../libs/runner.js"></script>
+    <script src="../libs/utils.js"></script>
+
+    <script src="../libs/crypto-js/core.js"></script>
+    <script src="../libs/crypto-js/cipher-core.js"></script>
+    <script src="../libs/crypto-js/aes.js"></script>
+    <script src="../libs/crypto-js/md5.js"></script>
+    <script src="../libs/crypto-js/sha256.js"></script>
+    <script src="../libs/crypto-js/ripemd160.js"></script>
+    <script src="../libs/jsencrypt.js"></script>
+
+    <script src="../libs/dimp.js"></script>
+    <script src="../libs/plugins.js"></script>
+
+    <script>
+        !function (ns) {
+            var sources = [
+
+                'src/protocol/receipt.js',
+                'src/protocol/mute.js',
+                'src/protocol/block.js',
+                'src/protocol/storage.js',
+
+                'src/cpu/content.js',
+                'src/cpu/command.js',
+                'src/cpu/default.js',
+                'src/cpu/forward.js',
+                'src/cpu/meta.js',
+                'src/cpu/profile.js',
+                'src/cpu/history.js',
+                'src/cpu/group/group.js',
+                'src/cpu/group/invite.js',
+                'src/cpu/group/expel.js',
+                'src/cpu/group/quit.js',
+                'src/cpu/group/query.js',
+                'src/cpu/group/reset.js',
+
+                'src/group/polylogue.js',
+                'src/group/chatroom.js',
+
+                'src/network/robot.js',
+                'src/network/station.js',
+                'src/network/provider.js',
+
+                'src/ans.js',
+                'src/delegate.js',
+                'src/cache.js',
+                'src/facebook.js',
+                'src/messenger.js'
+
+            ];
+
+            var dist = 'dist/sdk.js';
+
+            var tests = [
+                'tests/crypto_tests.js',
+                'tests/mkm_tests.js',
+                'tests/dkd_tests.js',
+                'tests/core_tests.js',
+                'tests/plugins_tests.js',
+                'tests/sdk_tests.js'
+            ];
+
+            var base = window.location.href;
+            base = base.substring(0, base.indexOf('tests/test.html'));
+            var loader = new Loader(base);
+
+            for (var i = 0; i < sources.length; ++i) {
+                loader.importJS(sources[i]);
+            }
+            for (var j = 0; j < tests.length; ++j) {
+                loader.importJS(tests[j]);
+            }
+
+            ns.sources = sources;
+            ns.dist = dist;
+        }(window);
+
+        $(function () {
+            var runner = new Runner('crypto_tests');
+            runner.run(crypto_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('mkm_tests');
+            runner.run(mkm_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('dkd_tests');
+            runner.run(dkd_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('core_tests');
+            runner.run(core_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('plugins_tests');
+            runner.run(plugins_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('sdk_tests');
+            runner.run(sdk_tests);
+        });
+    </script>
+</head>
+<body>
+
+<h2>Crypto Tests</h2>
+<div id="crypto_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>MingKeMing Tests</h2>
+<div id="mkm_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>DaoKeDao Tests</h2>
+<div id="dkd_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>Core Tests</h2>
+<div id="core_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>Plugins Tests</h2>
+<div id="plugins_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>SDK Tests</h2>
+<div id="sdk_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>Makefile</h2>
+<p class="console">
+    <script>
+        !(function () {
+            var text = 'cat';
+            for (var i = 0; i < sources.length; ++i) {
+                text += ' ' + sources[i];
+            }
+            text += ' >> ' + dist;
+            document.writeln(text);
+        }());
+    </script>
+</p>
+<p class="console">
+    <script>
+        !(function () {
+            var text = 'cat' +
+                ' libs/dimp.js' +
+                ' libs/plugins.js' +
+                ' dist/sdk.js' +
+                ' ../StarGate/dist/stargate.js' +
+                ' ../StarGate/src/exports.js' +
+                ' ../Plugins/src/immortals.js';
+            text += ' >> dist/all.js';
+            document.writeln(text);
+        }());
+    </script>
+</p>
+</body>
+</html>
