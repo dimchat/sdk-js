@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>StarGate Test Cases</title>
+    <link href="test.css" type="text/css" rel="stylesheet" />
+    <script src="../libs/loader.js"></script>
+    <script src="../libs/runner.js"></script>
+    <script src="../libs/utils.js"></script>
+
+    <script src="../libs/dimp.js"></script>
+
+    <script>
+        !function (ns) {
+            var sources = [
+                'src/namespace.js',
+
+                'src/fsm/delegate.js',
+                'src/fsm/transition.js',
+                'src/fsm/state.js',
+                'src/fsm/machine.js',
+
+                'src/notification.js',
+                'src/storage.js',
+
+                'src/star.js',
+
+                'src/extensions/task.js',
+                'src/extensions/fence.js',
+                'src/extensions/socket.js',
+
+                'src/network/host.js',
+                'src/network/ipv4.js',
+                'src/network/ipv6.js'
+            ];
+
+            var dist = 'dist/stargate.js';
+
+            var tests = [
+                'tests/sg_tests.js'
+            ];
+
+            var base = window.location.href;
+            base = base.substring(0, base.indexOf('tests/test.html'));
+            var loader = new Loader(base);
+
+            for (var i = 0; i < sources.length; ++i) {
+                loader.importJS(sources[i]);
+            }
+            for (var j = 0; j < tests.length; ++j) {
+                loader.importJS(tests[j]);
+            }
+
+            ns.sources = sources;
+            ns.dist = dist;
+        }(window);
+
+        $(function () {
+            var runner = new Runner('sg_tests');
+            runner.run(sg_tests);
+        });
+    </script>
+</head>
+<body>
+
+<h2>StarGate Tests</h2>
+<div id="sg_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>Makefile</h2>
+<p class="console">
+    <script>
+        !(function () {
+            var text = 'cat';
+            for (var i = 0; i < sources.length; ++i) {
+                text += ' ' + sources[i];
+            }
+            text += ' >> ' + dist;
+            document.writeln(text);
+        }());
+    </script>
+</p>
+</body>
+</html>
