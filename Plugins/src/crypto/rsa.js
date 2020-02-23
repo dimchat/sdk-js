@@ -79,6 +79,7 @@
     };
 
     var x509_header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
+    x509_header = new Data(x509_header);
     var parse_key = function () {
         if (!this.cipher) {
             var der = this.getData();
@@ -87,9 +88,7 @@
             cipher.setPublicKey(key);
             if (cipher.key.e === 0 || cipher.key.n === null) {
                 // FIXME: PKCS#1 -> X.509
-                der = Data.from(der).toArray();
-                der = x509_header.concat(der);
-                der = Data.from(der).getBytes();
+                der = x509_header.concat(der).getBytes();
                 key = Base64.encode(der);
                 cipher.setPublicKey(key);
             }
