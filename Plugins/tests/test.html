@@ -5,11 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DIM Plugins Test Cases</title>
-    <link href="test.css" type="text/css" rel="stylesheet" />
-    <script src="../libs/loader.js"></script>
-    <script src="../libs/runner.js"></script>
-    <script src="../libs/utils.js"></script>
-
     <script src="../libs/crypto-js/core.js"></script>
     <script src="../libs/crypto-js/cipher-core.js"></script>
     <script src="../libs/crypto-js/aes.js"></script>
@@ -18,7 +13,12 @@
     <script src="../libs/crypto-js/ripemd160.js"></script>
     <script src="../libs/jsencrypt.js"></script>
 
-    <script src="../libs/dimp.js"></script>
+    <link href="/Crypto/tests/test.css" type="text/css" rel="stylesheet" />
+    <script src="/Crypto/libs/loader.js"></script>
+    <script src="/Crypto/libs/runner.js"></script>
+    <script src="/Crypto/libs/utils.js"></script>
+
+    <script src="/DIMP/dist/dimp.js"></script>
 
     <script>
         !function (ns) {
@@ -45,10 +45,10 @@
             var tests = [
                 'src/immortals.js',
 
-                'tests/crypto_tests.js',
-                'tests/mkm_tests.js',
-                'tests/dkd_tests.js',
-                'tests/core_tests.js',
+                '../Crypto/tests/crypto_tests.js',
+                '../MingKeMing/tests/mkm_tests.js',
+                '../DaoKeDao/tests/dkd_tests.js',
+                '../DIMP/tests/core_tests.js',
                 'tests/plugins_tests.js'
             ];
 

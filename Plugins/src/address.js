@@ -67,17 +67,10 @@
             throw RangeError('address length error: ' + string);
         }
         // check code
-        var prefix = new Data(21);
-        var suffix = new Data(4);
-        var i;
-        for (i = 0; i < 21; ++i) {
-            prefix.push(data[i]);
-        }
-        for (i = 21; i < 25; ++i) {
-            suffix.push(data[i]);
-        }
-        var cc = check_code(prefix.getBytes());
-        if (!ns.type.Arrays.equals(cc, suffix.getBytes())) {
+        var prefix = data.subarray(0, 21);
+        var suffix = data.subarray(21, 25);
+        var cc = check_code(prefix);
+        if (!ns.type.Arrays.equals(cc, suffix)) {
             throw Error('address check code error: ' + string);
         }
         this.network = new NetworkType(data[0]);
@@ -106,31 +99,19 @@
         // 2. head = network + digest
         var head = new Data(21);
         head.push(network.value);
-        var i;
-        for (i = 0; i < 20; ++i) {
-            head.push(digest[i]);
-        }
+        head.push(digest);
         // 3. cc = sha256(sha256(head)).prefix(4)
         var cc = check_code(head.getBytes());
         // 4. data = base58_encode(head + cc)
         var data = new Data(25);
-        for (i = 0; i < 21; ++i) {
-            data.push(head.getByte(i));
-        }
-        for (i = 0; i < 4; ++i) {
-            data.push(cc[i]);
-        }
+        data.push(head);
+        data.push(cc);
         return new DefaultAddress(Base58.encode(data.getBytes()));
     };
 
     var check_code = function (data) {
         var sha256d = SHA256.digest(SHA256.digest(data));
-        var cc = new Data(4);
-        var i;
-        for (i = 0; i < 4; ++i) {
-            cc.push(sha256d[i]);
-        }
-        return cc.getBytes();
+        return sha256d.subarray(0, 4);
     };
 
     var search_number = function (cc) {
@@ -138,8 +119,7 @@
         //     | ((cc[1] & 0xFF) << 8)
         //     | ((cc[2] & 0xFF) << 16)
         //     | ((cc[3] & 0xFF) << 24);
-        return (cc[0] | cc[1] << 8 | cc[2] << 16)
-            + cc[3] * 0x1000000;
+        return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 0x1000000;
     };
 
     //-------- register --------
