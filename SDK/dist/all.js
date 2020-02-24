@@ -251,9 +251,9 @@ if (typeof DIMP !== "object") {
     ns.type.register("Enum")
 }(DIMP);
 ! function(ns) {
-    var bytes = function(length) {
+    var bytes = function(capacity) {
         ns.type.Object.call(this);
-        var value = length ? arguments[0] : 0;
+        var value = capacity ? arguments[0] : 0;
         if (typeof value === "number") {
             if (value < 1) {
                 value = 1
@@ -4168,7 +4168,6 @@ if (typeof DaoKeDao !== "object") {
     ns.format.PEM.parser = new pem()
 }(DIMP);
 ! function(ns) {
-    var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var Base64 = ns.format.Base64;
@@ -4182,15 +4181,14 @@ if (typeof DaoKeDao !== "object") {
         return Hex.decode(result)
     };
     var random_data = function(size) {
-        var data = new Data(size);
+        var data = new Uint8Array(size);
         for (var i = 0; i < size; ++i) {
-            data.push(Math.floor(Math.random() * 256))
+            data[i] = Math.floor(Math.random() * 256)
         }
-        return data.getBytes()
+        return data
     };
     var zero_data = function(size) {
-        var data = new Data(size);
-        return data.getBytes()
+        return new Uint8Array(size)
     };
     var AESKey = function(key) {
         Dictionary.call(this, key)

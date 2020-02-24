@@ -34,8 +34,6 @@
 !function (ns) {
     'use strict';
 
-    var Data = ns.type.Data;
-
     var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
@@ -52,16 +50,15 @@
     };
 
     var random_data = function (size) {
-        var data = new Data(size);
+        var data = new Uint8Array(size);
         for (var i = 0; i < size; ++i) {
-            data.push(Math.floor(Math.random()*256));
+            data[i] = Math.floor(Math.random()*256);
         }
-        return data.getBytes();
+        return data;
     };
 
     var zero_data = function (size) {
-        var data = new Data(size);
-        return data.getBytes();
+        return new Uint8Array(size);
     };
 
     /**
