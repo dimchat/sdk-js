@@ -5,26 +5,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DIM-SDK Test Cases</title>
-    <link href="test.css" type="text/css" rel="stylesheet" />
-    <script src="../libs/loader.js"></script>
-    <script src="../libs/runner.js"></script>
-    <script src="../libs/utils.js"></script>
+    <script src="/Plugins/libs/crypto-js/core.js"></script>
+    <script src="/Plugins/libs/crypto-js/cipher-core.js"></script>
+    <script src="/Plugins/libs/crypto-js/aes.js"></script>
+    <script src="/Plugins/libs/crypto-js/md5.js"></script>
+    <script src="/Plugins/libs/crypto-js/sha256.js"></script>
+    <script src="/Plugins/libs/crypto-js/ripemd160.js"></script>
+    <script src="/Plugins/libs/jsencrypt.js"></script>
 
-    <script src="../libs/crypto-js/core.js"></script>
-    <script src="../libs/crypto-js/cipher-core.js"></script>
-    <script src="../libs/crypto-js/aes.js"></script>
-    <script src="../libs/crypto-js/md5.js"></script>
-    <script src="../libs/crypto-js/sha256.js"></script>
-    <script src="../libs/crypto-js/ripemd160.js"></script>
-    <script src="../libs/jsencrypt.js"></script>
+    <link href="/Crypto/tests/test.css" type="text/css" rel="stylesheet" />
+    <script src="/Crypto/libs/loader.js"></script>
+    <script src="/Crypto/libs/runner.js"></script>
+    <script src="/Crypto/libs/utils.js"></script>
 
-    <script src="../libs/dimp.js"></script>
-    <script src="../libs/plugins.js"></script>
+    <script src="/DIMP/dist/dimp.js"></script>
+    <script src="/Plugins/dist/plugins.js"></script>
 
     <script>
         !function (ns) {
             var sources = [
-
                 'src/protocol/receipt.js',
                 'src/protocol/mute.js',
                 'src/protocol/block.js',
@@ -56,17 +55,18 @@
                 'src/cache.js',
                 'src/facebook.js',
                 'src/messenger.js'
-
             ];
 
             var dist = 'dist/sdk.js';
 
             var tests = [
-                'tests/crypto_tests.js',
-                'tests/mkm_tests.js',
-                'tests/dkd_tests.js',
-                'tests/core_tests.js',
-                'tests/plugins_tests.js',
+                '../Plugins/src/immortals.js',
+
+                '../Crypto/tests/crypto_tests.js',
+                '../MingKeMing/tests/mkm_tests.js',
+                '../DaoKeDao/tests/dkd_tests.js',
+                '../DIMP/tests/core_tests.js',
+                '../Plugins/tests/plugins_tests.js',
                 'tests/sdk_tests.js'
             ];
 
@@ -159,8 +159,8 @@
     <script>
         !(function () {
             var text = 'cat' +
-                ' libs/dimp.js' +
-                ' libs/plugins.js' +
+                ' ../../core-js/DIMP/dist/dimp.js' +
+                ' ../Plugins/dist/plugins.js' +
                 ' dist/sdk.js' +
                 ' ../StarGate/dist/stargate.js' +
                 ' ../StarGate/src/exports.js' +
