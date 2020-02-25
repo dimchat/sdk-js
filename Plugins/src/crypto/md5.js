@@ -40,7 +40,7 @@
     //
     var md5 = function () {
     };
-    ns.type.Class(md5, null, Hash);
+    ns.Class(md5, null, Hash);
     md5.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);

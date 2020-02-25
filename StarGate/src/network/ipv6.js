@@ -140,7 +140,7 @@
         }
         Host.call(this, ip, port, data);
     };
-    DIMP.type.Class(IPv6, Host);
+    DIMP.Class(IPv6, Host);
 
     IPv6.prototype.valueOf = function () {
         if (this.port === 0) {
@@ -153,6 +153,12 @@
     IPv6.patten = /^\[?([0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(]:\d{1,5})?$/;
     IPv6.patten_compat = /^\[?([0-9A-Fa-f]{0,4}:){2,6}(\d{1,3}.){3}\d{1,3}(]:\d{1,5})?$/;
 
+    /**
+     *  Parse IPv6 host string
+     *
+     * @param host {String}
+     * @returns {IPv6|null}
+     */
     IPv6.parse = function (host) {
         // check
         if (!this.patten.test(host) && !this.patten_compat.test(host)) {

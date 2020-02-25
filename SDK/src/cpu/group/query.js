@@ -49,7 +49,7 @@
     var QueryCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.type.Class(QueryCommandProcessor, GroupCommandProcessor);
+    ns.Class(QueryCommandProcessor, GroupCommandProcessor);
 
     //
     //  Main

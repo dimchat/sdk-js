@@ -57,7 +57,7 @@
         this.reserved = reserved;
         this.caches = caches;
     };
-    ns.type.Class(AddressNameService);
+    ns.Class(AddressNameService);
 
     AddressNameService.prototype.isReserved = function (name) {
         return this.reserved[name] === true;
@@ -80,8 +80,8 @@
     /**
      *  Save ANS record
      *
-     * @param name - short name
-     * @param identifier
+     * @param name {String} - short name
+     * @param identifier {ID}
      * @returns {boolean}
      */
     AddressNameService.prototype.save = function (name, identifier) {
@@ -94,7 +94,7 @@
     /**
      *  Get ID by short name
      *
-     * @param name - short name
+     * @param name {String} - short name
      * @returns {ID}
      */
     AddressNameService.prototype.getIdentifier = function (name) {
@@ -104,8 +104,8 @@
     /**
      *  Get all short names with the same ID
      *
-     * @param identifier
-     * @returns {[]}
+     * @param identifier {ID}
+     * @returns {String[]}
      */
     AddressNameService.prototype.getNames = function (identifier) {
         var array = [];

@@ -55,7 +55,7 @@
     /**
      *  Create receipt command
      *
-     * @param info - command info; or serial number; or message; or envelope
+     * @param info {{}|Number|String|Envelope} - command info; or serial number; or message; or envelope
      * @constructor
      */
     var ReceiptCommand = function (info) {
@@ -91,7 +91,7 @@
             this.envelope = null;
         }
     };
-    ns.type.Class(ReceiptCommand, Command);
+    ns.Class(ReceiptCommand, Command);
 
     //-------- setter/getter --------
 

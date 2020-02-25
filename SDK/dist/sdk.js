@@ -45,7 +45,7 @@
             this.envelope = null
         }
     };
-    ns.type.Class(ReceiptCommand, Command);
+    ns.Class(ReceiptCommand, Command);
     ReceiptCommand.prototype.setSerialNumber = function(sn) {
         this.setValue("sn", sn);
         this.sn = sn
@@ -100,7 +100,7 @@
             this.setMuteCList(list)
         }
     };
-    ns.type.Class(MuteCommand, Command);
+    ns.Class(MuteCommand, Command);
     MuteCommand.MUTE = "mute";
     MuteCommand.prototype.getMuteCList = function() {
         return this.getValue("list")
@@ -128,7 +128,7 @@
             this.setBlockCList(list)
         }
     };
-    ns.type.Class(BlockCommand, Command);
+    ns.Class(BlockCommand, Command);
     BlockCommand.BLOCK = "block";
     BlockCommand.prototype.getBlockCList = function() {
         return this.getValue("list")
@@ -163,7 +163,7 @@
         this.key = null;
         this.password = null
     };
-    ns.type.Class(StorageCommand, Command);
+    ns.Class(StorageCommand, Command);
     StorageCommand.prototype.getTitle = function() {
         var title = this.getValue("title");
         if (title) {
@@ -261,7 +261,7 @@
         this.messenger = messenger;
         this.contentProcessors = {}
     };
-    ns.type.Class(ContentProcessor);
+    ns.Class(ContentProcessor);
     ContentProcessor.prototype.getContext = function(key) {
         return this.messenger.getContext(key)
     };
@@ -308,7 +308,7 @@
         ContentProcessor.call(this, messenger);
         this.commandProcessors = {}
     };
-    ns.type.Class(CommandProcessor, ContentProcessor);
+    ns.Class(CommandProcessor, ContentProcessor);
     CommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu = this.getCPU(cmd.getCommand());
         return cpu.process(cmd, sender, msg)
@@ -345,7 +345,7 @@
     var DefaultContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
     };
-    ns.type.Class(DefaultContentProcessor, ContentProcessor);
+    ns.Class(DefaultContentProcessor, ContentProcessor);
     DefaultContentProcessor.prototype.process = function(content, sender, msg) {
         var type = content.type.toString();
         var text = "Content (type: " + type + ") not support yet!";
@@ -365,7 +365,7 @@
     var DefaultCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    ns.type.Class(DefaultCommandProcessor, CommandProcessor);
+    ns.Class(DefaultCommandProcessor, CommandProcessor);
     DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var name = cmd.getCommand();
         var text = "Command (name: " + name + ") not support yet!";
@@ -385,7 +385,7 @@
     var ForwardContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
     };
-    ns.type.Class(ForwardContentProcessor, ContentProcessor);
+    ns.Class(ForwardContentProcessor, ContentProcessor);
     ForwardContentProcessor.prototype.process = function(content, sender, msg) {
         var rMsg = content.getMessage();
         return this.messenger.processReliableMessage(rMsg)
@@ -402,7 +402,7 @@
     var MetaCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    ns.type.Class(MetaCommandProcessor, CommandProcessor);
+    ns.Class(MetaCommandProcessor, CommandProcessor);
     var get_meta = function(identifier) {
         var facebook = this.getFacebook();
         var meta = facebook.getMeta(identifier);
@@ -446,7 +446,7 @@
     var ProfileCommandProcessor = function(messenger) {
         MetaCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(ProfileCommandProcessor, MetaCommandProcessor);
+    ns.Class(ProfileCommandProcessor, MetaCommandProcessor);
     var get_profile = function(identifier) {
         var facebook = this.getFacebook();
         var profile = facebook.getProfile(identifier);
@@ -497,7 +497,7 @@
         CommandProcessor.call(this, messenger);
         this.gpu = null
     };
-    ns.type.Class(HistoryCommandProcessor, CommandProcessor);
+    ns.Class(HistoryCommandProcessor, CommandProcessor);
     HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu;
         if (cmd.getGroup()) {
@@ -522,7 +522,7 @@
     var GroupCommandProcessor = function(messenger) {
         HistoryCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(GroupCommandProcessor, HistoryCommandProcessor);
+    ns.Class(GroupCommandProcessor, HistoryCommandProcessor);
     var convert_id_list = function(list) {
         var facebook = this.getFacebook();
         var array = [];
@@ -586,7 +586,7 @@
     var InviteCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(InviteCommandProcessor, GroupCommandProcessor);
+    ns.Class(InviteCommandProcessor, GroupCommandProcessor);
     var is_reset = function(inviteList, sender, group) {
         var facebook = this.getFacebook();
         if (this.containsOwner(inviteList, group)) {
@@ -657,7 +657,7 @@
     var ExpelCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(ExpelCommandProcessor, GroupCommandProcessor);
+    ns.Class(ExpelCommandProcessor, GroupCommandProcessor);
     ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -701,7 +701,7 @@
     var QuitCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(QuitCommandProcessor, GroupCommandProcessor);
+    ns.Class(QuitCommandProcessor, GroupCommandProcessor);
     QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -735,7 +735,7 @@
     var QueryCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(QueryCommandProcessor, GroupCommandProcessor);
+    ns.Class(QueryCommandProcessor, GroupCommandProcessor);
     QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -769,7 +769,7 @@
     var ResetCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.type.Class(ResetCommandProcessor, GroupCommandProcessor);
+    ns.Class(ResetCommandProcessor, GroupCommandProcessor);
     var save = function(newMembers, sender, group) {
         if (!this.containsOwner(newMembers, group)) {
             return GroupCommand.query(group)
@@ -856,7 +856,7 @@
     var Polylogue = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.type.Class(Polylogue, Group);
+    ns.Class(Polylogue, Group);
     Polylogue.prototype.getOwner = function() {
         var owner = Group.prototype.getOwner.call(this);
         if (owner) {
@@ -869,7 +869,7 @@
 ! function(ns) {
     var GroupDataSource = ns.GroupDataSource;
     var ChatroomDataSource = function() {};
-    ns.type.Interface(ChatroomDataSource, GroupDataSource);
+    ns.Interface(ChatroomDataSource, GroupDataSource);
     ChatroomDataSource.prototype.getAdmins = function() {
         console.assert(false, "implement me!");
         return null
@@ -881,7 +881,7 @@
     var Chatroom = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.type.Class(Chatroom, Group);
+    ns.Class(Chatroom, Group);
     Chatroom.prototype.getAdmins = function() {
         return this.delegate.getAdmins(this.identifier)
     };
@@ -892,7 +892,7 @@
     var Robot = function(identifier) {
         User.call(this, identifier)
     };
-    ns.type.Class(Robot, User);
+    ns.Class(Robot, User);
     ns.Robot = Robot
 }(DIMP);
 ! function(ns) {
@@ -902,7 +902,7 @@
         this.host = host;
         this.port = port
     };
-    ns.type.Class(Station, User);
+    ns.Class(Station, User);
     ns.Station = Station
 }(DIMP);
 ! function(ns) {
@@ -910,7 +910,7 @@
     var ServiceProvider = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.type.Class(ServiceProvider, Group);
+    ns.Class(ServiceProvider, Group);
     ServiceProvider.prototype.getStations = function() {
         return this.delegate.getMembers(this.identifier)
     };
@@ -935,7 +935,7 @@
         this.reserved = reserved;
         this.caches = caches
     };
-    ns.type.Class(AddressNameService);
+    ns.Class(AddressNameService);
     AddressNameService.prototype.isReserved = function(name) {
         return this.reserved[name] === true
     };
@@ -978,7 +978,7 @@
 }(DIMP);
 ! function(ns) {
     var Callback = function() {};
-    ns.type.Interface(Callback);
+    ns.Interface(Callback);
     Callback.prototype.onFinished = function(result, error) {
         console.assert(result || error, "result empty");
         console.assert(false, "implement me!")
@@ -987,7 +987,7 @@
 }(DIMP);
 ! function(ns) {
     var CompletionHandler = function() {};
-    ns.type.Interface(CompletionHandler);
+    ns.Interface(CompletionHandler);
     CompletionHandler.prototype.onSuccess = function() {
         console.assert(false, "implement me!")
     };
@@ -999,7 +999,7 @@
 }(DIMP);
 ! function(ns) {
     var ConnectionDelegate = function() {};
-    ns.type.Interface(ConnectionDelegate);
+    ns.Interface(ConnectionDelegate);
     ConnectionDelegate.prototype.onReceivePackage = function(data) {
         console.assert(data !== null, "data empty");
         console.assert(false, "implement me!");
@@ -1009,7 +1009,7 @@
 }(DIMP);
 ! function(ns) {
     var MessengerDelegate = function() {};
-    ns.type.Interface(MessengerDelegate);
+    ns.Interface(MessengerDelegate);
     MessengerDelegate.prototype.uploadData = function(data, msg) {
         console.assert(data !== null, "data empty");
         console.assert(msg !== null, "msg empty");
@@ -1036,7 +1036,7 @@
         KeyCache.call(this);
         this.user = null
     };
-    ns.type.Class(KeyStore, KeyCache);
+    ns.Class(KeyStore, KeyCache);
     KeyStore.prototype.getUser = function() {
         return this.user
     };
@@ -1086,7 +1086,7 @@
         this.contactsMap = {};
         this.membersMap = {}
     };
-    ns.type.Class(Facebook, Barrack);
+    ns.Class(Facebook, Barrack);
     Facebook.prototype.ansGet = function(name) {
         if (!this.ans) {
             return null
@@ -1472,7 +1472,7 @@
         this.cpu = new ContentProcessor(this);
         this.delegate = null
     };
-    ns.type.Class(Messenger, Transceiver, ConnectionDelegate);
+    ns.Class(Messenger, Transceiver, ConnectionDelegate);
     Messenger.prototype.getContext = function(key) {
         return this.context[key]
     };

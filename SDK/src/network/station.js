@@ -45,7 +45,7 @@
         this.host = host;
         this.port = port;
     };
-    ns.type.Class(Station, User);
+    ns.Class(Station, User);
 
     //-------- namespace --------
     ns.Station = Station;

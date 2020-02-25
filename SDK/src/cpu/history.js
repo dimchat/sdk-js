@@ -49,7 +49,7 @@
         // Group Command Processor
         this.gpu = null;
     };
-    ns.type.Class(HistoryCommandProcessor, CommandProcessor);
+    ns.Class(HistoryCommandProcessor, CommandProcessor);
 
     //
     //  Main

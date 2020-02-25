@@ -48,7 +48,7 @@
     var DefaultContentProcessor = function (messenger) {
         ContentProcessor.call(this, messenger);
     };
-    ns.type.Class(DefaultContentProcessor, ContentProcessor);
+    ns.Class(DefaultContentProcessor, ContentProcessor);
 
     //
     //  Main
@@ -86,7 +86,7 @@
     var DefaultCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
     };
-    ns.type.Class(DefaultCommandProcessor, CommandProcessor);
+    ns.Class(DefaultCommandProcessor, CommandProcessor);
 
     //
     //  Main

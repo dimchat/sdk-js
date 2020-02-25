@@ -76,8 +76,13 @@
     <script>
         !(function () {
             var text = 'cat';
+            var file;
             for (var i = 0; i < sources.length; ++i) {
-                text += ' ' + sources[i];
+                file = sources[i];
+                if (!file) {
+                    continue;
+                }
+                text += ' ' + file;
             }
             text += ' >> ' + dist;
             document.writeln(text);

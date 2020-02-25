@@ -46,7 +46,7 @@
     var QuitCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.type.Class(QuitCommandProcessor, GroupCommandProcessor);
+    ns.Class(QuitCommandProcessor, GroupCommandProcessor);
 
     //
     //  Main

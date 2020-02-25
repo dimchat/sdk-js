@@ -45,7 +45,10 @@
     });
 
     /**
-     *  State Machine
+     *  Create a State Machine with default state name
+     *
+     * @param defaultStateName {String}
+     * @constructor
      */
     var Machine = function (defaultStateName) {
         this.defaultStateName = defaultStateName ?  defaultStateName : 'default';
@@ -55,18 +58,23 @@
 
         this.delegate = null;
     };
-    DIMP.type.Class(Machine);
+    DIMP.Class(Machine);
 
     /**
-     *  add state with name
+     *  Add state with name
      *
-     * @param state
-     * @param name
+     * @param state {State}
+     * @param name {String}
      */
     Machine.prototype.addState = function (state, name) {
         this.stateMap[name] = state;
     };
 
+    /**
+     *  Change state with name
+     *
+     * @param name {String}
+     */
     Machine.prototype.changeState = function (name) {
         var state = this.currentState;
         // exit current state

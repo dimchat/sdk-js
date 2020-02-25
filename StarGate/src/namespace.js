@@ -46,10 +46,10 @@ if (typeof StarGate !== 'object') {
         sg.network = {};
     }
 
-    DIMP.namespace(fsm);
-    DIMP.namespace(sg);
-    DIMP.namespace(sg.extensions);
-    DIMP.namespace(sg.network);
+    DIMP.Namespace(fsm);
+    DIMP.Namespace(sg);
+    DIMP.Namespace(sg.extensions);
+    DIMP.Namespace(sg.network);
 
     sg.register('extensions');
     sg.register('network');

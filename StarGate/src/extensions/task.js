@@ -35,12 +35,10 @@
 !function (ns) {
     "use strict";
 
-    var Star = ns.Star;
-
     /**
      *  Create sending task
      *
-     * @param data - payload
+     * @param data {Uint8Array} - payload
      * @param delegate - StarDelegate
      * @constructor
      */
@@ -49,7 +47,7 @@
         this.delegate = delegate;
         this.star = null;
     };
-    DIMP.type.Class(Task);
+    DIMP.Class(Task);
 
     Task.prototype.onResponse = function (data) {
         this.delegate.onReceived(data);

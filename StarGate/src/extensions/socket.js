@@ -40,15 +40,21 @@
     /**
      *  Simple gate
      *
-     * @param delegate - StarDelegate
+     * @param delegate {StarDelegate}
      * @constructor
      */
     var SocketClient = function (delegate) {
         Fence.call(this, delegate);
         this.ws = null;
     };
-    DIMP.type.Class(SocketClient, Fence);
+    DIMP.Class(SocketClient, Fence);
 
+    /**
+     *  Connect to a server
+     *
+     * @param host {String}
+     * @param port {Number}
+     */
     SocketClient.prototype.connect = function (host, port) {
         var protocol = 'ws';
         if ('https' === window.location.protocol.split(':')[0]) {
@@ -72,7 +78,7 @@
         };
         this.ws = ws;
     };
-    SocketClient.prototype.disconnect = function (ws) {
+    SocketClient.prototype.disconnect = function () {
         if (!this.ws) {
             return;
         }
@@ -96,6 +102,12 @@
         }
     };
 
+    /**
+     *  Send request data onto the connected server
+     *
+     * @param data {Uint8Array}
+     * @param delegate - StarDelegate
+     */
     SocketClient.prototype.send = function (data, delegate) {
         if (this.isConnected()) {
             this.ws.send(data);

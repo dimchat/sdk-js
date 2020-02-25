@@ -46,7 +46,7 @@
     var ForwardContentProcessor = function (messenger) {
         ContentProcessor.call(this, messenger);
     };
-    ns.type.Class(ForwardContentProcessor, ContentProcessor);
+    ns.Class(ForwardContentProcessor, ContentProcessor);
 
     //
     //  Main

@@ -45,7 +45,7 @@
         // CPU pool (ContentType -> ContentProcessor)
         this.contentProcessors = {};
     };
-    ns.type.Class(ContentProcessor);
+    ns.Class(ContentProcessor);
 
     //
     //  Environment variables as context
@@ -67,10 +67,10 @@
     /**
      *  Main function for process message content
      *
-     * @param content - content received
-     * @param sender - sender ID
-     * @param msg - instant message
-     * @returns {Content|null} - responding to sender
+     * @param content {Content} - content received
+     * @param sender {ID}
+     * @param msg {InstantMessage}
+     * @returns {Content} - responding to sender
      */
     ContentProcessor.prototype.process = function (content, sender, msg) {
         // process content by type

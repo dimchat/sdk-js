@@ -175,7 +175,7 @@
     //
     var base58 = function () {
     };
-    ns.type.Class(base58, null, BaseCoder);
+    ns.Class(base58, null, BaseCoder);
     base58.prototype.encode = function (data) {
         return bs58.encode(data);
     };

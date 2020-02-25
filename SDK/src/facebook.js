@@ -68,7 +68,7 @@
         this.contactsMap   = {};  // ID -> List<ID>
         this.membersMap    = {};  // ID -> List<ID>
     };
-    ns.type.Class(Facebook, Barrack);
+    ns.Class(Facebook, Barrack);
 
     Facebook.prototype.ansGet = function (name) {
         if (!this.ans) {
@@ -92,8 +92,8 @@
     /**
      *  Save meta for entity ID (must verify first)
      *
-     * @param meta
-     * @param identifier
+     * @param meta {Meta}
+     * @param identifier {ID}
      * @returns {boolean}
      */
     Facebook.prototype.saveMeta = function (meta, identifier) {
@@ -105,7 +105,7 @@
     /**
      *  Load meta for entity ID
      *
-     * @param identifier
+     * @param identifier {ID}
      * @returns {Meta}
      */
     Facebook.prototype.loadMeta = function (identifier) {
@@ -202,8 +202,8 @@
     /**
      *  Save profile with entity ID (must verify first)
      *
-     * @param profile
-     * @param identifier
+     * @param profile {Profile}
+     * @param identifier {ID}
      * @returns {boolean}
      */
     Facebook.prototype.saveProfile = function (profile, identifier) {
@@ -215,7 +215,7 @@
     /**
      *  Load profile for entity ID
      *
-     * @param identifier
+     * @param identifier {ID}
      * @returns {Profile}
      */
     Facebook.prototype.loadProfile = function (identifier) {
@@ -250,8 +250,8 @@
     /**
      *  Save private key for user ID
      *
-     * @param key
-     * @param identifier
+     * @param key {PrivateKey}
+     * @param identifier {ID}
      * @returns {boolean}
      */
     Facebook.prototype.savePrivateKey = function (key, identifier) {
@@ -263,7 +263,7 @@
     /**
      *  Load private key for user ID
      *
-     * @param identifier
+     * @param identifier {ID}
      * @returns {PrivateKey}
      */
     Facebook.prototype.loadPrivateKey = function (identifier) {
@@ -286,8 +286,8 @@
     /**
      *  Save contacts for user
      *
-     * @param contacts
-     * @param identifier
+     * @param contacts {ID[]} - contacts ID list
+     * @param identifier {ID} - user ID
      * @returns {boolean}
      */
     Facebook.prototype.saveContacts = function (contacts, identifier) {
@@ -299,7 +299,7 @@
     /**
      *  Load contacts for user
      *
-     * @param identifier
+     * @param identifier {ID}
      * @returns {ID[]}
      */
     Facebook.prototype.loadContacts = function (identifier) {
@@ -322,8 +322,8 @@
     /**
      *  Save members of group
      *
-     * @param members
-     * @param identifier
+     * @param members {ID[]} - members ID list
+     * @param identifier {ID} - group ID
      * @returns {boolean}
      */
     Facebook.prototype.saveMembers = function (members, identifier) {
@@ -335,7 +335,7 @@
     /**
      *  Load members of group
      *
-     * @param identifier
+     * @param identifier {ID}
      * @returns {ID[]}
      */
     Facebook.prototype.loadMembers = function (identifier) {

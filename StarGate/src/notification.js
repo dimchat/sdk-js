@@ -41,8 +41,13 @@
      */
     var Observer = function () {
     };
-    DIMP.type.Interface(Observer);
+    DIMP.Interface(Observer);
 
+    /**
+     *  Callback when received notification
+     *
+     * @param notification {Notification}
+     */
     Observer.prototype.onReceiveNotification = function (notification) {
         console.assert(notification !== null, 'notification empty');
         console.assert(false, 'implement me!');
@@ -60,13 +65,18 @@
 
     /**
      *  Notification object with name, sender and extra info
+     *
+     * @param name {String}
+     * @param sender {Object}
+     * @param userInfo {{}}
+     * @constructor
      */
     var Notification = function (name, sender, userInfo) {
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    DIMP.type.Class(Notification);
+    DIMP.Class(Notification);
 
     //-------- namespace --------
     ns.Notification = Notification;
@@ -86,13 +96,13 @@
     var Center = function () {
         this.observerMap = {};
     };
-    DIMP.type.Class(Center);
+    DIMP.Class(Center);
 
     /**
      *  Add observer with notification name
      *
-     * @param observer
-     * @param name
+     * @param observer {Observer}
+     * @param name {String}
      */
     Center.prototype.addObserver = function (observer, name) {
         var list = this.observerMap[name];
@@ -111,8 +121,8 @@
     /**
      *  Remove observer from notification center
      *
-     * @param observer
-     * @param name - OPTIONAL
+     * @param observer {Observer}
+     * @param name {String} - OPTIONAL
      */
     Center.prototype.removeObserver = function (observer, name) {
         if (name) {
@@ -133,9 +143,9 @@
     /**
      *  Post a notification
      *
-     * @param notification - Notification object; or notification name
-     * @param sender - OPTIONAL
-     * @param userInfo - OPTIONAL
+     * @param notification {Notification|String} - notification or name
+     * @param sender {Object} - OPTIONAL
+     * @param userInfo {{}} - OPTIONAL
      */
     Center.prototype.postNotification = function (notification, sender, userInfo) {
         if (typeof notification === 'string') {

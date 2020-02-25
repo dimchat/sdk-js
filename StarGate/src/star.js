@@ -41,18 +41,39 @@
      */
     var Delegate = function () {
     };
-    DIMP.type.Interface(Delegate);
+    DIMP.Interface(Delegate);
 
+    /**
+     *  Callback after received data
+     *
+     * @param response {Uint8Array}
+     * @param star {Star}
+     */
     Delegate.prototype.onReceived = function (response, star) {
         console.assert(response !== null, 'response empty');
         console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
+
+    /**
+     *  Callback on connection status changed
+     *
+     * @param status {StarStatus}
+     * @param star {Star}
+     */
     Delegate.prototype.onStatusChanged = function (status, star) {
         console.assert(status !== null, 'status empty');
         console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
+
+    /**
+     *  Callback after request sent
+     *
+     * @param request {Uint8Array}
+     * @param error {Error}
+     * @param star {Star}
+     */
     Delegate.prototype.onSent = function (request, error, star) {
         console.assert(request !== null, 'request empty');
         console.assert(star !== null, 'star empty');
@@ -83,7 +104,7 @@
 
     var Star = function () {
     };
-    DIMP.type.Interface(Star);
+    DIMP.Interface(Star);
 
     /**
      * Get connection status
@@ -98,7 +119,7 @@
     /**
      *  Connect to a server
      *
-     * @param options
+     * @param options {{}}
      */
     Star.prototype.launch = function (options) {
         console.assert(options !== null, 'options empty');
@@ -119,8 +140,8 @@
     /**
      *  Send data to the connected server
      *
-     * @param payload
-     * @param delegate - StarDelegate
+     * @param payload {Uint8Array}
+     * @param delegate {StarDelegate}
      */
     Star.prototype.send = function (payload, delegate) {
         console.assert(payload !== null, 'payload empty');

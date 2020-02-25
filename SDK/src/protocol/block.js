@@ -63,7 +63,7 @@
             this.setBlockCList(list);
         }
     };
-    ns.type.Class(BlockCommand, Command);
+    ns.Class(BlockCommand, Command);
 
     BlockCommand.BLOCK = 'block';
 

@@ -41,12 +41,12 @@
     var Transition = function (targetStateName) {
         this.target = targetStateName;
     };
-    DIMP.type.Class(Transition);
+    DIMP.Class(Transition);
 
     /**
      *  Evaluate the current state
      *
-     * @param machine
+     * @param machine {Machine}
      * @returns {boolean}
      */
     Transition.prototype.evaluate = function (machine) {

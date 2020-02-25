@@ -64,7 +64,7 @@
         // Messenger delegate for sending data
         this.delegate = null;
     };
-    ns.type.Class(Messenger, Transceiver, ConnectionDelegate);
+    ns.Class(Messenger, Transceiver, ConnectionDelegate);
 
     //
     //  Environment variables as context
@@ -280,10 +280,10 @@
     /**
      *  Send message content to receiver
      *
-     * @param content
-     * @param receiver
-     * @param callback - OPTIONAL
-     * @param split - OPTIONAL; whether split group message
+     * @param content {Content}
+     * @param receiver {ID}
+     * @param callback {Callback} - OPTIONAL
+     * @param split {boolean} - OPTIONAL; whether split group message
      * @returns {boolean}
      */
     Messenger.prototype.sendContent = function (content, receiver, callback, split) {
@@ -297,9 +297,9 @@
     /**
      *  Send instant message (encrypt and sign) onto DIM network
      *
-     * @param msg - instant message
-     * @param callback - OPTIONAL; if needs callback, set it here
-     * @param split - OPTIONAL; whether split group message
+     * @param msg {InstantMessage}
+     * @param callback {Callback} - OPTIONAL; if needs callback, set it here
+     * @param split {boolean} - OPTIONAL; whether split group message
      * @returns {boolean}
      */
     Messenger.prototype.sendMessage = function (msg, callback, split) {
@@ -357,7 +357,7 @@
     /**
      *  Save the message into local storage
      *
-     * @param msg
+     * @param msg {InstantMessage}
      * @returns {boolean}
      */
     Messenger.prototype.saveMessage = function (msg) {
@@ -370,7 +370,7 @@
      *  or received instant message for group's meta,
      *  or sending instant message for receiver's meta.
      *
-     * @param msg - ReliableMessage|InstantMessage
+     * @param msg {ReliableMessage|InstantMessage}
      * @returns {boolean}
      */
     Messenger.prototype.suspendMessage = function (msg) {

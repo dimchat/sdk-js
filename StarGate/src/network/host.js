@@ -51,15 +51,23 @@
     //          [X:X:X:X:X:X:127.0.0.1]:9527
     //
 
+    /**
+     *  Create host info with IP, port, IP data
+     *
+     * @param ip {String}
+     * @param port {Number}
+     * @param data {Uint8Array}
+     * @constructor
+     */
     var Host = function (ip, port, data) {
         // ip string
-        this.ip = ip;      // String
+        this.ip = ip;
 
         // port number
-        this.port = port;  // Number
+        this.port = port;
 
         // ip data array
-        this.data = data;  // Uint8Array
+        this.data = data;
     };
     Host.prototype.valueOf = function () {
         console.assert(false, 'implement me!');
@@ -71,6 +79,13 @@
     Host.prototype.toLocaleString = function () {
         return this.valueOf();
     };
+
+    /**
+     *  Convert host info to data array
+     *
+     * @param default_port {Number}
+     * @returns {Uint8Array}
+     */
     Host.prototype.toArray = function (default_port) {
         var data = this.data; // ip data
         var port = this.port;

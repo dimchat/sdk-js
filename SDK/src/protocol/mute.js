@@ -63,7 +63,7 @@
             this.setMuteCList(list);
         }
     };
-    ns.type.Class(MuteCommand, Command);
+    ns.Class(MuteCommand, Command);
 
     MuteCommand.MUTE = 'mute';
 

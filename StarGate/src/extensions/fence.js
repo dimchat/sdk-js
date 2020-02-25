@@ -41,17 +41,33 @@
     var StarStatus = ns.StarStatus;
     var Star = ns.Star;
 
+    /**
+     *  Create a star gate with delegate
+     *
+     * @param delegate - StarDelegate
+     * @constructor
+     */
     var Fence = function (delegate) {
         this.delegate = delegate;
         this.status = StarStatus.Init;
         this.waitingList = [];
     };
-    DIMP.type.Class(Fence, null, Star);
+    DIMP.Class(Fence, null, Star);
 
+    /**
+     *  Callback when received data
+     *
+     * @param data {Uint8Array}
+     */
     Fence.prototype.onReceived = function (data) {
         this.delegate.onReceived(data, this);
     };
 
+    /**
+     *  Get connection status
+     *
+     * @returns {StarStatus}
+     */
     Fence.prototype.getStatus = function () {
         return this.status;
     };
@@ -63,6 +79,11 @@
         this.status = status;
     };
 
+    /**
+     *  Get next task
+     *
+     * @returns {Object<Task>}
+     */
     Fence.prototype.getTask = function () {
         if (this.waitingList.length === 0) {
             return null;
@@ -70,6 +91,12 @@
         return this.waitingList.shift();
     };
 
+    /**
+     *  Connect to a server
+     *
+     * @param host {String}
+     * @param port {Number}
+     */
     Fence.prototype.connect = function (host, port) {
         console.assert(host !== null, 'host empty');
         console.assert(port !== null, 'port empty');
@@ -92,6 +119,11 @@
     Fence.prototype.onError = function (error) {
         this.setStatus(StarStatus.Error);
     };
+    /**
+     *  Callback when received response
+     *
+     * @param data {Uint8Array}
+     */
     Fence.prototype.onReceived = function (data) {
         this.delegate.onReceived(data, this);
     };
@@ -108,6 +140,12 @@
         this.setStatus(StarStatus.Init);
     };
 
+    /**
+     *  Send request data to server
+     *
+     * @param data {Uint8Array}
+     * @param delegate {StarDelegate}
+     */
     Fence.prototype.send = function (data, delegate) {
         var task = new Task(data, delegate);
         task.star = this;

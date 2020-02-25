@@ -43,7 +43,7 @@
      */
     var ChatroomDataSource = function () {
     };
-    ns.type.Interface(ChatroomDataSource, GroupDataSource);
+    ns.Interface(ChatroomDataSource, GroupDataSource);
 
     /**
      *  Get all admins in the chatroom
@@ -71,7 +71,7 @@
     var Chatroom = function (identifier) {
         Group.call(this, identifier);
     };
-    ns.type.Class(Chatroom, Group);
+    ns.Class(Chatroom, Group);
 
     Chatroom.prototype.getAdmins = function () {
         return this.delegate.getAdmins(this.identifier);

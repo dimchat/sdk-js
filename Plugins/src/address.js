@@ -76,7 +76,7 @@
         this.network = new NetworkType(data[0]);
         this.code = search_number(cc);
     };
-    ns.type.Class(DefaultAddress, Address);
+    ns.Class(DefaultAddress, Address);
 
     DefaultAddress.prototype.getNetwork = function () {
         return this.network;
@@ -89,8 +89,8 @@
     /**
      *  Generate address with fingerprint and network ID
      *
-     * @param fingerprint
-     * @param network
+     * @param fingerprint {Uint8Array}
+     * @param network {NetworkType}
      * @returns {DefaultAddress}
      */
     DefaultAddress.generate = function (fingerprint, network) {

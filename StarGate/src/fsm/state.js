@@ -41,8 +41,13 @@
     var State = function () {
         this.transitions = [];
     };
-    DIMP.type.Class(State);
+    DIMP.Class(State);
 
+    /**
+     *  Append a transition for this state
+     *
+     * @param transition {Transition}
+     */
     State.prototype.addTransition = function (transition) {
         if (this.transitions.indexOf(transition) >= 0) {
             throw Error('transition exists: ' + transition);
@@ -50,7 +55,12 @@
         this.transitions.push(transition);
     };
 
-    // called by machine.tick()
+    /**
+     *  Evaluate all transitions for this state
+     *  (called by machine.tick)
+     *
+     * @param machine
+     */
     State.prototype.tick = function (machine) {
         var transition;
         for (var i = 0; i < this.transitions.length; ++i) {
@@ -66,7 +76,7 @@
     /**
      *  Callback when enter state
      *
-     * @param machine
+     * @param machine {Machine}
      */
     State.prototype.onEnter = function (machine) {
         console.assert(machine !== null, 'machine empty');
@@ -75,7 +85,7 @@
     /**
      *  Callback when exit state
      *
-     * @param machine
+     * @param machine {Machine}
      */
     State.prototype.onExit = function (machine) {
         console.assert(machine !== null, 'machine empty');
@@ -85,7 +95,7 @@
     /**
      *  Callback when state paused
      *
-     * @param machine
+     * @param machine {Machine}
      */
     State.prototype.onPause = function (machine) {
         console.assert(machine !== null, 'machine empty');
@@ -93,7 +103,7 @@
     /**
      *  Callback when state resumed
      *
-     * @param machine
+     * @param machine {Machine}
      */
     State.prototype.onResume = function (machine) {
         console.assert(machine !== null, 'machine empty');

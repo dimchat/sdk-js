@@ -46,7 +46,7 @@
     var InviteCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.type.Class(InviteCommandProcessor, GroupCommandProcessor);
+    ns.Class(InviteCommandProcessor, GroupCommandProcessor);
 
     // check whether this is a Reset command
     var is_reset = function (inviteList, sender, group) {

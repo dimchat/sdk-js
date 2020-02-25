@@ -42,7 +42,7 @@
         // current user
         this.user = null;
     };
-    ns.type.Class(KeyStore, KeyCache);
+    ns.Class(KeyStore, KeyCache);
 
     KeyStore.prototype.getUser = function () {
         return this.user;

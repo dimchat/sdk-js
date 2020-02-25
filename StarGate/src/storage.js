@@ -46,7 +46,7 @@
             this.ROOT = 'dim';
         }
     };
-    DIMP.type.Class(Storage);
+    DIMP.Class(Storage);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
@@ -75,7 +75,7 @@
     /**
      *  Check whether data file exists
      *
-     * @param path
+     * @param path {String}
      * @returns {boolean}
      */
     Storage.prototype.exists = function (path) {
@@ -85,7 +85,7 @@
     /**
      *  Load text from file path
      *
-     * @param path
+     * @param path {String}
      * @returns {string}
      */
     Storage.prototype.loadText = function (path) {
@@ -95,8 +95,8 @@
     /**
      *  Load data from file path
      *
-     * @param path
-     * @returns {*[]}
+     * @param path {String}
+     * @returns {Uint8Array}
      */
     Storage.prototype.loadData = function (path) {
         var base64 = this.loadText(path);
@@ -109,8 +109,8 @@
     /**
      *  Load JSON from file path
      *
-     * @param path
-     * @returns {Dictionary|Array}
+     * @param path {String}
+     * @returns {{}|[]}
      */
     Storage.prototype.loadJSON = function (path) {
         var json = this.loadText(path);
@@ -127,7 +127,7 @@
     /**
      *  Delete file
      *
-     * @param path
+     * @param path {String}
      */
     Storage.prototype.remove = function (path) {
         this.removeItem(this.ROOT + '.' + path);
@@ -137,8 +137,8 @@
     /**
      *  Save string into Text file
      *
-     * @param text
-     * @param path
+     * @param text {String}
+     * @param path {String}
      */
     Storage.prototype.saveText = function (text, path) {
         if (text) {
@@ -153,8 +153,8 @@
     /**
      *  Save data into binary file
      *
-     * @param data
-     * @param path
+     * @param data {Uint8Array}
+     * @param path {String}
      */
     Storage.prototype.saveData = function (data, path) {
         var base64 = null;
@@ -167,8 +167,8 @@
     /**
      *  Save Map/List into JSON file
      *
-     * @param container
-     * @param path
+     * @param container {{}|[]}
+     * @param path {String}
      */
     Storage.prototype.saveJSON = function (container, path) {
         var json = null;

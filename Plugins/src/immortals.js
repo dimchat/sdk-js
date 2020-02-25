@@ -121,7 +121,7 @@
         load_account.call(this, HULK);
         load_account.call(this, MOKI);
     };
-    ns.type.Class(Immortals, null, UserDataSource);
+    ns.Class(Immortals, null, UserDataSource);
 
     var load_account = function (identifier) {
         // ID

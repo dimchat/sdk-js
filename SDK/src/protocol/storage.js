@@ -78,7 +78,7 @@
         this.key = null;       // encrypted symmetric key data
         this.password = null;  // symmetric key for data
     };
-    ns.type.Class(StorageCommand, Command);
+    ns.Class(StorageCommand, Command);
 
     //-------- setter/getter --------
 

@@ -37,7 +37,7 @@
 
     var Callback = function () {
     };
-    ns.type.Interface(Callback);
+    ns.Interface(Callback);
 
     Callback.prototype.onFinished = function (result, error) {
         console.assert(result || error, 'result empty');
@@ -54,7 +54,7 @@
 
     var CompletionHandler = function () {
     };
-    ns.type.Interface(CompletionHandler);
+    ns.Interface(CompletionHandler);
 
     CompletionHandler.prototype.onSuccess = function () {
         console.assert(false, 'implement me!');
@@ -75,12 +75,12 @@
 
     var ConnectionDelegate = function () {
     };
-    ns.type.Interface(ConnectionDelegate);
+    ns.Interface(ConnectionDelegate);
 
     /**
      *  Receive data package
      *
-     * @param data - package from network connection (Uint8Array)
+     * @param data {Uint8Array} - package from network connection
      * @returns {Uint8Array} data response to sender
      */
     ConnectionDelegate.prototype.onReceivePackage = function (data) {
@@ -99,13 +99,13 @@
 
     var MessengerDelegate = function () {
     };
-    ns.type.Interface(MessengerDelegate);
+    ns.Interface(MessengerDelegate);
 
     /**
      *  Upload encrypted data to CDN
      *
-     * @param data - encrypted file data (Uint8Array)
-     * @param msg - instant message
+     * @param data {Uint8Array} - encrypted file data
+     * @param msg {InstantMessage}
      * @returns {String} - download URL
      */
     MessengerDelegate.prototype.uploadData = function (data, msg) {
@@ -118,8 +118,8 @@
     /**
      *  Download encrypted data from CDN
      *
-     * @param url - download URL
-     * @param msg - instant message
+     * @param url {URL} - download URL
+     * @param msg {InstantMessage}
      * @returns {Uint8Array} - encrypted file data
      */
     MessengerDelegate.prototype.downloadData = function (url, msg) {
@@ -132,8 +132,8 @@
     /**
      *  Send out a data package onto network
      *
-     * @param data - package data (Uint8Array)
-     * @param handler - completion handler
+     * @param data {Uint8Array} - package data
+     * @param handler {CompletionHandler}
      * @returns {boolean}
      */
     MessengerDelegate.prototype.sendPackage = function (data, handler) {

@@ -43,7 +43,7 @@
     var Polylogue = function (identifier) {
         Group.call(this, identifier);
     };
-    ns.type.Class(Polylogue, Group);
+    ns.Class(Polylogue, Group);
 
     Polylogue.prototype.getOwner = function () {
         var owner = Group.prototype.getOwner.call(this);
