@@ -47,7 +47,7 @@
         this.delegate = delegate;
         this.star = null;
     };
-    DIMP.Class(Task);
+    DIMP.Class(Task, DIMP.type.Object, null);
 
     Task.prototype.onResponse = function (data) {
         this.delegate.onReceived(data);

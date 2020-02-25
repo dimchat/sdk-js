@@ -42,7 +42,7 @@
         // current user
         this.user = null;
     };
-    ns.Class(KeyStore, KeyCache);
+    ns.Class(KeyStore, KeyCache, null);
 
     KeyStore.prototype.getUser = function () {
         return this.user;
@@ -80,5 +80,7 @@
 
     //-------- namespace --------
     ns.KeyStore = KeyStore;
+
+    ns.register('KeyStore');
 
 }(DIMP);

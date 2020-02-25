@@ -46,7 +46,7 @@
     var QuitCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.Class(QuitCommandProcessor, GroupCommandProcessor);
+    ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
 
     //
     //  Main
@@ -68,8 +68,9 @@
             throw Error('Group members not found: ' + group);
         }
         if (members.indexOf(sender) < 0) {
-            // throw Error('sender (' + sender + ') is not a member of group: ' + group);
-            return;
+            // FIXME:
+            throw Error('sender is not a member of group: ' + msg);
+            // return;
         }
         ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
@@ -82,5 +83,7 @@
 
     //-------- namespace --------
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;
+
+    ns.cpu.group.register('QuitCommandProcessor');
 
 }(DIMP);

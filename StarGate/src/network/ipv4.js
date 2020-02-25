@@ -63,7 +63,7 @@
         }
         Host.call(this, ip, port, data);
     };
-    DIMP.Class(IPv4, Host);
+    DIMP.Class(IPv4, Host, null);
 
     IPv4.prototype.valueOf = function () {
         if (this.port === 0) {

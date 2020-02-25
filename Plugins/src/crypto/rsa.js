@@ -115,7 +115,8 @@
 
     RSAPublicKey.prototype.encrypt = function (plaintext) {
         // convert Int8Array to String
-        plaintext = (new ns.type.String(plaintext)).toString();
+        var str = new ns.type.String(plaintext, 'UTF-8');
+        plaintext = str.toString();
         // create cipher
         var cipher = parse_key.call(this);
         //
@@ -266,7 +267,7 @@
         var string = cipher.decrypt(data);
         if (string) {
             // convert String to Int8Array
-            return (new ns.type.String(string)).getBytes();
+            return ns.type.String.from(string).getBytes('UTF-8');
         } else {
             throw Error('RSA decrypt error: ' + data);
         }

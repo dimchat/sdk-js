@@ -78,7 +78,7 @@
         this.key = null;       // encrypted symmetric key data
         this.password = null;  // symmetric key for data
     };
-    ns.Class(StorageCommand, Command);
+    ns.Class(StorageCommand, Command, null);
 
     //-------- setter/getter --------
 
@@ -204,5 +204,7 @@
 
     //-------- namespace --------
     ns.protocol.StorageCommand = StorageCommand;
+
+    ns.protocol.register('StorageCommand');
 
 }(DIMP);

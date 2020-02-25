@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 1, 2020
+ * @date      Feb. 25, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -45,7 +45,7 @@
             this.envelope = null
         }
     };
-    ns.Class(ReceiptCommand, Command);
+    ns.Class(ReceiptCommand, Command, null);
     ReceiptCommand.prototype.setSerialNumber = function(sn) {
         this.setValue("sn", sn);
         this.sn = sn
@@ -81,7 +81,8 @@
         this.envelope = env
     };
     Command.register(Command.RECEIPT, ReceiptCommand);
-    ns.protocol.ReceiptCommand = ReceiptCommand
+    ns.protocol.ReceiptCommand = ReceiptCommand;
+    ns.protocol.register("ReceiptCommand")
 }(DIMP);
 ! function(ns) {
     var Command = ns.protocol.Command;
@@ -100,7 +101,7 @@
             this.setMuteCList(list)
         }
     };
-    ns.Class(MuteCommand, Command);
+    ns.Class(MuteCommand, Command, null);
     MuteCommand.MUTE = "mute";
     MuteCommand.prototype.getMuteCList = function() {
         return this.getValue("list")
@@ -109,7 +110,8 @@
         this.setValue("list", list)
     };
     Command.register(MuteCommand.MUTE, MuteCommand);
-    ns.protocol.MuteCommand = MuteCommand
+    ns.protocol.MuteCommand = MuteCommand;
+    ns.protocol.register("MuteCommand")
 }(DIMP);
 ! function(ns) {
     var Command = ns.protocol.Command;
@@ -128,7 +130,7 @@
             this.setBlockCList(list)
         }
     };
-    ns.Class(BlockCommand, Command);
+    ns.Class(BlockCommand, Command, null);
     BlockCommand.BLOCK = "block";
     BlockCommand.prototype.getBlockCList = function() {
         return this.getValue("list")
@@ -137,7 +139,8 @@
         this.setValue("list", list)
     };
     Command.register(BlockCommand.BLOCK, BlockCommand);
-    ns.protocol.BlockCommand = BlockCommand
+    ns.protocol.BlockCommand = BlockCommand;
+    ns.protocol.register("BlockCommand")
 }(DIMP);
 ! function(ns) {
     var Base64 = ns.format.Base64;
@@ -163,7 +166,7 @@
         this.key = null;
         this.password = null
     };
-    ns.Class(StorageCommand, Command);
+    ns.Class(StorageCommand, Command, null);
     StorageCommand.prototype.getTitle = function() {
         var title = this.getValue("title");
         if (title) {
@@ -253,7 +256,8 @@
     Command.register(StorageCommand.STORAGE, StorageCommand);
     Command.register(StorageCommand.CONTACTS, StorageCommand);
     Command.register(StorageCommand.PRIVATE_KEY, StorageCommand);
-    ns.protocol.StorageCommand = StorageCommand
+    ns.protocol.StorageCommand = StorageCommand;
+    ns.protocol.register("StorageCommand")
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
@@ -261,7 +265,7 @@
         this.messenger = messenger;
         this.contentProcessors = {}
     };
-    ns.Class(ContentProcessor);
+    ns.Class(ContentProcessor, ns.type.Object, null);
     ContentProcessor.prototype.getContext = function(key) {
         return this.messenger.getContext(key)
     };
@@ -276,30 +280,47 @@
         return cpu.process(content, sender, msg)
     };
     ContentProcessor.prototype.getCPU = function(type) {
-        var cpu = this.contentProcessors[type];
+        var value;
+        if (type instanceof ContentType) {
+            value = type.valueOf()
+        } else {
+            value = type
+        }
+        var cpu = this.contentProcessors[value];
         if (cpu) {
             return cpu
         }
-        var clazz = cpu_classes[type];
+        var clazz = cpu_classes[value];
         if (!clazz) {
-            clazz = cpu_classes[ContentType.UNKNOWN]
+            if (ContentType.UNKNOWN.equals(value)) {
+                throw TypeError("default CPU not register yet")
+            }
+            return this.getCPU(ContentType.UNKNOWN)
         }
         cpu = new clazz(this.messenger);
-        this.contentProcessors[type] = cpu;
+        this.contentProcessors[value] = cpu;
         return cpu
     };
     var cpu_classes = {};
     ContentProcessor.register = function(type, clazz) {
-        if (clazz) {
-            cpu_classes[type] = clazz
+        var value;
+        if (type instanceof ContentType) {
+            value = type.valueOf()
         } else {
-            delete cpu_classes[type]
+            value = type
+        }
+        if (clazz) {
+            cpu_classes[value] = clazz
+        } else {
+            delete cpu_classes[value]
         }
     };
     if (typeof ns.cpu !== "object") {
         ns.cpu = {}
     }
-    ns.cpu.ContentProcessor = ContentProcessor
+    ns.Namespace(ns.cpu);
+    ns.cpu.ContentProcessor = ContentProcessor;
+    ns.cpu.register("ContentProcessor")
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
@@ -308,7 +329,7 @@
         ContentProcessor.call(this, messenger);
         this.commandProcessors = {}
     };
-    ns.Class(CommandProcessor, ContentProcessor);
+    ns.Class(CommandProcessor, ContentProcessor, null);
     CommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu = this.getCPU(cmd.getCommand());
         return cpu.process(cmd, sender, msg)
@@ -320,7 +341,10 @@
         }
         var clazz = cpu_classes[command];
         if (!clazz) {
-            clazz = cpu_classes[CommandProcessor.UNKNOWN]
+            if (command === ContentProcessor.UNKNOWN) {
+                throw TypeError("default CPU not register yet")
+            }
+            return this.getCPU(CommandProcessor.UNKNOWN)
         }
         cpu = new clazz(this.messenger);
         this.commandProcessors[command] = cpu;
@@ -336,7 +360,8 @@
     };
     CommandProcessor.UNKNOWN = "unknown";
     ContentProcessor.register(ContentType.COMMAND, CommandProcessor);
-    ns.cpu.CommandProcessor = CommandProcessor
+    ns.cpu.CommandProcessor = CommandProcessor;
+    ns.cpu.register("CommandProcessor")
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
@@ -345,7 +370,7 @@
     var DefaultContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
     };
-    ns.Class(DefaultContentProcessor, ContentProcessor);
+    ns.Class(DefaultContentProcessor, ContentProcessor, null);
     DefaultContentProcessor.prototype.process = function(content, sender, msg) {
         var type = content.type.toString();
         var text = "Content (type: " + type + ") not support yet!";
@@ -357,7 +382,8 @@
         return res
     };
     ContentProcessor.register(ContentType.UNKNOWN, DefaultContentProcessor);
-    ns.cpu.DefaultContentProcessor = DefaultContentProcessor
+    ns.cpu.DefaultContentProcessor = DefaultContentProcessor;
+    ns.cpu.register("DefaultContentProcessor")
 }(DIMP);
 ! function(ns) {
     var TextContent = ns.protocol.TextContent;
@@ -365,7 +391,7 @@
     var DefaultCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    ns.Class(DefaultCommandProcessor, CommandProcessor);
+    ns.Class(DefaultCommandProcessor, CommandProcessor, null);
     DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var name = cmd.getCommand();
         var text = "Command (name: " + name + ") not support yet!";
@@ -377,7 +403,8 @@
         return res
     };
     CommandProcessor.register(CommandProcessor.UNKNOWN, DefaultCommandProcessor);
-    ns.cpu.DefaultCommandProcessor = DefaultCommandProcessor
+    ns.cpu.DefaultCommandProcessor = DefaultCommandProcessor;
+    ns.cpu.register("DefaultCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
@@ -385,13 +412,14 @@
     var ForwardContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
     };
-    ns.Class(ForwardContentProcessor, ContentProcessor);
+    ns.Class(ForwardContentProcessor, ContentProcessor, null);
     ForwardContentProcessor.prototype.process = function(content, sender, msg) {
         var rMsg = content.getMessage();
         return this.messenger.processReliableMessage(rMsg)
     };
     ContentProcessor.register(ContentType.FORWARD, ForwardContentProcessor);
-    ns.cpu.ForwardContentProcessor = ForwardContentProcessor
+    ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
+    ns.cpu.register("ForwardContentProcessor")
 }(DIMP);
 ! function(ns) {
     var TextContent = ns.protocol.TextContent;
@@ -402,7 +430,7 @@
     var MetaCommandProcessor = function(messenger) {
         CommandProcessor.call(this, messenger)
     };
-    ns.Class(MetaCommandProcessor, CommandProcessor);
+    ns.Class(MetaCommandProcessor, CommandProcessor, null);
     var get_meta = function(identifier) {
         var facebook = this.getFacebook();
         var meta = facebook.getMeta(identifier);
@@ -434,7 +462,8 @@
         }
     };
     CommandProcessor.register(Command.META, MetaCommandProcessor);
-    ns.cpu.MetaCommandProcessor = MetaCommandProcessor
+    ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
+    ns.cpu.register("MetaCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var TextContent = ns.protocol.TextContent;
@@ -446,7 +475,7 @@
     var ProfileCommandProcessor = function(messenger) {
         MetaCommandProcessor.call(this, messenger)
     };
-    ns.Class(ProfileCommandProcessor, MetaCommandProcessor);
+    ns.Class(ProfileCommandProcessor, MetaCommandProcessor, null);
     var get_profile = function(identifier) {
         var facebook = this.getFacebook();
         var profile = facebook.getProfile(identifier);
@@ -454,7 +483,7 @@
             var text = "Sorry, profile not found for ID: " + identifier;
             return new TextContent(text)
         }
-        return ProfileCommand.response(identifier, profile)
+        return ProfileCommand.response(identifier, profile, null)
     };
     var put_profile = function(identifier, profile, meta) {
         var facebook = this.getFacebook();
@@ -487,7 +516,8 @@
         }
     };
     CommandProcessor.register(Command.PROFILE, ProfileCommandProcessor);
-    ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor
+    ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor;
+    ns.cpu.register("ProfileCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
@@ -497,7 +527,7 @@
         CommandProcessor.call(this, messenger);
         this.gpu = null
     };
-    ns.Class(HistoryCommandProcessor, CommandProcessor);
+    ns.Class(HistoryCommandProcessor, CommandProcessor, null);
     HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu;
         if (cmd.getGroup()) {
@@ -515,14 +545,15 @@
         CommandProcessor.register.call(this, command, clazz)
     };
     ContentProcessor.register(ContentType.HISTORY, HistoryCommandProcessor);
-    ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor
+    ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;
+    ns.cpu.register("HistoryCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
     var GroupCommandProcessor = function(messenger) {
         HistoryCommandProcessor.call(this, messenger)
     };
-    ns.Class(GroupCommandProcessor, HistoryCommandProcessor);
+    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
     var convert_id_list = function(list) {
         var facebook = this.getFacebook();
         var array = [];
@@ -578,7 +609,9 @@
     if (typeof ns.cpu.group !== "object") {
         ns.cpu.group = {}
     }
-    ns.cpu.GroupCommandProcessor = GroupCommandProcessor
+    ns.Namespace(ns.cpu.group);
+    ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
+    ns.cpu.register("GroupCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
@@ -586,7 +619,7 @@
     var InviteCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.Class(InviteCommandProcessor, GroupCommandProcessor);
+    ns.Class(InviteCommandProcessor, GroupCommandProcessor, null);
     var is_reset = function(inviteList, sender, group) {
         var facebook = this.getFacebook();
         if (this.containsOwner(inviteList, group)) {
@@ -649,7 +682,8 @@
         return null
     };
     GroupCommandProcessor.register(GroupCommand.INVITE, InviteCommandProcessor);
-    ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor
+    ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor;
+    ns.cpu.group.register("InviteCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
@@ -657,14 +691,14 @@
     var ExpelCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.Class(ExpelCommandProcessor, GroupCommandProcessor);
+    ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
     ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error(sender + " is not the owner/admin of group: " + group)
+                throw Error("sender is not the owner/admin of group: " + msg)
             }
         }
         var expelList = this.getMembers(cmd);
@@ -693,7 +727,8 @@
         return null
     };
     GroupCommandProcessor.register(GroupCommand.EXPEL, ExpelCommandProcessor);
-    ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor
+    ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor;
+    ns.cpu.group.register("ExpelCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
@@ -701,7 +736,7 @@
     var QuitCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.Class(QuitCommandProcessor, GroupCommandProcessor);
+    ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
     QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -717,14 +752,15 @@
             throw Error("Group members not found: " + group)
         }
         if (members.indexOf(sender) < 0) {
-            return
+            throw Error("sender is not a member of group: " + msg)
         }
         ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
         return null
     };
     GroupCommandProcessor.register(GroupCommand.QUIT, QuitCommandProcessor);
-    ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor
+    ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;
+    ns.cpu.group.register("QuitCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var TextContent = ns.protocol.TextContent;
@@ -735,7 +771,7 @@
     var QueryCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.Class(QueryCommandProcessor, GroupCommandProcessor);
+    ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
     QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
@@ -743,7 +779,7 @@
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
                 if (!facebook.isOwner(sender, group)) {
-                    throw Error(sender + " is not a member/assistant of group: " + group)
+                    throw Error("sender is not a member/assistant of group: " + msg)
                 }
             }
         }
@@ -761,7 +797,8 @@
         }
     };
     GroupCommandProcessor.register(GroupCommand.QUERY, QueryCommandProcessor);
-    ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor
+    ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;
+    ns.cpu.group.register("QueryCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
@@ -769,7 +806,7 @@
     var ResetCommandProcessor = function(messenger) {
         GroupCommandProcessor.call(this, messenger)
     };
-    ns.Class(ResetCommandProcessor, GroupCommandProcessor);
+    ns.Class(ResetCommandProcessor, GroupCommandProcessor, null);
     var save = function(newMembers, sender, group) {
         if (!this.containsOwner(newMembers, group)) {
             return GroupCommand.query(group)
@@ -779,7 +816,7 @@
             var owner = facebook.getOwner(group);
             if (owner && !owner.equals(sender)) {
                 var cmd = GroupCommand.query(group);
-                this.messenger.sendContent(cmd, owner)
+                this.messenger.sendContent(cmd, owner, null, false)
             }
         }
         return null
@@ -834,7 +871,7 @@
         }
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error(sender + " is not the owner/admin of group: " + group)
+                throw Error("sender is not the owner/admin of group: " + msg)
             }
         }
         var result = reset.call(this, newMembers, group);
@@ -849,14 +886,15 @@
         return null
     };
     GroupCommandProcessor.register(GroupCommand.RESET, ResetCommandProcessor);
-    ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor
+    ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor;
+    ns.cpu.group.register("ResetCommandProcessor")
 }(DIMP);
 ! function(ns) {
     var Group = ns.Group;
     var Polylogue = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.Class(Polylogue, Group);
+    ns.Class(Polylogue, Group, null);
     Polylogue.prototype.getOwner = function() {
         var owner = Group.prototype.getOwner.call(this);
         if (owner) {
@@ -864,7 +902,8 @@
         }
         return this.getFounder()
     };
-    ns.Polylogue = Polylogue
+    ns.Polylogue = Polylogue;
+    ns.register("Polylogue")
 }(DIMP);
 ! function(ns) {
     var GroupDataSource = ns.GroupDataSource;
@@ -874,26 +913,29 @@
         console.assert(false, "implement me!");
         return null
     };
-    ns.ChatroomDataSource = ChatroomDataSource
+    ns.ChatroomDataSource = ChatroomDataSource;
+    ns.register("ChatroomDataSource")
 }(DIMP);
 ! function(ns) {
     var Group = ns.Group;
     var Chatroom = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.Class(Chatroom, Group);
+    ns.Class(Chatroom, Group, null);
     Chatroom.prototype.getAdmins = function() {
         return this.delegate.getAdmins(this.identifier)
     };
-    ns.Chatroom = Chatroom
+    ns.Chatroom = Chatroom;
+    ns.register("Chatroom")
 }(DIMP);
 ! function(ns) {
     var User = ns.User;
     var Robot = function(identifier) {
         User.call(this, identifier)
     };
-    ns.Class(Robot, User);
-    ns.Robot = Robot
+    ns.Class(Robot, User, null);
+    ns.Robot = Robot;
+    ns.register("Robot")
 }(DIMP);
 ! function(ns) {
     var User = ns.User;
@@ -902,19 +944,21 @@
         this.host = host;
         this.port = port
     };
-    ns.Class(Station, User);
-    ns.Station = Station
+    ns.Class(Station, User, null);
+    ns.Station = Station;
+    ns.register("Station")
 }(DIMP);
 ! function(ns) {
     var Group = ns.Group;
     var ServiceProvider = function(identifier) {
         Group.call(this, identifier)
     };
-    ns.Class(ServiceProvider, Group);
+    ns.Class(ServiceProvider, Group, null);
     ServiceProvider.prototype.getStations = function() {
         return this.delegate.getMembers(this.identifier)
     };
-    ns.ServiceProvider = ServiceProvider
+    ns.ServiceProvider = ServiceProvider;
+    ns.register("ServiceProvider")
 }(DIMP);
 ! function(ns) {
     var ID = ns.ID;
@@ -935,7 +979,7 @@
         this.reserved = reserved;
         this.caches = caches
     };
-    ns.Class(AddressNameService);
+    ns.Class(AddressNameService, ns.type.Object, null);
     AddressNameService.prototype.isReserved = function(name) {
         return this.reserved[name] === true
     };
@@ -974,20 +1018,22 @@
     };
     AddressNameService.FOUNDER = new ID("moky", Address.ANYWHERE);
     AddressNameService.KEYWORDS = ["all", "everyone", "anyone", "owner", "founder", "dkd", "mkm", "dimp", "dim", "dimt", "rsa", "ecc", "aes", "des", "btc", "eth", "crypto", "key", "symmetric", "asymmetric", "public", "private", "secret", "password", "id", "address", "meta", "profile", "entity", "user", "group", "contact", "member", "admin", "administrator", "assistant", "main", "polylogue", "chatroom", "social", "organization", "company", "school", "government", "department", "provider", "station", "thing", "robot", "message", "instant", "secure", "reliable", "envelope", "sender", "receiver", "time", "content", "forward", "command", "history", "keys", "data", "signature", "type", "serial", "sn", "text", "file", "image", "audio", "video", "page", "handshake", "receipt", "block", "mute", "register", "suicide", "found", "abdicate", "invite", "expel", "join", "quit", "reset", "query", "hire", "fire", "resign", "server", "client", "terminal", "local", "remote", "barrack", "cache", "transceiver", "ans", "facebook", "store", "messenger", "root", "supervisor"];
-    ns.AddressNameService = AddressNameService
+    ns.AddressNameService = AddressNameService;
+    ns.register("AddressNameService")
 }(DIMP);
 ! function(ns) {
     var Callback = function() {};
-    ns.Interface(Callback);
+    ns.Interface(Callback, null);
     Callback.prototype.onFinished = function(result, error) {
         console.assert(result || error, "result empty");
         console.assert(false, "implement me!")
     };
-    ns.Callback = Callback
+    ns.Callback = Callback;
+    ns.register("Callback")
 }(DIMP);
 ! function(ns) {
     var CompletionHandler = function() {};
-    ns.Interface(CompletionHandler);
+    ns.Interface(CompletionHandler, null);
     CompletionHandler.prototype.onSuccess = function() {
         console.assert(false, "implement me!")
     };
@@ -995,21 +1041,29 @@
         console.assert(error !== null, "result empty");
         console.assert(false, "implement me!")
     };
-    ns.CompletionHandler = CompletionHandler
+    CompletionHandler.newHandler = function(onSuccess, onFailed) {
+        var handler = new CompletionHandler();
+        handler.onSuccess = onSuccess;
+        handler.onFailed = onFailed;
+        return handler
+    };
+    ns.CompletionHandler = CompletionHandler;
+    ns.register("CompletionHandler")
 }(DIMP);
 ! function(ns) {
     var ConnectionDelegate = function() {};
-    ns.Interface(ConnectionDelegate);
+    ns.Interface(ConnectionDelegate, null);
     ConnectionDelegate.prototype.onReceivePackage = function(data) {
         console.assert(data !== null, "data empty");
         console.assert(false, "implement me!");
         return null
     };
-    ns.ConnectionDelegate = ConnectionDelegate
+    ns.ConnectionDelegate = ConnectionDelegate;
+    ns.register("ConnectionDelegate")
 }(DIMP);
 ! function(ns) {
     var MessengerDelegate = function() {};
-    ns.Interface(MessengerDelegate);
+    ns.Interface(MessengerDelegate, null);
     MessengerDelegate.prototype.uploadData = function(data, msg) {
         console.assert(data !== null, "data empty");
         console.assert(msg !== null, "msg empty");
@@ -1028,7 +1082,8 @@
         console.assert(false, "implement me!");
         return false
     };
-    ns.MessengerDelegate = MessengerDelegate
+    ns.MessengerDelegate = MessengerDelegate;
+    ns.register("MessengerDelegate")
 }(DIMP);
 ! function(ns) {
     var KeyCache = ns.core.KeyCache;
@@ -1036,7 +1091,7 @@
         KeyCache.call(this);
         this.user = null
     };
-    ns.Class(KeyStore, KeyCache);
+    ns.Class(KeyStore, KeyCache, null);
     KeyStore.prototype.getUser = function() {
         return this.user
     };
@@ -1064,7 +1119,8 @@
     KeyStore.prototype.loadKeys = function() {
         return null
     };
-    ns.KeyStore = KeyStore
+    ns.KeyStore = KeyStore;
+    ns.register("KeyStore")
 }(DIMP);
 ! function(ns) {
     var DecryptKey = ns.crypto.DecryptKey;
@@ -1086,7 +1142,7 @@
         this.contactsMap = {};
         this.membersMap = {}
     };
-    ns.Class(Facebook, Barrack);
+    ns.Class(Facebook, Barrack, null);
     Facebook.prototype.ansGet = function(name) {
         if (!this.ans) {
             return null
@@ -1454,7 +1510,8 @@
         }
         return false
     };
-    ns.Facebook = Facebook
+    ns.Facebook = Facebook;
+    ns.register("Facebook")
 }(DIMP);
 ! function(ns) {
     var SymmetricKey = ns.crypto.SymmetricKey;
@@ -1463,6 +1520,7 @@
     var InstantMessage = ns.InstantMessage;
     var FileContent = ns.protocol.FileContent;
     var ContentProcessor = ns.cpu.ContentProcessor;
+    var CompletionHandler = ns.CompletionHandler;
     var ConnectionDelegate = ns.ConnectionDelegate;
     var Transceiver = ns.core.Transceiver;
     var Facebook = ns.Facebook;
@@ -1619,7 +1677,7 @@
     Messenger.prototype.sendContent = function(content, receiver, callback, split) {
         var facebook = this.getFacebook();
         var user = facebook.getCurrentUser();
-        var env = Envelope.newEnvelope(user.identifier, receiver);
+        var env = Envelope.newEnvelope(user.identifier, receiver, 0);
         var msg = InstantMessage.newMessage(content, env);
         return this.sendMessage(msg, callback, split)
     };
@@ -1654,14 +1712,11 @@
         return ok
     };
     var send_message = function(msg, callback) {
-        var handler = {
-            onSuccess: function() {
-                callback.onFinished(msg, null)
-            },
-            onFailed: function(error) {
-                callback.onFinished(error)
-            }
-        };
+        var handler = CompletionHandler.newHandler(function() {
+            callback.onFinished(msg, null)
+        }, function(error) {
+            callback.onFinished(error)
+        });
         var data = this.serializeMessage(msg);
         return this.delegate.sendPackage(data, handler)
     };
@@ -1694,7 +1749,7 @@
                 throw Error("current user not found!")
             }
         }
-        var env = Envelope.newEnvelope(user.identifier, sender);
+        var env = Envelope.newEnvelope(user.identifier, sender, 0);
         var iMsg = InstantMessage.newMessage(response, env);
         var nMsg = this.signMessage(this.encryptMessage(iMsg));
         return this.serializeMessage(nMsg)
@@ -1720,5 +1775,6 @@
         }
         return res
     };
-    ns.Messenger = Messenger
+    ns.Messenger = Messenger;
+    ns.register("Messenger")
 }(DIMP);

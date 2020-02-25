@@ -49,7 +49,7 @@
     var QueryCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.Class(QueryCommandProcessor, GroupCommandProcessor);
+    ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
 
     //
     //  Main
@@ -62,7 +62,7 @@
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
                 if (!facebook.isOwner(sender, group)) {
-                    throw Error(sender + ' is not a member/assistant of group: ' + group);
+                    throw Error('sender is not a member/assistant of group: ' + msg);
                 }
             }
         }
@@ -87,5 +87,7 @@
 
     //-------- namespace --------
     ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;
+
+    ns.cpu.group.register('QueryCommandProcessor');
 
 }(DIMP);

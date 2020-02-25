@@ -46,7 +46,7 @@
     var ExpelCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.Class(ExpelCommandProcessor, GroupCommandProcessor);
+    ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
 
     //
     //  Main
@@ -58,7 +58,7 @@
         // 1. check permission
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error(sender + ' is not the owner/admin of group: ' + group);
+                throw Error('sender is not the owner/admin of group: ' + msg);
             }
         }
         // 1.2. get expelling members from command content
@@ -98,5 +98,7 @@
 
     //-------- namespace --------
     ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor;
+
+    ns.cpu.group.register('ExpelCommandProcessor');
 
 }(DIMP);

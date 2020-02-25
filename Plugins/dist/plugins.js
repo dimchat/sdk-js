@@ -127,7 +127,7 @@
         function decode(string) {
             var buffer = decodeUnsafe(string);
             if (buffer) {
-                return ns.type.Data.from(buffer).getBytes()
+                return new Uint8Array(buffer)
             }
             throw new Error("Non-base" + BASE + " character")
         }
@@ -333,7 +333,7 @@
             return Base64.decode(iv)
         }
         var zeros = zero_data(this.getBlockSize());
-        this.setValue(Base64.encode(zeros));
+        this.setValue("iv", Base64.encode(zeros));
         return zeros
     };
     AESKey.prototype.encrypt = function(plaintext) {
@@ -421,7 +421,8 @@
         return cipher.verify(data, signature, CryptoJS.SHA256)
     };
     RSAPublicKey.prototype.encrypt = function(plaintext) {
-        plaintext = (new ns.type.String(plaintext)).toString();
+        var str = new ns.type.String(plaintext, "UTF-8");
+        plaintext = str.toString();
         var cipher = parse_key.call(this);
         var base64 = cipher.encrypt(plaintext);
         if (base64) {
@@ -517,7 +518,7 @@
         var cipher = parse_key.call(this);
         var string = cipher.decrypt(data);
         if (string) {
-            return (new ns.type.String(string)).getBytes()
+            return ns.type.String.from(string).getBytes("UTF-8")
         } else {
             throw Error("RSA decrypt error: " + data)
         }
@@ -549,7 +550,7 @@
         this.network = new NetworkType(data[0]);
         this.code = search_number(cc)
     };
-    ns.Class(DefaultAddress, Address);
+    ns.Class(DefaultAddress, Address, null);
     DefaultAddress.prototype.getNetwork = function() {
         return this.network
     };
@@ -559,13 +560,13 @@
     DefaultAddress.generate = function(fingerprint, network) {
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         var head = new Data(21);
-        head.push(network.value);
+        head.push(network.valueOf());
         head.push(digest);
-        var cc = check_code(head.getBytes());
+        var cc = check_code(head.getBytes(false));
         var data = new Data(25);
         data.push(head);
         data.push(cc);
-        return new DefaultAddress(Base58.encode(data.getBytes()))
+        return new DefaultAddress(Base58.encode(data.getBytes(false)))
     };
     var check_code = function(data) {
         var sha256d = SHA256.digest(SHA256.digest(data));
@@ -585,7 +586,7 @@
         Meta.call(this, meta);
         this.idMap = {}
     };
-    ns.Class(DefaultMeta, Meta);
+    ns.Class(DefaultMeta, Meta, null);
     DefaultMeta.prototype.generateIdentifier = function(network) {
         var identifier = this.idMap[network];
         if (!identifier) {

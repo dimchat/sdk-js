@@ -47,7 +47,7 @@
         Fence.call(this, delegate);
         this.ws = null;
     };
-    DIMP.Class(SocketClient, Fence);
+    DIMP.Class(SocketClient, Fence, null);
 
     /**
      *  Connect to a server

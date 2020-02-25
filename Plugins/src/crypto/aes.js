@@ -132,7 +132,7 @@
         }
         // zero iv
         var zeros = zero_data(this.getBlockSize());
-        this.setValue(Base64.encode(zeros));
+        this.setValue('iv', Base64.encode(zeros));
         return zeros;
     };
 

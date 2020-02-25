@@ -40,7 +40,7 @@
      */
     var Delegate = function () {
     };
-    DIMP.Interface(Delegate);
+    DIMP.Interface(Delegate, null);
 
     /**
      *  Callback when entering a new state

@@ -49,7 +49,7 @@
         // Group Command Processor
         this.gpu = null;
     };
-    ns.Class(HistoryCommandProcessor, CommandProcessor);
+    ns.Class(HistoryCommandProcessor, CommandProcessor, null);
 
     //
     //  Main
@@ -83,5 +83,7 @@
 
     //-------- namespace --------
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;
+
+    ns.cpu.register('HistoryCommandProcessor');
 
 }(DIMP);

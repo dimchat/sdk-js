@@ -49,6 +49,7 @@
 
     var ContentProcessor = ns.cpu.ContentProcessor;
 
+    var CompletionHandler = ns.CompletionHandler;
     var ConnectionDelegate = ns.ConnectionDelegate;
 
     var Transceiver = ns.core.Transceiver;
@@ -281,7 +282,7 @@
      *  Send message content to receiver
      *
      * @param content {Content}
-     * @param receiver {ID}
+     * @param receiver {ID|String}
      * @param callback {Callback} - OPTIONAL
      * @param split {boolean} - OPTIONAL; whether split group message
      * @returns {boolean}
@@ -289,7 +290,7 @@
     Messenger.prototype.sendContent = function (content, receiver, callback, split) {
         var facebook = this.getFacebook();
         var user = facebook.getCurrentUser();
-        var env = Envelope.newEnvelope(user.identifier, receiver);
+        var env = Envelope.newEnvelope(user.identifier, receiver, 0);
         var msg = InstantMessage.newMessage(content, env);
         return this.sendMessage(msg, callback, split);
     };
@@ -297,7 +298,7 @@
     /**
      *  Send instant message (encrypt and sign) onto DIM network
      *
-     * @param msg {InstantMessage}
+     * @param msg {InstantMessage|Message}
      * @param callback {Callback} - OPTIONAL; if needs callback, set it here
      * @param split {boolean} - OPTIONAL; whether split group message
      * @returns {boolean}
@@ -339,14 +340,14 @@
     };
 
     var send_message = function (msg, callback) {
-        var handler = {
-            onSuccess: function () {
+        var handler = CompletionHandler.newHandler(
+            function () {
                 callback.onFinished(msg, null);
             },
-            onFailed: function (error) {
+            function (error) {
                 callback.onFinished(error);
             }
-        };
+        );
         var data = this.serializeMessage(msg);
         return this.delegate.sendPackage(data, handler);
     };
@@ -409,7 +410,7 @@
                 throw Error('current user not found!');
             }
         }
-        var env = Envelope.newEnvelope(user.identifier, sender);
+        var env = Envelope.newEnvelope(user.identifier, sender, 0);
         var iMsg = InstantMessage.newMessage(response, env);
         var nMsg = this.signMessage(this.encryptMessage(iMsg));
         // serialize message
@@ -451,5 +452,7 @@
 
     //-------- namespace --------
     ns.Messenger = Messenger;
+
+    ns.register('Messenger');
 
 }(DIMP);

@@ -63,7 +63,7 @@
             this.setMuteCList(list);
         }
     };
-    ns.Class(MuteCommand, Command);
+    ns.Class(MuteCommand, Command, null);
 
     MuteCommand.MUTE = 'mute';
 
@@ -81,5 +81,7 @@
 
     //-------- namespace --------
     ns.protocol.MuteCommand = MuteCommand;
+
+    ns.protocol.register('MuteCommand');
 
 }(DIMP);

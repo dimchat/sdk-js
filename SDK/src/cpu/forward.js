@@ -46,7 +46,7 @@
     var ForwardContentProcessor = function (messenger) {
         ContentProcessor.call(this, messenger);
     };
-    ns.Class(ForwardContentProcessor, ContentProcessor);
+    ns.Class(ForwardContentProcessor, ContentProcessor, null);
 
     //
     //  Main
@@ -65,5 +65,7 @@
 
     //-------- namespace --------
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
+
+    ns.cpu.register('ForwardContentProcessor');
 
 }(DIMP);

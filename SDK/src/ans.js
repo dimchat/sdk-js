@@ -57,7 +57,7 @@
         this.reserved = reserved;
         this.caches = caches;
     };
-    ns.Class(AddressNameService);
+    ns.Class(AddressNameService, ns.type.Object, null);
 
     AddressNameService.prototype.isReserved = function (name) {
         return this.reserved[name] === true;
@@ -158,5 +158,7 @@
 
     //-------- namespace --------
     ns.AddressNameService = AddressNameService;
+
+    ns.register('AddressNameService');
 
 }(DIMP);

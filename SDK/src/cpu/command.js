@@ -48,7 +48,7 @@
         // CPU pool (String -> CommandProcessor)
         this.commandProcessors = {};
     };
-    ns.Class(CommandProcessor, ContentProcessor);
+    ns.Class(CommandProcessor, ContentProcessor, null);
 
     //
     //  Main
@@ -75,11 +75,11 @@
         // 2. get CPU class by command name
         var clazz = cpu_classes[command];
         if (!clazz) {
-            // default CPU
-            clazz = cpu_classes[CommandProcessor.UNKNOWN];
-            // if (!clazz) {
-            //     throw TypeError('failed to get CPU for command: ' + command);
-            // }
+            if (command === ContentProcessor.UNKNOWN) {
+                throw TypeError('default CPU not register yet');
+            }
+            // call default CPU
+            return this.getCPU(CommandProcessor.UNKNOWN);
         }
         // 3. create CPU with messenger
         cpu = new clazz(this.messenger);
@@ -104,5 +104,7 @@
 
     //-------- namespace --------
     ns.cpu.CommandProcessor = CommandProcessor;
+
+    ns.cpu.register('CommandProcessor');
 
 }(DIMP);

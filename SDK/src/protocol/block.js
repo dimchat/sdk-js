@@ -63,7 +63,7 @@
             this.setBlockCList(list);
         }
     };
-    ns.Class(BlockCommand, Command);
+    ns.Class(BlockCommand, Command, null);
 
     BlockCommand.BLOCK = 'block';
 
@@ -81,5 +81,7 @@
 
     //-------- namespace --------
     ns.protocol.BlockCommand = BlockCommand;
+
+    ns.protocol.register('BlockCommand');
 
 }(DIMP);

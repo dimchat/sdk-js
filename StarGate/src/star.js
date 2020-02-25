@@ -41,7 +41,7 @@
      */
     var Delegate = function () {
     };
-    DIMP.Interface(Delegate);
+    DIMP.Interface(Delegate, null);
 
     /**
      *  Callback after received data
@@ -104,7 +104,7 @@
 
     var Star = function () {
     };
-    DIMP.Interface(Star);
+    DIMP.Interface(Star, null);
 
     /**
      * Get connection status

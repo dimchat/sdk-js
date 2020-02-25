@@ -50,7 +50,7 @@
     var ProfileCommandProcessor = function (messenger) {
         MetaCommandProcessor.call(this, messenger);
     };
-    ns.Class(ProfileCommandProcessor, MetaCommandProcessor);
+    ns.Class(ProfileCommandProcessor, MetaCommandProcessor, null);
 
     // query profile for ID
     var get_profile = function (identifier) {
@@ -62,7 +62,7 @@
             return new TextContent(text);
         }
         // response profile info
-        return ProfileCommand.response(identifier, profile);
+        return ProfileCommand.response(identifier, profile, null);
     };
 
     // received a profile for ID
@@ -111,5 +111,7 @@
 
     //-------- namespace --------
     ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor;
+
+    ns.cpu.register('ProfileCommandProcessor');
 
 }(DIMP);

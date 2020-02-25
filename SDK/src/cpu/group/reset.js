@@ -46,7 +46,7 @@
     var ResetCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
-    ns.Class(ResetCommandProcessor, GroupCommandProcessor);
+    ns.Class(ResetCommandProcessor, GroupCommandProcessor, null);
 
     // temporary save
     var save = function (newMembers, sender, group) {
@@ -63,7 +63,7 @@
                 // NOTICE: to prevent counterfeit,
                 //         query the owner for newest member-list
                 var cmd = GroupCommand.query(group);
-                this.messenger.sendContent(cmd, owner);
+                this.messenger.sendContent(cmd, owner, null, false);
             }
         }
         // response (no need to response this group command)
@@ -135,7 +135,7 @@
         // 1. check permission
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error(sender + ' is not the owner/admin of group: ' + group);
+                throw Error('sender is not the owner/admin of group: ' + msg);
             }
         }
         // 2. do reset
@@ -157,5 +157,7 @@
 
     //-------- namespace --------
     ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor;
+
+    ns.cpu.group.register('ResetCommandProcessor');
 
 }(DIMP);

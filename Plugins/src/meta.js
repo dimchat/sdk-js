@@ -60,7 +60,7 @@
         // memory cache
         this.idMap = {};
     };
-    ns.Class(DefaultMeta, Meta);
+    ns.Class(DefaultMeta, Meta, null);
 
     DefaultMeta.prototype.generateIdentifier = function (network) {
         // check cache

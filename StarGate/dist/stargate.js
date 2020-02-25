@@ -28,7 +28,7 @@ if (typeof StarGate !== "object") {
 }(StarGate, FiniteStateMachine);
 ! function(ns) {
     var Delegate = function() {};
-    DIMP.Interface(Delegate);
+    DIMP.Interface(Delegate, null);
     Delegate.prototype.enterState = function(state, machine) {
         console.assert(state !== null, "state empty");
         console.assert(machine !== null, "machine empty");
@@ -54,7 +54,7 @@ if (typeof StarGate !== "object") {
     var Transition = function(targetStateName) {
         this.target = targetStateName
     };
-    DIMP.Class(Transition);
+    DIMP.Class(Transition, DIMP.type.Object, null);
     Transition.prototype.evaluate = function(machine) {
         console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!");
@@ -67,7 +67,7 @@ if (typeof StarGate !== "object") {
     var State = function() {
         this.transitions = []
     };
-    DIMP.Class(State);
+    DIMP.Class(State, DIMP.type.Object, null);
     State.prototype.addTransition = function(transition) {
         if (this.transitions.indexOf(transition) >= 0) {
             throw Error("transition exists: " + transition)
@@ -114,7 +114,7 @@ if (typeof StarGate !== "object") {
         this.status = Status.Stopped;
         this.delegate = null
     };
-    DIMP.Class(Machine);
+    DIMP.Class(Machine, DIMP.type.Object, null);
     Machine.prototype.addState = function(state, name) {
         this.stateMap[name] = state
     };
@@ -174,7 +174,7 @@ if (typeof StarGate !== "object") {
 }(FiniteStateMachine);
 ! function(ns) {
     var Observer = function() {};
-    DIMP.Interface(Observer);
+    DIMP.Interface(Observer, null);
     Observer.prototype.onReceiveNotification = function(notification) {
         console.assert(notification !== null, "notification empty");
         console.assert(false, "implement me!")
@@ -188,7 +188,7 @@ if (typeof StarGate !== "object") {
         this.sender = sender;
         this.userInfo = userInfo
     };
-    DIMP.Class(Notification);
+    DIMP.Class(Notification, DIMP.type.Object, null);
     ns.Notification = Notification;
     ns.register("Notification")
 }(StarGate);
@@ -197,7 +197,7 @@ if (typeof StarGate !== "object") {
     var Center = function() {
         this.observerMap = {}
     };
-    DIMP.Class(Center);
+    DIMP.Class(Center, DIMP.type.Object, null);
     Center.prototype.addObserver = function(observer, name) {
         var list = this.observerMap[name];
         if (list) {
@@ -254,7 +254,7 @@ if (typeof StarGate !== "object") {
             this.ROOT = "dim"
         }
     };
-    DIMP.Class(Storage);
+    DIMP.Class(Storage, DIMP.type.Object, null);
     Storage.prototype.getItem = function(key) {
         return this.storage.getItem(key)
     };
@@ -327,7 +327,7 @@ if (typeof StarGate !== "object") {
 }(StarGate);
 ! function(ns) {
     var Delegate = function() {};
-    DIMP.Interface(Delegate);
+    DIMP.Interface(Delegate, null);
     Delegate.prototype.onReceived = function(response, star) {
         console.assert(response !== null, "response empty");
         console.assert(star !== null, "star empty");
@@ -356,7 +356,7 @@ if (typeof StarGate !== "object") {
 }(StarGate);
 ! function(ns) {
     var Star = function() {};
-    DIMP.Interface(Star);
+    DIMP.Interface(Star, null);
     Star.prototype.getStatus = function() {
         console.assert(false, "implement me!");
         return null
@@ -384,7 +384,7 @@ if (typeof StarGate !== "object") {
         this.delegate = delegate;
         this.star = null
     };
-    DIMP.Class(Task);
+    DIMP.Class(Task, DIMP.type.Object, null);
     Task.prototype.onResponse = function(data) {
         this.delegate.onReceived(data)
     };
@@ -474,7 +474,7 @@ if (typeof StarGate !== "object") {
         Fence.call(this, delegate);
         this.ws = null
     };
-    DIMP.Class(SocketClient, Fence);
+    DIMP.Class(SocketClient, Fence, null);
     SocketClient.prototype.connect = function(host, port) {
         var protocol = "ws";
         if ("https" === window.location.protocol.split(":")[0]) {
@@ -538,6 +538,7 @@ if (typeof StarGate !== "object") {
         this.port = port;
         this.data = data
     };
+    DIMP.Class(Host, DIMP.type.Object, null);
     Host.prototype.valueOf = function() {
         console.assert(false, "implement me!");
         return null
@@ -594,7 +595,7 @@ if (typeof StarGate !== "object") {
         }
         Host.call(this, ip, port, data)
     };
-    DIMP.Class(IPv4, Host);
+    DIMP.Class(IPv4, Host, null);
     IPv4.prototype.valueOf = function() {
         if (this.port === 0) {
             return this.ip
@@ -705,7 +706,7 @@ if (typeof StarGate !== "object") {
         }
         Host.call(this, ip, port, data)
     };
-    DIMP.Class(IPv6, Host);
+    DIMP.Class(IPv6, Host, null);
     IPv6.prototype.valueOf = function() {
         if (this.port === 0) {
             return this.ip

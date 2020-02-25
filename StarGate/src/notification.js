@@ -41,7 +41,7 @@
      */
     var Observer = function () {
     };
-    DIMP.Interface(Observer);
+    DIMP.Interface(Observer, null);
 
     /**
      *  Callback when received notification
@@ -76,7 +76,7 @@
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    DIMP.Class(Notification);
+    DIMP.Class(Notification, DIMP.type.Object, null);
 
     //-------- namespace --------
     ns.Notification = Notification;
@@ -96,7 +96,7 @@
     var Center = function () {
         this.observerMap = {};
     };
-    DIMP.Class(Center);
+    DIMP.Class(Center, DIMP.type.Object, null);
 
     /**
      *  Add observer with notification name

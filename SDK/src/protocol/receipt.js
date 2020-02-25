@@ -91,7 +91,7 @@
             this.envelope = null;
         }
     };
-    ns.Class(ReceiptCommand, Command);
+    ns.Class(ReceiptCommand, Command, null);
 
     //-------- setter/getter --------
 
@@ -137,5 +137,7 @@
 
     //-------- namespace --------
     ns.protocol.ReceiptCommand = ReceiptCommand;
+
+    ns.protocol.register('ReceiptCommand');
 
 }(DIMP);

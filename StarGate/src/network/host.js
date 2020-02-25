@@ -69,6 +69,8 @@
         // ip data array
         this.data = data;
     };
+    DIMP.Class(Host, DIMP.type.Object, null);
+
     Host.prototype.valueOf = function () {
         console.assert(false, 'implement me!');
         return null;

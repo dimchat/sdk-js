@@ -43,9 +43,11 @@
     var Robot = function (identifier) {
         User.call(this, identifier);
     };
-    ns.Class(Robot, User);
+    ns.Class(Robot, User, null);
 
     //-------- namespace --------
     ns.Robot = Robot;
+
+    ns.register('Robot');
 
 }(DIMP);

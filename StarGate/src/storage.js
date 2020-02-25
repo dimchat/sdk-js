@@ -46,7 +46,7 @@
             this.ROOT = 'dim';
         }
     };
-    DIMP.Class(Storage);
+    DIMP.Class(Storage, DIMP.type.Object, null);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);

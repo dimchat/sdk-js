@@ -37,7 +37,7 @@
 
     var Callback = function () {
     };
-    ns.Interface(Callback);
+    ns.Interface(Callback, null);
 
     Callback.prototype.onFinished = function (result, error) {
         console.assert(result || error, 'result empty');
@@ -47,6 +47,8 @@
     //-------- namespace --------
     ns.Callback = Callback;
 
+    ns.register('Callback');
+
 }(DIMP);
 
 !function (ns) {
@@ -54,7 +56,7 @@
 
     var CompletionHandler = function () {
     };
-    ns.Interface(CompletionHandler);
+    ns.Interface(CompletionHandler, null);
 
     CompletionHandler.prototype.onSuccess = function () {
         console.assert(false, 'implement me!');
@@ -65,8 +67,17 @@
         console.assert(false, 'implement me!');
     };
 
+    CompletionHandler.newHandler = function (onSuccess, onFailed) {
+        var handler = new CompletionHandler();
+        handler.onSuccess = onSuccess;
+        handler.onFailed = onFailed;
+        return handler;
+    };
+
     //-------- namespace --------
     ns.CompletionHandler = CompletionHandler;
+
+    ns.register('CompletionHandler');
 
 }(DIMP);
 
@@ -75,7 +86,7 @@
 
     var ConnectionDelegate = function () {
     };
-    ns.Interface(ConnectionDelegate);
+    ns.Interface(ConnectionDelegate, null);
 
     /**
      *  Receive data package
@@ -92,6 +103,8 @@
     //-------- namespace --------
     ns.ConnectionDelegate = ConnectionDelegate;
 
+    ns.register('ConnectionDelegate');
+
 }(DIMP);
 
 !function (ns) {
@@ -99,7 +112,7 @@
 
     var MessengerDelegate = function () {
     };
-    ns.Interface(MessengerDelegate);
+    ns.Interface(MessengerDelegate, null);
 
     /**
      *  Upload encrypted data to CDN
@@ -145,5 +158,7 @@
 
     //-------- namespace --------
     ns.MessengerDelegate = MessengerDelegate;
+
+    ns.register('MessengerDelegate');
 
 }(DIMP);

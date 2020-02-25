@@ -45,7 +45,7 @@
         // CPU pool (ContentType -> ContentProcessor)
         this.contentProcessors = {};
     };
-    ns.Class(ContentProcessor);
+    ns.Class(ContentProcessor, ns.type.Object, null);
 
     //
     //  Environment variables as context
@@ -85,34 +85,58 @@
 
     //-------- Runtime --------
 
+    /**
+     *  Get/create content processor with content type
+     *
+     * @param type {ContentType}
+     * @returns {ContentProcessor}
+     */
     ContentProcessor.prototype.getCPU = function (type) {
+        var value;
+        if (type instanceof ContentType) {
+            value = type.valueOf();
+        } else {
+            value = type;
+        }
         // 1. get from pool
-        var cpu = this.contentProcessors[type];
+        var cpu = this.contentProcessors[value];
         if (cpu) {
             return cpu;
         }
         // 2. get CPU class by content type
-        var clazz = cpu_classes[type];
+        var clazz = cpu_classes[value];
         if (!clazz) {
-            // default CPU
-            clazz = cpu_classes[ContentType.UNKNOWN];
-            // if (!clazz) {
-            //     throw TypeError('failed to get CPU for content type: ' + type);
-            // }
+            if (ContentType.UNKNOWN.equals(value)) {
+                throw TypeError('default CPU not register yet');
+            }
+            // call default CPU
+            return this.getCPU(ContentType.UNKNOWN);
         }
         // 3. create CPU with messenger
         cpu = new clazz(this.messenger);
-        this.contentProcessors[type] = cpu;
+        this.contentProcessors[value] = cpu;
         return cpu;
     };
 
     var cpu_classes = {}; // ContentType -> Class
 
+    /**
+     *  Register content processor class with content type
+     *
+     * @param type {ContentType}
+     * @param clazz {Class}
+     */
     ContentProcessor.register = function (type, clazz) {
-        if (clazz) {
-            cpu_classes[type] = clazz;
+        var value;
+        if (type instanceof ContentType) {
+            value = type.valueOf();
         } else {
-            delete cpu_classes[type];
+            value = type;
+        }
+        if (clazz) {
+            cpu_classes[value] = clazz;
+        } else {
+            delete cpu_classes[value];
         }
     };
 
@@ -120,6 +144,10 @@
     if (typeof ns.cpu !== 'object') {
         ns.cpu = {};
     }
+    ns.Namespace(ns.cpu);
+
     ns.cpu.ContentProcessor = ContentProcessor;
+
+    ns.cpu.register('ContentProcessor')
 
 }(DIMP);

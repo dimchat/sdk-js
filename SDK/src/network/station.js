@@ -45,9 +45,11 @@
         this.host = host;
         this.port = port;
     };
-    ns.Class(Station, User);
+    ns.Class(Station, User, null);
 
     //-------- namespace --------
     ns.Station = Station;
+
+    ns.register('Station');
 
 }(DIMP);

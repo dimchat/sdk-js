@@ -40,7 +40,7 @@
     var ServiceProvider = function (identifier) {
         Group.call(this, identifier);
     };
-    ns.Class(ServiceProvider, Group);
+    ns.Class(ServiceProvider, Group, null);
 
     ServiceProvider.prototype.getStations = function () {
         return this.delegate.getMembers(this.identifier);
@@ -48,5 +48,7 @@
 
     //-------- namespace --------
     ns.ServiceProvider = ServiceProvider;
+
+    ns.register('ServiceProvider');
 
 }(DIMP);

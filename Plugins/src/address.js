@@ -76,7 +76,7 @@
         this.network = new NetworkType(data[0]);
         this.code = search_number(cc);
     };
-    ns.Class(DefaultAddress, Address);
+    ns.Class(DefaultAddress, Address, null);
 
     DefaultAddress.prototype.getNetwork = function () {
         return this.network;
@@ -98,15 +98,15 @@
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         // 2. head = network + digest
         var head = new Data(21);
-        head.push(network.value);
+        head.push(network.valueOf());
         head.push(digest);
         // 3. cc = sha256(sha256(head)).prefix(4)
-        var cc = check_code(head.getBytes());
+        var cc = check_code(head.getBytes(false));
         // 4. data = base58_encode(head + cc)
         var data = new Data(25);
         data.push(head);
         data.push(cc);
-        return new DefaultAddress(Base58.encode(data.getBytes()));
+        return new DefaultAddress(Base58.encode(data.getBytes(false)));
     };
 
     var check_code = function (data) {

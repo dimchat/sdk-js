@@ -49,7 +49,7 @@
     var MetaCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
     };
-    ns.Class(MetaCommandProcessor, CommandProcessor);
+    ns.Class(MetaCommandProcessor, CommandProcessor, null);
 
     // query meta for ID
     var get_meta = function (identifier) {
@@ -99,5 +99,7 @@
 
     //-------- namespace --------
     ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
+
+    ns.cpu.register('MetaCommandProcessor');
 
 }(DIMP);

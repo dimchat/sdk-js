@@ -68,7 +68,7 @@
         this.contactsMap   = {};  // ID -> List<ID>
         this.membersMap    = {};  // ID -> List<ID>
     };
-    ns.Class(Facebook, Barrack);
+    ns.Class(Facebook, Barrack, null);
 
     Facebook.prototype.ansGet = function (name) {
         if (!this.ans) {
@@ -631,5 +631,7 @@
 
     //-------- namespace --------
     ns.Facebook = Facebook;
+
+    ns.register('Facebook');
 
 }(DIMP);

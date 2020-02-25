@@ -43,7 +43,7 @@
     var Polylogue = function (identifier) {
         Group.call(this, identifier);
     };
-    ns.Class(Polylogue, Group);
+    ns.Class(Polylogue, Group, null);
 
     Polylogue.prototype.getOwner = function () {
         var owner = Group.prototype.getOwner.call(this);
@@ -56,5 +56,7 @@
 
     //-------- namespace --------
     ns.Polylogue = Polylogue;
+
+    ns.register('Polylogue');
 
 }(DIMP);

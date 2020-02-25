@@ -44,7 +44,7 @@
     var GroupCommandProcessor = function (messenger) {
         HistoryCommandProcessor.call(this, messenger);
     };
-    ns.Class(GroupCommandProcessor, HistoryCommandProcessor);
+    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
 
     // convert String list to ID list
     var convert_id_list = function (list) {
@@ -122,6 +122,10 @@
     if (typeof ns.cpu.group !== 'object') {
         ns.cpu.group = {};
     }
+    ns.Namespace(ns.cpu.group);
+
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
+
+    ns.cpu.register('GroupCommandProcessor');
 
 }(DIMP);

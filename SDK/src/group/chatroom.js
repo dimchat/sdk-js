@@ -58,6 +58,8 @@
     //-------- namespace --------
     ns.ChatroomDataSource = ChatroomDataSource;
 
+    ns.register('ChatroomDataSource');
+
 }(DIMP);
 
 !function (ns) {
@@ -71,7 +73,7 @@
     var Chatroom = function (identifier) {
         Group.call(this, identifier);
     };
-    ns.Class(Chatroom, Group);
+    ns.Class(Chatroom, Group, null);
 
     Chatroom.prototype.getAdmins = function () {
         return this.delegate.getAdmins(this.identifier);
@@ -79,5 +81,7 @@
 
     //-------- namespace --------
     ns.Chatroom = Chatroom;
+
+    ns.register('Chatroom');
 
 }(DIMP);

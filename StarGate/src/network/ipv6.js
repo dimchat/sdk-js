@@ -140,7 +140,7 @@
         }
         Host.call(this, ip, port, data);
     };
-    DIMP.Class(IPv6, Host);
+    DIMP.Class(IPv6, Host, null);
 
     IPv6.prototype.valueOf = function () {
         if (this.port === 0) {

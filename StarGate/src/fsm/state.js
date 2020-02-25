@@ -41,7 +41,7 @@
     var State = function () {
         this.transitions = [];
     };
-    DIMP.Class(State);
+    DIMP.Class(State, DIMP.type.Object, null);
 
     /**
      *  Append a transition for this state

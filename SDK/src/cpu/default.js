@@ -48,7 +48,7 @@
     var DefaultContentProcessor = function (messenger) {
         ContentProcessor.call(this, messenger);
     };
-    ns.Class(DefaultContentProcessor, ContentProcessor);
+    ns.Class(DefaultContentProcessor, ContentProcessor, null);
 
     //
     //  Main
@@ -71,6 +71,8 @@
     //-------- namespace --------
     ns.cpu.DefaultContentProcessor = DefaultContentProcessor;
 
+    ns.cpu.register('DefaultContentProcessor');
+
 }(DIMP);
 
 !function (ns) {
@@ -86,7 +88,7 @@
     var DefaultCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
     };
-    ns.Class(DefaultCommandProcessor, CommandProcessor);
+    ns.Class(DefaultCommandProcessor, CommandProcessor, null);
 
     //
     //  Main
@@ -108,5 +110,7 @@
 
     //-------- namespace --------
     ns.cpu.DefaultCommandProcessor = DefaultCommandProcessor;
+
+    ns.cpu.register('DefaultCommandProcessor');
 
 }(DIMP);
