@@ -52,7 +52,7 @@
         this.status = StarStatus.Init;
         this.waitingList = [];
     };
-    DIMP.Class(Fence, null, Star);
+    DIMP.Class(Fence, DIMP.type.Object, Star);
 
     /**
      *  Callback when received data

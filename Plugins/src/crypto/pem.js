@@ -127,7 +127,7 @@
     //
     var pem = function () {
     };
-    ns.Class(pem, null, KeyParser);
+    ns.Class(pem, ns.type.Object, KeyParser);
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };

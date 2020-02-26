@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 25, 2020
+ * @date      Feb. 27, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -223,13 +223,13 @@
     StorageCommand.prototype.decrypt = function(key) {
         if (!this.plaintext) {
             var pwd = null;
-            if (ns.type.Object.isinstance(key, PrivateKey)) {
+            if (key instanceof PrivateKey) {
                 pwd = this.decryptKey(key);
                 if (!pwd) {
                     throw Error("failed to decrypt key: " + key)
                 }
             } else {
-                if (ns.type.Object.isinstance(key, SymmetricKey)) {
+                if (key instanceof SymmetricKey) {
                     pwd = key
                 } else {
                     throw TypeError("Decryption key error: " + key)
@@ -1415,7 +1415,7 @@
     Facebook.prototype.getPrivateKeysForDecryption = function(identifier) {
         var keys = [];
         var sKey = this.getPrivateKeyForSignature(identifier);
-        if (sKey && ns.type.Object.isinstance(sKey, DecryptKey)) {
+        if (sKey && ns.Interface.conforms(sKey, DecryptKey)) {
             keys.push(sKey)
         }
         return keys

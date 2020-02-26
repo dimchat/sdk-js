@@ -162,13 +162,13 @@
         if (!this.plaintext) {
             // 1. get password for decrypting data
             var pwd = null;
-            if (ns.type.Object.isinstance(key, PrivateKey)) {
+            if (key instanceof PrivateKey) {
                 // decrypt password with private key
                 pwd = this.decryptKey(key);
                 if (!pwd) {
                     throw Error('failed to decrypt key: ' + key);
                 }
-            } else if (ns.type.Object.isinstance(key, SymmetricKey)) {
+            } else if (key instanceof SymmetricKey) {
                 pwd = key;
             } else {
                 throw TypeError('Decryption key error: ' + key);

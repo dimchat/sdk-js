@@ -34,7 +34,6 @@
 !function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Base64 = ns.format.Base64;
@@ -72,12 +71,12 @@
      *      }
      */
     var AESKey = function (key) {
-        Dictionary.call(this, key);
+        SymmetricKey.call(this, key);
         // TODO: check algorithm parameters
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
     };
-    ns.Class(AESKey, Dictionary, SymmetricKey);
+    ns.Class(AESKey, SymmetricKey, null);
 
     AESKey.prototype.getSize = function () {
         var size = this.getValue('keySize');

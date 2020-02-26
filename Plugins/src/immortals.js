@@ -121,7 +121,7 @@
         load_account.call(this, HULK);
         load_account.call(this, MOKI);
     };
-    ns.Class(Immortals, null, UserDataSource);
+    ns.Class(Immortals, ns.type.Object, UserDataSource);
 
     var load_account = function (identifier) {
         // ID
@@ -258,7 +258,7 @@
 
     Immortals.prototype.getPrivateKeysForDecryption = function (identifier) {
         var key = this.privateKeyMap[identifier];
-        if (key && ns.type.Object.isinstance(key, DecryptKey)) {
+        if (key && ns.Interface.conforms(key, DecryptKey)) {
             return [key];
         }
         return null;

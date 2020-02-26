@@ -39,7 +39,6 @@
     var PEM = ns.format.PEM;
 
     var Data = ns.type.Data;
-    var Dictionary = ns.type.Dictionary;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
@@ -54,9 +53,9 @@
      *      }
      */
     var RSAPublicKey = function (key) {
-        Dictionary.call(this, key);
+        PublicKey.call(this, key);
     };
-    ns.Class(RSAPublicKey, Dictionary, PublicKey, EncryptKey);
+    ns.Class(RSAPublicKey, PublicKey, EncryptKey);
 
     RSAPublicKey.prototype.getData = function () {
         var data = this.getValue('data');
@@ -152,8 +151,6 @@
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
 
-    var Dictionary = ns.type.Dictionary;
-
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
@@ -169,9 +166,9 @@
      *      }
      */
     var RSAPrivateKey = function (key) {
-        Dictionary.call(this, key);
+        PrivateKey.call(this, key);
     };
-    ns.Class(RSAPrivateKey, Dictionary, PrivateKey, DecryptKey);
+    ns.Class(RSAPrivateKey, PrivateKey, DecryptKey);
 
     RSAPrivateKey.prototype.getData = function () {
         var data = this.getValue('data');

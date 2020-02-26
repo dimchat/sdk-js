@@ -1,9 +1,9 @@
 /**
- *  DIM-SDK (v0.1.0)
- *  (DIMP: Decentralized Instant Messaging Protocol)
+ *  StarGate (v0.1.0)
+ *  (Interfaces for network connection)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 10, 2020
+ * @date      Feb. 27, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -406,7 +406,7 @@ if (typeof StarGate !== "object") {
         this.status = StarStatus.Init;
         this.waitingList = []
     };
-    DIMP.Class(Fence, null, Star);
+    DIMP.Class(Fence, DIMP.type.Object, Star);
     Fence.prototype.onReceived = function(data) {
         this.delegate.onReceived(data, this)
     };

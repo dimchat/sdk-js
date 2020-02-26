@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 23, 2020
+ * @date      Feb. 27, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -140,7 +140,7 @@
     var bs58 = base("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
     var BaseCoder = ns.format.BaseCoder;
     var base58 = function() {};
-    ns.Class(base58, null, BaseCoder);
+    ns.Class(base58, ns.type.Object, BaseCoder);
     base58.prototype.encode = function(data) {
         return bs58.encode(data)
     };
@@ -152,7 +152,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var md5 = function() {};
-    ns.Class(md5, null, Hash);
+    ns.Class(md5, ns.type.Object, Hash);
     md5.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -164,7 +164,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var sha256 = function() {};
-    ns.Class(sha256, null, Hash);
+    ns.Class(sha256, ns.type.Object, Hash);
     sha256.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -176,7 +176,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var ripemd160 = function() {};
-    ns.Class(ripemd160, null, Hash);
+    ns.Class(ripemd160, ns.type.Object, Hash);
     ripemd160.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -256,7 +256,7 @@
     };
     var KeyParser = ns.format.KeyParser;
     var pem = function() {};
-    ns.Class(pem, null, KeyParser);
+    ns.Class(pem, ns.type.Object, KeyParser);
     pem.prototype.encodePublicKey = function(key) {
         return encode_public(key)
     };
@@ -272,7 +272,6 @@
     ns.format.PEM.parser = new pem()
 }(DIMP);
 ! function(ns) {
-    var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var Base64 = ns.format.Base64;
     var Hex = ns.format.Hex;
@@ -295,9 +294,9 @@
         return new Uint8Array(size)
     };
     var AESKey = function(key) {
-        Dictionary.call(this, key)
+        SymmetricKey.call(this, key)
     };
-    ns.Class(AESKey, Dictionary, SymmetricKey);
+    ns.Class(AESKey, SymmetricKey, null);
     AESKey.prototype.getSize = function() {
         var size = this.getValue("keySize");
         if (size) {
@@ -373,14 +372,13 @@
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
     var Data = ns.type.Data;
-    var Dictionary = ns.type.Dictionary;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
     var EncryptKey = ns.crypto.EncryptKey;
     var RSAPublicKey = function(key) {
-        Dictionary.call(this, key)
+        PublicKey.call(this, key)
     };
-    ns.Class(RSAPublicKey, Dictionary, PublicKey, EncryptKey);
+    ns.Class(RSAPublicKey, PublicKey, EncryptKey);
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -440,15 +438,14 @@
     var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
-    var Dictionary = ns.type.Dictionary;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
     var PublicKey = ns.crypto.PublicKey;
     var RSAPrivateKey = function(key) {
-        Dictionary.call(this, key)
+        PrivateKey.call(this, key)
     };
-    ns.Class(RSAPrivateKey, Dictionary, PrivateKey, DecryptKey);
+    ns.Class(RSAPrivateKey, PrivateKey, DecryptKey);
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
