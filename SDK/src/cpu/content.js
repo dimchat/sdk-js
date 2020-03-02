@@ -118,7 +118,7 @@
         return cpu;
     };
 
-    var cpu_classes = {}; // ContentType -> Class
+    var cpu_classes = {}; // int -> Class
 
     /**
      *  Register content processor class with content type
