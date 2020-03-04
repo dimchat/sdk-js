@@ -43,13 +43,13 @@
     };
     DIMP.Interface(Observer, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when received notification
      *
-     * @param notification {Notification}
+     * @param {Notification} notification
      */
     Observer.prototype.onReceiveNotification = function (notification) {
-        console.assert(notification !== null, 'notification empty');
         console.assert(false, 'implement me!');
     };
 
@@ -66,9 +66,9 @@
     /**
      *  Notification object with name, sender and extra info
      *
-     * @param name {String}
-     * @param sender {Object}
-     * @param userInfo {{}}
+     * @param {String} name
+     * @param {Object} sender
+     * @param {{}} userInfo
      * @constructor
      */
     var Notification = function (name, sender, userInfo) {
@@ -101,8 +101,8 @@
     /**
      *  Add observer with notification name
      *
-     * @param observer {Observer}
-     * @param name {String}
+     * @param {Observer} observer
+     * @param {String} name
      */
     Center.prototype.addObserver = function (observer, name) {
         var list = this.observerMap[name];
@@ -121,8 +121,8 @@
     /**
      *  Remove observer from notification center
      *
-     * @param observer {Observer}
-     * @param name {String} - OPTIONAL
+     * @param {Observer} observer
+     * @param {String} name - OPTIONAL
      */
     Center.prototype.removeObserver = function (observer, name) {
         if (name) {
@@ -143,9 +143,9 @@
     /**
      *  Post a notification
      *
-     * @param notification {Notification|String} - notification or name
-     * @param sender {Object} - OPTIONAL
-     * @param userInfo {{}} - OPTIONAL
+     * @param {Notification|String} notification - notification or name
+     * @param {Object} sender - OPTIONAL
+     * @param {{}} userInfo - OPTIONAL
      */
     Center.prototype.postNotification = function (notification, sender, userInfo) {
         if (typeof notification === 'string') {

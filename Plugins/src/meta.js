@@ -37,6 +37,7 @@
 !function (ns) {
     'use strict';
 
+    var NetworkType = ns.protocol.NetworkType;
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.Meta;
 
@@ -58,11 +59,15 @@
     var DefaultMeta = function (meta) {
         Meta.call(this, meta);
         // memory cache
-        this.idMap = {};
+        this.idMap = {};  // int -> ID
     };
     ns.Class(DefaultMeta, Meta, null);
 
+    // @Override
     DefaultMeta.prototype.generateIdentifier = function (network) {
+        if (network instanceof NetworkType) {
+            network = network.valueOf();
+        }
         // check cache
         var identifier = this.idMap[network];
         if (!identifier) {
@@ -75,9 +80,13 @@
         return identifier;
     };
 
+    // @Override
     DefaultMeta.prototype.generateAddress = function (network) {
         if (!this.isValid()) {
             throw Error('meta invalid: ' + this);
+        }
+        if (network instanceof NetworkType) {
+            network = network.valueOf();
         }
         // check cache
         var identifier = this.idMap[network];

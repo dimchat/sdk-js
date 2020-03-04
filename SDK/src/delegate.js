@@ -39,8 +39,8 @@
     };
     ns.Interface(Callback, null);
 
+    // noinspection JSUnusedLocalSymbols
     Callback.prototype.onFinished = function (result, error) {
-        console.assert(result || error, 'result empty');
         console.assert(false, 'implement me!');
     };
 
@@ -62,8 +62,8 @@
         console.assert(false, 'implement me!');
     };
 
+    // noinspection JSUnusedLocalSymbols
     CompletionHandler.prototype.onFailed = function (error) {
-        console.assert(error !== null, 'result empty');
         console.assert(false, 'implement me!');
     };
 
@@ -88,14 +88,14 @@
     };
     ns.Interface(ConnectionDelegate, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Receive data package
      *
-     * @param data {Uint8Array} - package from network connection
+     * @param {Uint8Array} data - package from network connection
      * @returns {Uint8Array} data response to sender
      */
     ConnectionDelegate.prototype.onReceivePackage = function (data) {
-        console.assert(data !== null, 'data empty');
         console.assert(false, 'implement me!');
         return null;
     };
@@ -114,44 +114,41 @@
     };
     ns.Interface(MessengerDelegate, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Upload encrypted data to CDN
      *
-     * @param data {Uint8Array} - encrypted file data
-     * @param msg {InstantMessage}
+     * @param {Uint8Array} data - encrypted file data
+     * @param {InstantMessage} msg
      * @returns {String} - download URL
      */
     MessengerDelegate.prototype.uploadData = function (data, msg) {
-        console.assert(data !== null, 'data empty');
-        console.assert(msg !== null, 'msg empty');
         console.assert(false, 'implement me!');
         return null;
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Download encrypted data from CDN
      *
-     * @param url {URL} - download URL
-     * @param msg {InstantMessage}
+     * @param {URL} url - download URL
+     * @param {InstantMessage} msg
      * @returns {Uint8Array} - encrypted file data
      */
     MessengerDelegate.prototype.downloadData = function (url, msg) {
-        console.assert(url !== null, 'URL empty');
-        console.assert(msg !== null, 'msg empty');
         console.assert(false, 'implement me!');
         return null;
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Send out a data package onto network
      *
-     * @param data {Uint8Array} - package data
-     * @param handler {CompletionHandler}
+     * @param {Uint8Array} data - package data
+     * @param {CompletionHandler} handler
      * @returns {boolean}
      */
     MessengerDelegate.prototype.sendPackage = function (data, handler) {
-        console.assert(data !== null, 'data empty');
-        console.assert(handler !== null, 'handler empty');
         console.assert(false, 'implement me!');
         return false;
     };

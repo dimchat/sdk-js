@@ -46,7 +46,7 @@
     /**
      *  Append a transition for this state
      *
-     * @param transition {Transition}
+     * @param {Transition} transition
      */
     State.prototype.addTransition = function (transition) {
         if (this.transitions.indexOf(transition) >= 0) {
@@ -59,7 +59,7 @@
      *  Evaluate all transitions for this state
      *  (called by machine.tick)
      *
-     * @param machine
+     * @param {Machine} machine
      */
     State.prototype.tick = function (machine) {
         var transition;
@@ -73,40 +73,42 @@
         }
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when enter state
      *
-     * @param machine {Machine}
+     * @param {Machine} machine
      */
     State.prototype.onEnter = function (machine) {
-        console.assert(machine !== null, 'machine empty');
         console.assert(false, 'implement me!');
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when exit state
      *
-     * @param machine {Machine}
+     * @param {Machine} machine
      */
     State.prototype.onExit = function (machine) {
-        console.assert(machine !== null, 'machine empty');
         console.assert(false, 'implement me!');
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when state paused
      *
-     * @param machine {Machine}
+     * @param {Machine} machine
      */
     State.prototype.onPause = function (machine) {
-        console.assert(machine !== null, 'machine empty');
+        //console.assert(false, 'implement me!');
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when state resumed
      *
-     * @param machine {Machine}
+     * @param {Machine} machine
      */
     State.prototype.onResume = function (machine) {
-        console.assert(machine !== null, 'machine empty');
+        //console.assert(false, 'implement me!');
     };
 
     //-------- namespace --------

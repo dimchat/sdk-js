@@ -67,9 +67,9 @@
     /**
      *  Main function for process message content
      *
-     * @param content {Content} - content received
-     * @param sender {ID}
-     * @param msg {InstantMessage}
+     * @param {Content} content - content received
+     * @param {ID} sender
+     * @param {InstantMessage} msg
      * @returns {Content} - responding to sender
      */
     ContentProcessor.prototype.process = function (content, sender, msg) {
@@ -88,7 +88,7 @@
     /**
      *  Get/create content processor with content type
      *
-     * @param type {ContentType}
+     * @param {ContentType} type
      * @returns {ContentProcessor}
      */
     ContentProcessor.prototype.getCPU = function (type) {
@@ -123,8 +123,8 @@
     /**
      *  Register content processor class with content type
      *
-     * @param type {ContentType}
-     * @param clazz {Class}
+     * @param {ContentType} type
+     * @param {Class} clazz
      */
     ContentProcessor.register = function (type, clazz) {
         var value;

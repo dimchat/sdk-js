@@ -996,8 +996,6 @@
         }
     };
     AddressNameService.prototype.save = function(name, identifier) {
-        console.assert(name !== null, "name empty");
-        console.assert(identifier !== null, "ID empty");
         console.assert(false, "implement me!");
         return false
     };
@@ -1025,7 +1023,6 @@
     var Callback = function() {};
     ns.Interface(Callback, null);
     Callback.prototype.onFinished = function(result, error) {
-        console.assert(result || error, "result empty");
         console.assert(false, "implement me!")
     };
     ns.Callback = Callback;
@@ -1038,7 +1035,6 @@
         console.assert(false, "implement me!")
     };
     CompletionHandler.prototype.onFailed = function(error) {
-        console.assert(error !== null, "result empty");
         console.assert(false, "implement me!")
     };
     CompletionHandler.newHandler = function(onSuccess, onFailed) {
@@ -1054,7 +1050,6 @@
     var ConnectionDelegate = function() {};
     ns.Interface(ConnectionDelegate, null);
     ConnectionDelegate.prototype.onReceivePackage = function(data) {
-        console.assert(data !== null, "data empty");
         console.assert(false, "implement me!");
         return null
     };
@@ -1065,20 +1060,14 @@
     var MessengerDelegate = function() {};
     ns.Interface(MessengerDelegate, null);
     MessengerDelegate.prototype.uploadData = function(data, msg) {
-        console.assert(data !== null, "data empty");
-        console.assert(msg !== null, "msg empty");
         console.assert(false, "implement me!");
         return null
     };
     MessengerDelegate.prototype.downloadData = function(url, msg) {
-        console.assert(url !== null, "URL empty");
-        console.assert(msg !== null, "msg empty");
         console.assert(false, "implement me!");
         return null
     };
     MessengerDelegate.prototype.sendPackage = function(data, handler) {
-        console.assert(data !== null, "data empty");
-        console.assert(handler !== null, "handler empty");
         console.assert(false, "implement me!");
         return false
     };
@@ -1113,7 +1102,6 @@
         }
     };
     KeyStore.prototype.saveKeys = function(map) {
-        console.assert(map !== null, "map empty");
         return false
     };
     KeyStore.prototype.loadKeys = function() {
@@ -1159,12 +1147,11 @@
         return Barrack.prototype.cacheMeta.call(this, meta, identifier)
     };
     Facebook.prototype.saveMeta = function(meta, identifier) {
-        console.assert(meta !== null, "meta empty");
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return false
     };
     Facebook.prototype.loadMeta = function(identifier) {
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return null
     };
     var EXPIRES_KEY = "expires";
@@ -1182,7 +1169,7 @@
             }
         }
         var meta;
-        if (identifier.getType().isGroup()) {
+        if (identifier.isGroup()) {
             var members = this.getMembers(identifier);
             if (members) {
                 var id;
@@ -1199,7 +1186,7 @@
             }
             var owner = this.getOwner(identifier);
             if (!owner) {
-                if (identifier.getType().equals(NetworkType.Polylogue)) {
+                if (NetworkType.Polylogue.equals(identifier.getType())) {
                     meta = this.getMeta(identifier)
                 } else {
                     return false
@@ -1235,12 +1222,11 @@
         return true
     };
     Facebook.prototype.saveProfile = function(profile, identifier) {
-        console.assert(profile !== null, "profile empty");
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return false
     };
     Facebook.prototype.loadProfile = function(identifier) {
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return null
     };
     Facebook.prototype.verifyPrivateKey = function(key, identifier) {
@@ -1263,12 +1249,11 @@
         return true
     };
     Facebook.prototype.savePrivateKey = function(key, identifier) {
-        console.assert(key !== null, "private key empty");
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return false
     };
     Facebook.prototype.loadPrivateKey = function(identifier) {
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return null
     };
     Facebook.prototype.cacheContacts = function(contacts, identifier) {
@@ -1280,12 +1265,11 @@
         return true
     };
     Facebook.prototype.saveContacts = function(contacts, identifier) {
-        console.assert(contacts !== null, "contacts empty");
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return false
     };
     Facebook.prototype.loadContacts = function(identifier) {
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return null
     };
     Facebook.prototype.cacheMembers = function(members, identifier) {
@@ -1297,12 +1281,11 @@
         return true
     };
     Facebook.prototype.saveMembers = function(members, identifier) {
-        console.assert(members !== null, "members empty");
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return false
     };
     Facebook.prototype.loadMembers = function(identifier) {
-        console.assert(identifier !== null, "ID empty");
+        console.assert(false, "implement me!");
         return null
     };
     Facebook.prototype.getLocalUsers = function() {
@@ -1328,13 +1311,13 @@
             return new User(identifier)
         }
         var type = identifier.getType();
-        if (type.isPerson()) {
+        if (NetworkType.Main.equals(type) || NetworkType.BTCMain.equals(type)) {
             return new User(identifier)
         }
-        if (type.isRobot()) {
+        if (NetworkType.Robot.equals(type)) {
             return new Robot(identifier)
         }
-        if (type.isStation()) {
+        if (NetworkType.Station.equals(type)) {
             return new Station(identifier)
         }
         throw TypeError("Unsupported user type: " + type)
@@ -1344,13 +1327,13 @@
             return new Group(identifier)
         }
         var type = identifier.getType();
-        if (type.equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(type)) {
             return new Polylogue(identifier)
         }
-        if (type.equals(NetworkType.Chatroom)) {
+        if (NetworkType.Chatroom.equals(type)) {
             return new Chatroom(identifier)
         }
-        if (type.isProvider()) {
+        if (NetworkType.Provider.equals(type)) {
             return new ServiceProvider(identifier)
         }
         throw TypeError("Unsupported group type: " + type)
@@ -1447,7 +1430,7 @@
         if (owner) {
             return owner
         }
-        if (identifier.getType().equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(identifier.getType())) {
             return this.getFounder(identifier)
         }
         return null
@@ -1478,7 +1461,7 @@
         return gMeta.matches(mMeta.key)
     };
     Facebook.prototype.isOwner = function(member, group) {
-        if (group.getType().equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(group.getType())) {
             return this.isFounder(member, group)
         }
         throw Error("only Polylogue so far")
@@ -1558,7 +1541,7 @@
                 return users[0]
             }
         }
-        if (receiver.getType().isGroup()) {
+        if (receiver.isGroup()) {
             var members = facebook.getMembers(receiver);
             if (!members || members.length === 0) {
                 return null
@@ -1585,7 +1568,7 @@
         if (!user) {
             return null
         } else {
-            if (receiver.getType().isGroup()) {
+            if (receiver.isGroup()) {
                 msg = msg.trim(user.identifier)
             }
         }
@@ -1688,7 +1671,7 @@
         var sMsg = this.encryptMessage(msg);
         var rMsg = this.signMessage(sMsg);
         var ok = true;
-        if (split && receiver.getType().isGroup()) {
+        if (split && receiver.isGroup()) {
             var messages = null;
             var members = facebook.getMembers(receiver);
             if (members && members.length > 0) {
@@ -1721,12 +1704,10 @@
         return this.delegate.sendPackage(data, handler)
     };
     Messenger.prototype.saveMessage = function(msg) {
-        console.assert(msg !== null, "message empty");
         console.assert(false, "implement me!");
         return false
     };
     Messenger.prototype.suspendMessage = function(msg) {
-        console.assert(msg !== null, "message empty");
         console.assert(false, "implement me!");
         return false
     };

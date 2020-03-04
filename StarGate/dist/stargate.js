@@ -30,23 +30,13 @@ if (typeof StarGate !== "object") {
     var Delegate = function() {};
     DIMP.Interface(Delegate, null);
     Delegate.prototype.enterState = function(state, machine) {
-        console.assert(state !== null, "state empty");
-        console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!")
     };
     Delegate.prototype.exitState = function(state, machine) {
-        console.assert(state !== null, "state empty");
-        console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!")
     };
-    Delegate.prototype.pauseState = function(state, machine) {
-        console.assert(state !== null, "state empty");
-        console.assert(machine !== null, "machine empty")
-    };
-    Delegate.prototype.resumeState = function(state, machine) {
-        console.assert(state !== null, "state empty");
-        console.assert(machine !== null, "machine empty")
-    };
+    Delegate.prototype.pauseState = function(state, machine) {};
+    Delegate.prototype.resumeState = function(state, machine) {};
     ns.StateDelegate = Delegate;
     ns.register("StateDelegate")
 }(FiniteStateMachine);
@@ -56,7 +46,6 @@ if (typeof StarGate !== "object") {
     };
     DIMP.Class(Transition, DIMP.type.Object, null);
     Transition.prototype.evaluate = function(machine) {
-        console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!");
         return false
     };
@@ -85,19 +74,13 @@ if (typeof StarGate !== "object") {
         }
     };
     State.prototype.onEnter = function(machine) {
-        console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!")
     };
     State.prototype.onExit = function(machine) {
-        console.assert(machine !== null, "machine empty");
         console.assert(false, "implement me!")
     };
-    State.prototype.onPause = function(machine) {
-        console.assert(machine !== null, "machine empty")
-    };
-    State.prototype.onResume = function(machine) {
-        console.assert(machine !== null, "machine empty")
-    };
+    State.prototype.onPause = function(machine) {};
+    State.prototype.onResume = function(machine) {};
     ns.State = State;
     ns.register("State")
 }(FiniteStateMachine);
@@ -176,7 +159,6 @@ if (typeof StarGate !== "object") {
     var Observer = function() {};
     DIMP.Interface(Observer, null);
     Observer.prototype.onReceiveNotification = function(notification) {
-        console.assert(notification !== null, "notification empty");
         console.assert(false, "implement me!")
     };
     ns.Observer = Observer;
@@ -329,18 +311,12 @@ if (typeof StarGate !== "object") {
     var Delegate = function() {};
     DIMP.Interface(Delegate, null);
     Delegate.prototype.onReceived = function(response, star) {
-        console.assert(response !== null, "response empty");
-        console.assert(star !== null, "star empty");
         console.assert(false, "implement me!")
     };
     Delegate.prototype.onStatusChanged = function(status, star) {
-        console.assert(status !== null, "status empty");
-        console.assert(star !== null, "star empty");
         console.assert(false, "implement me!")
     };
     Delegate.prototype.onSent = function(request, error, star) {
-        console.assert(request !== null, "request empty");
-        console.assert(star !== null, "star empty");
         console.assert(false, "implement me!")
     };
     var Status = DIMP.type.Enum({
@@ -362,7 +338,6 @@ if (typeof StarGate !== "object") {
         return null
     };
     Star.prototype.launch = function(options) {
-        console.assert(options !== null, "options empty");
         console.assert(false, "implement me!")
     };
     Star.prototype.terminate = function() {
@@ -371,8 +346,6 @@ if (typeof StarGate !== "object") {
     Star.prototype.pause = function(options) {};
     Star.prototype.resume = function(options) {};
     Star.prototype.send = function(payload, delegate) {
-        console.assert(payload !== null, "payload empty");
-        console.assert(delegate !== null, "delegate empty");
         console.assert(false, "implement me!")
     };
     ns.Star = Star;
@@ -427,8 +400,6 @@ if (typeof StarGate !== "object") {
         return this.waitingList.shift()
     };
     Fence.prototype.connect = function(host, port) {
-        console.assert(host !== null, "host empty");
-        console.assert(port !== null, "port empty");
         console.assert(false, "implement me!")
     };
     Fence.prototype.disconnect = function() {

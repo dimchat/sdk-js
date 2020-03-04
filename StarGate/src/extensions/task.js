@@ -38,8 +38,8 @@
     /**
      *  Create sending task
      *
-     * @param data {Uint8Array} - payload
-     * @param delegate - StarDelegate
+     * @param {Uint8Array} data - payload
+     * @param {StarDelegate|*} delegate
      * @constructor
      */
     var Task = function (data, delegate) {

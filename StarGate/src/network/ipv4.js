@@ -78,7 +78,7 @@
     /**
      *  Parse IPv4 host string
      *
-     * @param host {String}
+     * @param {String} host
      * @returns {IPv4}
      */
     IPv4.parse = function (host) {

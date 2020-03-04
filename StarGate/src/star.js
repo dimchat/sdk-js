@@ -43,40 +43,37 @@
     };
     DIMP.Interface(Delegate, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback after received data
      *
-     * @param response {Uint8Array}
-     * @param star {Star}
+     * @param {Uint8Array} response
+     * @param {Star} star - server
      */
     Delegate.prototype.onReceived = function (response, star) {
-        console.assert(response !== null, 'response empty');
-        console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback on connection status changed
      *
-     * @param status {StarStatus}
-     * @param star {Star}
+     * @param {StarStatus} status
+     * @param {Star} star - server
      */
     Delegate.prototype.onStatusChanged = function (status, star) {
-        console.assert(status !== null, 'status empty');
-        console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback after request sent
      *
-     * @param request {Uint8Array}
-     * @param error {Error}
-     * @param star {Star}
+     * @param {Uint8Array} request
+     * @param {Error} error
+     * @param {Star} star - server
      */
     Delegate.prototype.onSent = function (request, error, star) {
-        console.assert(request !== null, 'request empty');
-        console.assert(star !== null, 'star empty');
         console.assert(false, 'implement me!');
     };
 
@@ -116,13 +113,13 @@
         return null;
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Connect to a server
      *
-     * @param options {{}}
+     * @param {{}} options
      */
     Star.prototype.launch = function (options) {
-        console.assert(options !== null, 'options empty');
         console.assert(false, 'implement me!');
     };
     /**
@@ -137,15 +134,14 @@
     Star.prototype.resume = function (options) {
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Send data to the connected server
      *
-     * @param payload {Uint8Array}
-     * @param delegate {StarDelegate}
+     * @param {Uint8Array} payload
+     * @param {StarDelegate} delegate
      */
     Star.prototype.send = function (payload, delegate) {
-        console.assert(payload !== null, 'payload empty');
-        console.assert(delegate !== null, 'delegate empty');
         console.assert(false, 'implement me!');
     };
 

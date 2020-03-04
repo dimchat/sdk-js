@@ -44,7 +44,7 @@
     /**
      *  Create a star gate with delegate
      *
-     * @param delegate - StarDelegate
+     * @param {StarDelegate|*} delegate
      * @constructor
      */
     var Fence = function (delegate) {
@@ -57,7 +57,7 @@
     /**
      *  Callback when received data
      *
-     * @param data {Uint8Array}
+     * @param {Uint8Array} data
      */
     Fence.prototype.onReceived = function (data) {
         this.delegate.onReceived(data, this);
@@ -91,15 +91,14 @@
         return this.waitingList.shift();
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Connect to a server
      *
-     * @param host {String}
-     * @param port {Number}
+     * @param {String} host
+     * @param {Number} port
      */
     Fence.prototype.connect = function (host, port) {
-        console.assert(host !== null, 'host empty');
-        console.assert(port !== null, 'port empty');
         console.assert(false, 'implement me!');
     };
     Fence.prototype.disconnect = function () {
@@ -122,7 +121,7 @@
     /**
      *  Callback when received response
      *
-     * @param data {Uint8Array}
+     * @param {Uint8Array} data
      */
     Fence.prototype.onReceived = function (data) {
         this.delegate.onReceived(data, this);
@@ -143,8 +142,8 @@
     /**
      *  Send request data to server
      *
-     * @param data {Uint8Array}
-     * @param delegate {StarDelegate}
+     * @param {Uint8Array} data
+     * @param {StarDelegate} delegate
      */
     Fence.prototype.send = function (data, delegate) {
         var task = new Task(data, delegate);

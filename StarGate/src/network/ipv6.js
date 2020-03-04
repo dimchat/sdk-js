@@ -156,7 +156,7 @@
     /**
      *  Parse IPv6 host string
      *
-     * @param host {String}
+     * @param {String} host
      * @returns {IPv6|null}
      */
     IPv6.parse = function (host) {

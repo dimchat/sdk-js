@@ -89,28 +89,27 @@
         }
         return Barrack.prototype.cacheMeta.call(this, meta, identifier);
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save meta for entity ID (must verify first)
      *
-     * @param meta {Meta}
-     * @param identifier {ID}
+     * @param {Meta} meta
+     * @param {ID} identifier
      * @returns {boolean}
      */
     Facebook.prototype.saveMeta = function (meta, identifier) {
-        console.assert(meta !== null, 'meta empty');
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Load meta for entity ID
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {Meta}
      */
     Facebook.prototype.loadMeta = function (identifier) {
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return null;
     };
 
@@ -138,7 +137,7 @@
         //         else (this is a user profile)
         //             verify it with the user's meta.key
         var meta;
-        if (identifier.getType().isGroup()) {
+        if (identifier.isGroup()) {
             // check by each member
             var members = this.getMembers(identifier);
             if (members) {
@@ -160,7 +159,7 @@
             // check by owner
             var owner = this.getOwner(identifier);
             if (!owner) {
-                if (identifier.getType().equals(NetworkType.Polylogue)) {
+                if (NetworkType.Polylogue.equals(identifier.getType())) {
                     // NOTICE: if this is a polylogue profile
                     //             verify it with the founder's meta.key
                     //             (which equals to the group's meta.key)
@@ -199,28 +198,27 @@
         this.profileMap[identifier] = profile;
         return true;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save profile with entity ID (must verify first)
      *
-     * @param profile {Profile}
-     * @param identifier {ID}
+     * @param {Profile} profile
+     * @param {ID} identifier
      * @returns {boolean}
      */
     Facebook.prototype.saveProfile = function (profile, identifier) {
-        console.assert(profile !== null, 'profile empty');
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Load profile for entity ID
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {Profile}
      */
     Facebook.prototype.loadProfile = function (identifier) {
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return null;
     };
 
@@ -247,28 +245,27 @@
         this.privateKeyMap[identifier] = key;
         return true;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save private key for user ID
      *
-     * @param key {PrivateKey}
-     * @param identifier {ID}
+     * @param {PrivateKey} key
+     * @param {ID} identifier
      * @returns {boolean}
      */
     Facebook.prototype.savePrivateKey = function (key, identifier) {
-        console.assert(key !== null, 'private key empty');
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Load private key for user ID
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {PrivateKey}
      */
     Facebook.prototype.loadPrivateKey = function (identifier) {
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return null;
     };
 
@@ -283,28 +280,27 @@
         this.contactsMap[identifier] = contacts;
         return true;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save contacts for user
      *
-     * @param contacts {ID[]} - contacts ID list
-     * @param identifier {ID} - user ID
+     * @param {ID[]} contacts - contact ID list
+     * @param {ID} identifier - user ID
      * @returns {boolean}
      */
     Facebook.prototype.saveContacts = function (contacts, identifier) {
-        console.assert(contacts !== null, 'contacts empty');
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Load contacts for user
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {ID[]}
      */
     Facebook.prototype.loadContacts = function (identifier) {
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return null;
     };
 
@@ -319,28 +315,27 @@
         this.membersMap[identifier] = members;
         return true;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save members of group
      *
-     * @param members {ID[]} - members ID list
-     * @param identifier {ID} - group ID
+     * @param {ID[]} members - member ID list
+     * @param {ID} identifier - group ID
      * @returns {boolean}
      */
     Facebook.prototype.saveMembers = function (members, identifier) {
-        console.assert(members !== null, 'members empty');
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Load members of group
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {ID[]}
      */
     Facebook.prototype.loadMembers = function (identifier) {
-        console.assert(identifier !== null, 'ID empty');
-        // do nothing
+        console.assert(false, 'implement me!');
         return null;
     };
 
@@ -391,13 +386,13 @@
         }
         // check user type
         var type = identifier.getType();
-        if (type.isPerson()) {
+        if (NetworkType.Main.equals(type) || NetworkType.BTCMain.equals(type)) {
             return new User(identifier);
         }
-        if (type.isRobot()) {
+        if (NetworkType.Robot.equals(type)) {
             return new Robot(identifier);
         }
-        if (type.isStation()) {
+        if (NetworkType.Station.equals(type)) {
             return new Station(identifier);
         }
         throw TypeError('Unsupported user type: ' + type);
@@ -410,13 +405,13 @@
         }
         // check group type
         var type = identifier.getType();
-        if (type.equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(type)) {
             return new Polylogue(identifier);
         }
-        if (type.equals(NetworkType.Chatroom)) {
+        if (NetworkType.Chatroom.equals(type)) {
             return new Chatroom(identifier);
         }
-        if (type.isProvider()) {
+        if (NetworkType.Provider.equals(type)) {
             return new ServiceProvider(identifier);
         }
         throw TypeError('Unsupported group type: ' + type);
@@ -549,7 +544,7 @@
             return owner;
         }
         // check group type
-        if (identifier.getType().equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(identifier.getType())) {
             // Polylogue's owner is its founder
             return this.getFounder(identifier);
         }
@@ -588,7 +583,7 @@
     };
 
     Facebook.prototype.isOwner = function (member, group) {
-        if (group.getType().equals(NetworkType.Polylogue)) {
+        if (NetworkType.Polylogue.equals(group.getType())) {
             return this.isFounder(member, group);
         }
         throw Error('only Polylogue so far');

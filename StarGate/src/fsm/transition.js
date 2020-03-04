@@ -43,14 +43,14 @@
     };
     DIMP.Class(Transition, DIMP.type.Object, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Evaluate the current state
      *
-     * @param machine {Machine}
+     * @param {Machine} machine
      * @returns {boolean}
      */
     Transition.prototype.evaluate = function (machine) {
-        console.assert(machine !== null, 'machine empty');
         console.assert(false, 'implement me!');
         return false;
     };

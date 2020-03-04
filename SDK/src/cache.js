@@ -68,8 +68,8 @@
         }
     };
 
+    // noinspection JSUnusedLocalSymbols
     KeyStore.prototype.saveKeys = function(map) {
-        console.assert(map !== null, "map empty");
         // do nothing
         return false
     };

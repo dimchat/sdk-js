@@ -102,7 +102,7 @@
             // so just return current user
             return users[0];
         }
-        if (receiver.getType().isGroup()) {
+        if (receiver.isGroup()) {
             // group message (recipient not designated)
             var members = facebook.getMembers(receiver);
             if (!members || members.length === 0) {
@@ -137,7 +137,7 @@
         if (!user) {
             // current users not match
             return null;
-        } else if (receiver.getType().isGroup()) {
+        } else if (receiver.isGroup()) {
             // trim group message
             msg = msg.trim(user.identifier);
         }
@@ -281,10 +281,10 @@
     /**
      *  Send message content to receiver
      *
-     * @param content {Content}
-     * @param receiver {ID|String}
-     * @param callback {Callback} - OPTIONAL
-     * @param split {boolean} - OPTIONAL; whether split group message
+     * @param {Content} content
+     * @param {ID|String} receiver
+     * @param {Callback} callback - OPTIONAL
+     * @param {boolean} split - OPTIONAL; whether split group message
      * @returns {boolean}
      */
     Messenger.prototype.sendContent = function (content, receiver, callback, split) {
@@ -298,9 +298,9 @@
     /**
      *  Send instant message (encrypt and sign) onto DIM network
      *
-     * @param msg {InstantMessage|Message}
-     * @param callback {Callback} - OPTIONAL; if needs callback, set it here
-     * @param split {boolean} - OPTIONAL; whether split group message
+     * @param {InstantMessage|Message} msg
+     * @param {Callback} callback - OPTIONAL; if needs callback, set it here
+     * @param {boolean} split - OPTIONAL; whether split group message
      * @returns {boolean}
      */
     Messenger.prototype.sendMessage = function (msg, callback, split) {
@@ -311,7 +311,7 @@
         var sMsg = this.encryptMessage(msg);
         var rMsg = this.signMessage(sMsg);
         var ok = true;
-        if (split && receiver.getType().isGroup()) {
+        if (split && receiver.isGroup()) {
             // split for each members
             var messages = null;
             var members = facebook.getMembers(receiver);
@@ -355,27 +355,28 @@
     //
     //  Message
     //
+
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save the message into local storage
      *
-     * @param msg {InstantMessage}
+     * @param {InstantMessage} msg
      * @returns {boolean}
      */
     Messenger.prototype.saveMessage = function (msg) {
-        console.assert(msg !== null, 'message empty');
         console.assert(false, 'implement me!');
         return false;
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Suspend the received reliable message for the sender's meta,
      *  or received instant message for group's meta,
      *  or sending instant message for receiver's meta.
      *
-     * @param msg {ReliableMessage|InstantMessage}
+     * @param {ReliableMessage|InstantMessage} msg
      * @returns {boolean}
      */
     Messenger.prototype.suspendMessage = function (msg) {
-        console.assert(msg !== null, 'message empty');
         console.assert(false, 'implement me!');
         return false;
     };

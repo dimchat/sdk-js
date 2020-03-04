@@ -73,7 +73,7 @@
         if (!ns.type.Arrays.equals(cc, suffix)) {
             throw Error('address check code error: ' + string);
         }
-        this.network = new NetworkType(data[0]);
+        this.network = data[0];
         this.code = search_number(cc);
     };
     ns.Class(DefaultAddress, Address, null);
@@ -89,16 +89,19 @@
     /**
      *  Generate address with fingerprint and network ID
      *
-     * @param fingerprint {Uint8Array}
-     * @param network {NetworkType}
+     * @param {Uint8Array} fingerprint
+     * @param {NetworkType|Number|char|*} network
      * @returns {DefaultAddress}
      */
     DefaultAddress.generate = function (fingerprint, network) {
+        if (network instanceof NetworkType) {
+            network = network.valueOf();
+        }
         // 1. digest = ripemd160(sha256(fingerprint))
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         // 2. head = network + digest
         var head = new Data(21);
-        head.push(network.valueOf());
+        head.push(network);
         head.push(digest);
         // 3. cc = sha256(sha256(head)).prefix(4)
         var cc = check_code(head.getBytes(false));

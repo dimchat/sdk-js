@@ -544,7 +544,7 @@
         if (!ns.type.Arrays.equals(cc, suffix)) {
             throw Error("address check code error: " + string)
         }
-        this.network = new NetworkType(data[0]);
+        this.network = data[0];
         this.code = search_number(cc)
     };
     ns.Class(DefaultAddress, Address, null);
@@ -555,9 +555,12 @@
         return this.code
     };
     DefaultAddress.generate = function(fingerprint, network) {
+        if (network instanceof NetworkType) {
+            network = network.valueOf()
+        }
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         var head = new Data(21);
-        head.push(network.valueOf());
+        head.push(network);
         head.push(digest);
         var cc = check_code(head.getBytes(false));
         var data = new Data(25);
@@ -576,6 +579,7 @@
     ns.plugins.DefaultAddress = DefaultAddress
 }(DIMP);
 ! function(ns) {
+    var NetworkType = ns.protocol.NetworkType;
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.Meta;
     var DefaultAddress = ns.plugins.DefaultAddress;
@@ -585,6 +589,9 @@
     };
     ns.Class(DefaultMeta, Meta, null);
     DefaultMeta.prototype.generateIdentifier = function(network) {
+        if (network instanceof NetworkType) {
+            network = network.valueOf()
+        }
         var identifier = this.idMap[network];
         if (!identifier) {
             identifier = Meta.prototype.generateIdentifier.call(this, network);
@@ -597,6 +604,9 @@
     DefaultMeta.prototype.generateAddress = function(network) {
         if (!this.isValid()) {
             throw Error("meta invalid: " + this)
+        }
+        if (network instanceof NetworkType) {
+            network = network.valueOf()
         }
         var identifier = this.idMap[network];
         if (identifier) {

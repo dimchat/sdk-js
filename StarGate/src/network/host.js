@@ -54,9 +54,9 @@
     /**
      *  Create host info with IP, port, IP data
      *
-     * @param ip {String}
-     * @param port {Number}
-     * @param data {Uint8Array}
+     * @param {String} ip
+     * @param {Number} port
+     * @param {Uint8Array} data
      * @constructor
      */
     var Host = function (ip, port, data) {
@@ -85,7 +85,7 @@
     /**
      *  Convert host info to data array
      *
-     * @param default_port {Number}
+     * @param {Number} default_port
      * @returns {Uint8Array}
      */
     Host.prototype.toArray = function (default_port) {

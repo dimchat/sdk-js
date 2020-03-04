@@ -42,48 +42,46 @@
     };
     DIMP.Interface(Delegate, null);
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when entering a new state
      *
-     * @param state {State}
-     * @param machine {Machine}
+     * @param {State} state
+     * @param {Machine} machine
      */
     Delegate.prototype.enterState = function (state, machine) {
-        console.assert(state !== null, 'state empty');
-        console.assert(machine !== null, 'machine empty');
         console.assert(false, 'implement me!');
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when exit from current state
      *
-     * @param state {State}
-     * @param machine {Machine}
+     * @param {State} state
+     * @param {Machine} machine
      */
     Delegate.prototype.exitState = function (state, machine) {
-        console.assert(state !== null, 'state empty');
-        console.assert(machine !== null, 'machine empty');
         console.assert(false, 'implement me!');
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when pause current state
      *
-     * @param state {State}
-     * @param machine {Machine}
+     * @param {State} state
+     * @param {Machine} machine
      */
     Delegate.prototype.pauseState = function (state, machine) {
-        console.assert(state !== null, 'state empty');
-        console.assert(machine !== null, 'machine empty');
+        //console.assert(false, 'implement me!');
     };
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when resume current state
      *
-     * @param state {State}
-     * @param machine {Machine}
+     * @param {State} state
+     * @param {Machine} machine
      */
     Delegate.prototype.resumeState = function (state, machine) {
-        console.assert(state !== null, 'state empty');
-        console.assert(machine !== null, 'machine empty');
+        //console.assert(false, 'implement me!');
     };
 
     //-------- namespace --------

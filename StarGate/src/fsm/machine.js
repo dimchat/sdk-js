@@ -47,7 +47,7 @@
     /**
      *  Create a State Machine with default state name
      *
-     * @param defaultStateName {String}
+     * @param {String} defaultStateName
      * @constructor
      */
     var Machine = function (defaultStateName) {
@@ -63,8 +63,8 @@
     /**
      *  Add state with name
      *
-     * @param state {State}
-     * @param name {String}
+     * @param {State} state
+     * @param {String} name
      */
     Machine.prototype.addState = function (state, name) {
         this.stateMap[name] = state;
@@ -73,7 +73,7 @@
     /**
      *  Change state with name
      *
-     * @param name {String}
+     * @param {String} name
      */
     Machine.prototype.changeState = function (name) {
         var state = this.currentState;

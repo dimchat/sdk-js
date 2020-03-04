@@ -77,16 +77,15 @@
         }
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Save ANS record
      *
-     * @param name {String} - short name
-     * @param identifier {ID}
+     * @param {String} name - short name
+     * @param {ID} identifier
      * @returns {boolean}
      */
     AddressNameService.prototype.save = function (name, identifier) {
-        console.assert(name !== null, 'name empty');
-        console.assert(identifier !== null, 'ID empty');
         console.assert(false, 'implement me!');
         return false;
     };
@@ -94,7 +93,7 @@
     /**
      *  Get ID by short name
      *
-     * @param name {String} - short name
+     * @param {String} name - short name
      * @returns {ID}
      */
     AddressNameService.prototype.getIdentifier = function (name) {
@@ -104,7 +103,7 @@
     /**
      *  Get all short names with the same ID
      *
-     * @param identifier {ID}
+     * @param {ID} identifier
      * @returns {String[]}
      */
     AddressNameService.prototype.getNames = function (identifier) {

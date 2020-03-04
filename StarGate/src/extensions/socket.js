@@ -40,7 +40,7 @@
     /**
      *  Simple gate
      *
-     * @param delegate {StarDelegate}
+     * @param {StarDelegate} delegate
      * @constructor
      */
     var SocketClient = function (delegate) {
@@ -52,8 +52,8 @@
     /**
      *  Connect to a server
      *
-     * @param host {String}
-     * @param port {Number}
+     * @param {String} host
+     * @param {Number} port
      */
     SocketClient.prototype.connect = function (host, port) {
         var protocol = 'ws';
@@ -105,8 +105,8 @@
     /**
      *  Send request data onto the connected server
      *
-     * @param data {Uint8Array}
-     * @param delegate - StarDelegate
+     * @param {Uint8Array} data
+     * @param {StarDelegate|*} delegate
      */
     SocketClient.prototype.send = function (data, delegate) {
         if (this.isConnected()) {

@@ -75,7 +75,7 @@
     /**
      *  Check whether data file exists
      *
-     * @param path {String}
+     * @param {String} path
      * @returns {boolean}
      */
     Storage.prototype.exists = function (path) {
@@ -85,7 +85,7 @@
     /**
      *  Load text from file path
      *
-     * @param path {String}
+     * @param {String} path
      * @returns {string}
      */
     Storage.prototype.loadText = function (path) {
@@ -95,7 +95,7 @@
     /**
      *  Load data from file path
      *
-     * @param path {String}
+     * @param {String} path
      * @returns {Uint8Array}
      */
     Storage.prototype.loadData = function (path) {
@@ -109,7 +109,7 @@
     /**
      *  Load JSON from file path
      *
-     * @param path {String}
+     * @param {String} path
      * @returns {{}|[]}
      */
     Storage.prototype.loadJSON = function (path) {
@@ -127,7 +127,7 @@
     /**
      *  Delete file
      *
-     * @param path {String}
+     * @param {String} path
      */
     Storage.prototype.remove = function (path) {
         this.removeItem(this.ROOT + '.' + path);
@@ -137,8 +137,8 @@
     /**
      *  Save string into Text file
      *
-     * @param text {String}
-     * @param path {String}
+     * @param {String} text
+     * @param {String} path
      */
     Storage.prototype.saveText = function (text, path) {
         if (text) {
@@ -153,8 +153,8 @@
     /**
      *  Save data into binary file
      *
-     * @param data {Uint8Array}
-     * @param path {String}
+     * @param {Uint8Array} data
+     * @param {String} path
      */
     Storage.prototype.saveData = function (data, path) {
         var base64 = null;
@@ -167,8 +167,8 @@
     /**
      *  Save Map/List into JSON file
      *
-     * @param container {{}|[]}
-     * @param path {String}
+     * @param {{}|[]} container
+     * @param {String} path
      */
     Storage.prototype.saveJSON = function (container, path) {
         var json = null;
