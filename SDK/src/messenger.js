@@ -44,6 +44,7 @@
 
     var Envelope = ns.Envelope;
     var InstantMessage = ns.InstantMessage;
+    var ReliableMessage = ns.ReliableMessage;
 
     var FileContent = ns.protocol.FileContent;
 
@@ -104,14 +105,8 @@
         }
         if (receiver.isGroup()) {
             // group message (recipient not designated)
-            var members = facebook.getMembers(receiver);
-            if (!members || members.length === 0) {
-                // TODO: query group members
-                //       (do it by application)
-                return null;
-            }
             for (var i = 0; i < users.length; ++i) {
-                if (members.indexOf(users[i].identifier) >= 0) {
+                if (facebook.existsMember(users[i].identifier, receiver)) {
                     // set this item to be current user?
                     return users[i];
                 }
@@ -136,7 +131,7 @@
         var user = select.call(this, receiver);
         if (!user) {
             // current users not match
-            return null;
+            msg = null;
         } else if (receiver.isGroup()) {
             // trim group message
             msg = msg.trim(user.identifier);
@@ -298,12 +293,17 @@
     /**
      *  Send instant message (encrypt and sign) onto DIM network
      *
-     * @param {InstantMessage|Message} msg
+     * @param {InstantMessage|ReliableMessage} msg
      * @param {Callback} callback - OPTIONAL; if needs callback, set it here
      * @param {boolean} split - OPTIONAL; whether split group message
      * @returns {boolean}
      */
     Messenger.prototype.sendMessage = function (msg, callback, split) {
+        if (msg instanceof ReliableMessage) {
+            return send_message.call(this, msg, callback);
+        } else if (!(msg instanceof InstantMessage)) {
+            throw TypeError('message error: ' + msg);
+        }
         var facebook = this.getFacebook();
         var receiver = msg.envelope.receiver;
         receiver = facebook.getIdentifier(receiver);
@@ -393,62 +393,78 @@
             return null;
         }
         // 2. process message
-        var response = this.processReliableMessage(rMsg);
-        if (!response) {
+        rMsg = this.processReliableMessage(rMsg);
+        if (!rMsg) {
             // nothing to response
             return null;
         }
-        // 3. pack response
-        var facebook = this.getFacebook();
-        var sender = facebook.getIdentifier(rMsg.envelope.sender);
-        var receiver = facebook.getIdentifier(rMsg.envelope.receiver);
-        var user = select.call(this, receiver);
-        if (!user) {
-            // not for you?
-            // delivering message to other receiver?
-            user = facebook.getCurrentUser();
-            if (!user) {
-                throw Error('current user not found!');
-            }
-        }
-        var env = Envelope.newEnvelope(user.identifier, sender, 0);
-        var iMsg = InstantMessage.newMessage(response, env);
-        var nMsg = this.signMessage(this.encryptMessage(iMsg));
-        // serialize message
-        return this.serializeMessage(nMsg);
+        // 3. serialize message
+        return this.serializeMessage(rMsg);
     };
 
+    // TODO: override to check broadcast message before calling it
+    // TODO: override to deliver to the receiver when catch exception "receiver error ..."
     Messenger.prototype.processReliableMessage = function (msg) {
+        // 1. verify message
         var sMsg = this.verifyMessage(msg);
         if (!sMsg) {
             // waiting for sender's meta if not exists
             return null;
         }
-        // TODO: override to check broadcast message before calling it
-        // TODO: override to deliver to the receiver when catch exception "receiver error ..."
-        // continue to process it
-        return this.processSecureMessage(sMsg);
+        // 2. process message
+        sMsg = this.processSecureMessage(sMsg);
+        if (!sMsg) {
+            // nothing to respond
+            return null;
+        }
+        // 3. sign message
+        return this.signMessage(sMsg);
     };
 
     Messenger.prototype.processSecureMessage = function (msg) {
-        // try to decrypt
+        // 1. decrypt message
         var iMsg = this.decryptMessage(msg);
-        // continue to process it
-        return this.processInstantMessage(iMsg);
+        if (!iMsg) {
+            // cannot decrypt this message, not for you?
+            // delivering message to other receiver?
+            return null;
+        }
+        // 2. process message
+        iMsg = this.processInstantMessage(iMsg);
+        if (!iMsg) {
+            // nothing to respond
+            return null;
+        }
+        // 3. encrypt message
+        return this.encryptMessage(iMsg);
     };
 
+    // TODO: override to check group
+    // TODO: override to filter the response
     Messenger.prototype.processInstantMessage = function (msg) {
+        var facebook = this.getFacebook();
         var content = msg.content;
-        var sender = msg.envelope.sender;
-        sender = this.getFacebook().getIdentifier(sender);
+        var env = msg.envelope;
+        var sender = facebook.getIdentifier(env.sender);
 
+        // process content from sender
         var res = this.cpu.process(content, sender, msg);
         if (!this.saveMessage(msg)) {
             // error
             return null;
         }
-        // TODO: override to filter the response
-        return res;
+        if (!res) {
+            // nothing to respond
+            return null;
+        }
+
+        // check receiver
+        var receiver = facebook.getIdentifier(env.receiver);
+        var user = select.call(this, receiver);
+
+        // pack message
+        env = Envelope.newEnvelope(user.identifier, sender, 0);
+        return InstantMessage.newMessage(res, env);
     };
 
     //-------- namespace --------

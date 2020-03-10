@@ -53,11 +53,20 @@
     //
     ForwardContentProcessor.prototype.process = function (content, sender, msg) {
         var rMsg = content.getMessage();
-        return this.messenger.processReliableMessage(rMsg);
+        var messenger = this.messenger;
+        rMsg = messenger.processReliableMessage(rMsg);
+        if (rMsg) {
+            messenger.sendMessage(rMsg, null, false);
+        // } else {
+        //     var receiver = content.getMessage().envelope.receiver;
+        //     var text = 'Message forwarded: ' + receiver;
+        //     return new ReceiptCommand(text);
+        }
+
         // NOTICE: decrypt failed, not for you?
-        //         check content type in subclass, if it's a 'forward' message,
         //         it means you are asked to re-pack and forward this message
         // TODO: override to catch the exception 'receiver error ...'
+        return null;
     };
 
     //-------- register --------
