@@ -43,7 +43,7 @@
      */
     var ChatroomDataSource = function () {
     };
-    ns.Interface(ChatroomDataSource, GroupDataSource);
+    ns.Interface(ChatroomDataSource, [GroupDataSource]);
 
     /**
      *  Get all admins in the chatroom

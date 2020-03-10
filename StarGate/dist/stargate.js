@@ -3,7 +3,7 @@
  *  (Interfaces for network connection)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 27, 2020
+ * @date      Mar. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -85,7 +85,7 @@ if (typeof StarGate !== "object") {
     ns.register("State")
 }(FiniteStateMachine);
 ! function(ns) {
-    var Status = DIMP.type.Enum({
+    var Status = DIMP.type.Enum(null, {
         Stopped: 0,
         Running: 1,
         Paused: 2
@@ -319,7 +319,7 @@ if (typeof StarGate !== "object") {
     Delegate.prototype.onSent = function(request, error, star) {
         console.assert(false, "implement me!")
     };
-    var Status = DIMP.type.Enum({
+    var Status = DIMP.type.Enum(null, {
         Error: -1,
         Init: 0,
         Connecting: 1,
@@ -379,7 +379,7 @@ if (typeof StarGate !== "object") {
         this.status = StarStatus.Init;
         this.waitingList = []
     };
-    DIMP.Class(Fence, DIMP.type.Object, Star);
+    DIMP.Class(Fence, DIMP.type.Object, [Star]);
     Fence.prototype.onReceived = function(data) {
         this.delegate.onReceived(data, this)
     };

@@ -38,7 +38,7 @@
     /**
      *  Machine status
      */
-    var Status = DIMP.type.Enum({
+    var Status = DIMP.type.Enum(null, {
         Stopped: 0,
         Running: 1,
         Paused: 2

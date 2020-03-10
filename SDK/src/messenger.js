@@ -65,7 +65,7 @@
         // Messenger delegate for sending data
         this.delegate = null;
     };
-    ns.Class(Messenger, Transceiver, ConnectionDelegate);
+    ns.Class(Messenger, Transceiver, [ConnectionDelegate]);
 
     //
     //  Environment variables as context

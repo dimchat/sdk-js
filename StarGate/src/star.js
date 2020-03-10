@@ -80,7 +80,7 @@
     /**
      *  Connection Status
      */
-    var Status = DIMP.type.Enum({
+    var Status = DIMP.type.Enum(null, {
         Error:     -1,
         Init:       0,
         Connecting: 1,

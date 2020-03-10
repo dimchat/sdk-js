@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 27, 2020
+ * @date      Mar. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -908,7 +908,7 @@
 ! function(ns) {
     var GroupDataSource = ns.GroupDataSource;
     var ChatroomDataSource = function() {};
-    ns.Interface(ChatroomDataSource, GroupDataSource);
+    ns.Interface(ChatroomDataSource, [GroupDataSource]);
     ChatroomDataSource.prototype.getAdmins = function() {
         console.assert(false, "implement me!");
         return null
@@ -1513,7 +1513,7 @@
         this.cpu = new ContentProcessor(this);
         this.delegate = null
     };
-    ns.Class(Messenger, Transceiver, ConnectionDelegate);
+    ns.Class(Messenger, Transceiver, [ConnectionDelegate]);
     Messenger.prototype.getContext = function(key) {
         return this.context[key]
     };

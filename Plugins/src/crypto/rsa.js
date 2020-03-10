@@ -55,7 +55,7 @@
     var RSAPublicKey = function (key) {
         PublicKey.call(this, key);
     };
-    ns.Class(RSAPublicKey, PublicKey, EncryptKey);
+    ns.Class(RSAPublicKey, PublicKey, [EncryptKey]);
 
     RSAPublicKey.prototype.getData = function () {
         var data = this.getValue('data');
@@ -168,7 +168,7 @@
     var RSAPrivateKey = function (key) {
         PrivateKey.call(this, key);
     };
-    ns.Class(RSAPrivateKey, PrivateKey, DecryptKey);
+    ns.Class(RSAPrivateKey, PrivateKey, [DecryptKey]);
 
     RSAPrivateKey.prototype.getData = function () {
         var data = this.getValue('data');

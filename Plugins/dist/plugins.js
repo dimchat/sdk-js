@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 27, 2020
+ * @date      Mar. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -140,7 +140,7 @@
     var bs58 = base("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
     var BaseCoder = ns.format.BaseCoder;
     var base58 = function() {};
-    ns.Class(base58, ns.type.Object, BaseCoder);
+    ns.Class(base58, ns.type.Object, [BaseCoder]);
     base58.prototype.encode = function(data) {
         return bs58.encode(data)
     };
@@ -152,7 +152,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var md5 = function() {};
-    ns.Class(md5, ns.type.Object, Hash);
+    ns.Class(md5, ns.type.Object, [Hash]);
     md5.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -164,7 +164,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var sha256 = function() {};
-    ns.Class(sha256, ns.type.Object, Hash);
+    ns.Class(sha256, ns.type.Object, [Hash]);
     sha256.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -176,7 +176,7 @@
 ! function(ns) {
     var Hash = ns.digest.Hash;
     var ripemd160 = function() {};
-    ns.Class(ripemd160, ns.type.Object, Hash);
+    ns.Class(ripemd160, ns.type.Object, [Hash]);
     ripemd160.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -256,7 +256,7 @@
     };
     var KeyParser = ns.format.KeyParser;
     var pem = function() {};
-    ns.Class(pem, ns.type.Object, KeyParser);
+    ns.Class(pem, ns.type.Object, [KeyParser]);
     pem.prototype.encodePublicKey = function(key) {
         return encode_public(key)
     };
@@ -378,7 +378,7 @@
     var RSAPublicKey = function(key) {
         PublicKey.call(this, key)
     };
-    ns.Class(RSAPublicKey, PublicKey, EncryptKey);
+    ns.Class(RSAPublicKey, PublicKey, [EncryptKey]);
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -445,7 +445,7 @@
     var RSAPrivateKey = function(key) {
         PrivateKey.call(this, key)
     };
-    ns.Class(RSAPrivateKey, PrivateKey, DecryptKey);
+    ns.Class(RSAPrivateKey, PrivateKey, [DecryptKey]);
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
