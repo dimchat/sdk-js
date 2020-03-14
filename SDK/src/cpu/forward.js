@@ -38,6 +38,8 @@
 
     var ContentType = ns.protocol.ContentType;
 
+    var ForwardContent = ns.protocol.ForwardContent;
+
     var ContentProcessor = ns.cpu.ContentProcessor;
 
     /**
@@ -54,18 +56,20 @@
     ForwardContentProcessor.prototype.process = function (content, sender, msg) {
         var rMsg = content.getMessage();
         var messenger = this.messenger;
+        // call messenger to process it
         rMsg = messenger.processReliableMessage(rMsg);
+        // check response
         if (rMsg) {
-            messenger.sendMessage(rMsg, null, false);
-        // } else {
-        //     var receiver = content.getMessage().envelope.receiver;
-        //     var text = 'Message forwarded: ' + receiver;
-        //     return new ReceiptCommand(text);
-        }
+            // Over The Top
+            return new ForwardContent(rMsg);
+        }/* else {
+            var receiver = content.getMessage().envelope.receiver;
+            var text = 'Message forwarded: ' + receiver;
+            return new ReceiptCommand(text);
+        }*/
 
         // NOTICE: decrypt failed, not for you?
         //         it means you are asked to re-pack and forward this message
-        // TODO: override to catch the exception 'receiver error ...'
         return null;
     };
 

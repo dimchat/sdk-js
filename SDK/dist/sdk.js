@@ -408,6 +408,7 @@
 }(DIMP);
 ! function(ns) {
     var ContentType = ns.protocol.ContentType;
+    var ForwardContent = ns.protocol.ForwardContent;
     var ContentProcessor = ns.cpu.ContentProcessor;
     var ForwardContentProcessor = function(messenger) {
         ContentProcessor.call(this, messenger)
@@ -418,7 +419,7 @@
         var messenger = this.messenger;
         rMsg = messenger.processReliableMessage(rMsg);
         if (rMsg) {
-            messenger.sendMessage(rMsg, null, false)
+            return new ForwardContent(rMsg)
         }
         return null
     };
