@@ -101,7 +101,7 @@
     //
     //  Main
     //
-    GroupCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    GroupCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         // process command content by name
         var name = cmd.getCommand();
         var cpu = this.getCPU(name);
@@ -110,7 +110,7 @@
         //     res.setGroup(cmd.getGroup());
         //     return res;
         // }
-        return cpu.process(cmd, sender, msg);
+        return cpu.process(cmd, sender, iMsg);
     };
 
     //-------- Runtime --------

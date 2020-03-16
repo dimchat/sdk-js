@@ -93,7 +93,7 @@
     //
     //  Main
     //
-    ProfileCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    ProfileCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);

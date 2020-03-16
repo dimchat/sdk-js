@@ -54,7 +54,7 @@
     //
     //  Main
     //
-    HistoryCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    HistoryCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         var cpu;
         if (cmd.getGroup()) {
             // call Group Command Processor
@@ -70,7 +70,7 @@
             //     return new TextContent('History command (' + name + ') not support yet!')
             // }
         }
-        return cpu.process(cmd, sender, msg);
+        return cpu.process(cmd, sender, iMsg);
     };
 
     //-------- Runtime --------

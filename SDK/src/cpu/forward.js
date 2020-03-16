@@ -53,7 +53,7 @@
     //
     //  Main
     //
-    ForwardContentProcessor.prototype.process = function (content, sender, msg) {
+    ForwardContentProcessor.prototype.process = function (content, sender, iMsg) {
         var rMsg = content.getMessage();
         var messenger = this.messenger;
         // call messenger to process it

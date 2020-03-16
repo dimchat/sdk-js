@@ -82,7 +82,7 @@
     //
     //  Main
     //
-    MetaCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    MetaCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);

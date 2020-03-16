@@ -54,7 +54,7 @@
     //
     //  Main
     //
-    QueryCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    QueryCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -62,7 +62,7 @@
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
                 if (!facebook.isOwner(sender, group)) {
-                    throw Error('sender is not a member/assistant of group: ' + msg);
+                    throw Error('sender is not a member/assistant of group: ' + iMsg);
                 }
             }
         }

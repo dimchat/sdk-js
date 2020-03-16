@@ -275,9 +275,9 @@
     ContentProcessor.prototype.getFacebook = function() {
         return this.messenger.getFacebook()
     };
-    ContentProcessor.prototype.process = function(content, sender, msg) {
+    ContentProcessor.prototype.process = function(content, sender, iMsg) {
         var cpu = this.getCPU(content.type);
-        return cpu.process(content, sender, msg)
+        return cpu.process(content, sender, iMsg)
     };
     ContentProcessor.prototype.getCPU = function(type) {
         var value;
@@ -330,9 +330,9 @@
         this.commandProcessors = {}
     };
     ns.Class(CommandProcessor, ContentProcessor, null);
-    CommandProcessor.prototype.process = function(cmd, sender, msg) {
+    CommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var cpu = this.getCPU(cmd.getCommand());
-        return cpu.process(cmd, sender, msg)
+        return cpu.process(cmd, sender, iMsg)
     };
     CommandProcessor.prototype.getCPU = function(command) {
         var cpu = this.commandProcessors[command];
@@ -371,7 +371,7 @@
         ContentProcessor.call(this, messenger)
     };
     ns.Class(DefaultContentProcessor, ContentProcessor, null);
-    DefaultContentProcessor.prototype.process = function(content, sender, msg) {
+    DefaultContentProcessor.prototype.process = function(content, sender, iMsg) {
         var type = content.type.toString();
         var text = "Content (type: " + type + ") not support yet!";
         var res = new TextContent(text);
@@ -392,7 +392,7 @@
         CommandProcessor.call(this, messenger)
     };
     ns.Class(DefaultCommandProcessor, CommandProcessor, null);
-    DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    DefaultCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var name = cmd.getCommand();
         var text = "Command (name: " + name + ") not support yet!";
         var res = new TextContent(text);
@@ -414,7 +414,7 @@
         ContentProcessor.call(this, messenger)
     };
     ns.Class(ForwardContentProcessor, ContentProcessor, null);
-    ForwardContentProcessor.prototype.process = function(content, sender, msg) {
+    ForwardContentProcessor.prototype.process = function(content, sender, iMsg) {
         var rMsg = content.getMessage();
         var messenger = this.messenger;
         rMsg = messenger.processReliableMessage(rMsg);
@@ -456,7 +456,7 @@
         }
         return new ReceiptCommand("Meta received: " + identifier)
     };
-    MetaCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    MetaCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);
@@ -509,7 +509,7 @@
         }
         return new ReceiptCommand("Profile received: " + identifier)
     };
-    ProfileCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    ProfileCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);
@@ -534,7 +534,7 @@
         this.gpu = null
     };
     ns.Class(HistoryCommandProcessor, CommandProcessor, null);
-    HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    HistoryCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var cpu;
         if (cmd.getGroup()) {
             if (!this.gpu) {
@@ -545,7 +545,7 @@
             var name = cmd.getCommand();
             cpu = this.getCPU(name)
         }
-        return cpu.process(cmd, sender, msg)
+        return cpu.process(cmd, sender, iMsg)
     };
     HistoryCommandProcessor.register = function(command, clazz) {
         CommandProcessor.register.call(this, command, clazz)
@@ -604,10 +604,10 @@
         var owner = facebook.getOwner(group);
         return !owner
     };
-    GroupCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    GroupCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var name = cmd.getCommand();
         var cpu = this.getCPU(name);
-        return cpu.process(cmd, sender, msg)
+        return cpu.process(cmd, sender, iMsg)
     };
     GroupCommandProcessor.register = function(command, clazz) {
         HistoryCommandProcessor.register.call(this, command, clazz)
@@ -660,12 +660,12 @@
         }
         return null
     };
-    InviteCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    InviteCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (this.isEmpty(group)) {
-            return reset.call(this, cmd, sender, msg)
+            return reset.call(this, cmd, sender, iMsg)
         }
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
@@ -679,7 +679,7 @@
             throw Error("Invite command error: " + cmd)
         }
         if (is_reset.call(this, inviteList, sender, group)) {
-            return reset.call(this, cmd, sender, msg)
+            return reset.call(this, cmd, sender, iMsg)
         }
         var added = invite.call(this, inviteList, group);
         if (added) {
@@ -698,13 +698,13 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
-    ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    ExpelCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error("sender is not the owner/admin of group: " + msg)
+                throw Error("sender is not the owner/admin of group: " + iMsg)
             }
         }
         var expelList = this.getMembers(cmd);
@@ -743,7 +743,7 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
-    QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    QuitCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -758,7 +758,7 @@
             throw Error("Group members not found: " + group)
         }
         if (members.indexOf(sender) < 0) {
-            throw Error("sender is not a member of group: " + msg)
+            throw Error("sender is not a member of group: " + iMsg)
         }
         ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
@@ -778,14 +778,14 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
-    QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    QueryCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
                 if (!facebook.isOwner(sender, group)) {
-                    throw Error("sender is not a member/assistant of group: " + msg)
+                    throw Error("sender is not a member/assistant of group: " + iMsg)
                 }
             }
         }
@@ -864,7 +864,7 @@
         }
         return result
     };
-    ResetCommandProcessor.prototype.process = function(cmd, sender, msg) {
+    ResetCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -877,7 +877,7 @@
         }
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error("sender is not the owner/admin of group: " + msg)
+                throw Error("sender is not the owner/admin of group: " + iMsg)
             }
         }
         var result = reset.call(this, newMembers, group);
@@ -1065,11 +1065,11 @@
 ! function(ns) {
     var MessengerDelegate = function() {};
     ns.Interface(MessengerDelegate, null);
-    MessengerDelegate.prototype.uploadData = function(data, msg) {
+    MessengerDelegate.prototype.uploadData = function(data, iMsg) {
         console.assert(false, "implement me!");
         return null
     };
-    MessengerDelegate.prototype.downloadData = function(url, msg) {
+    MessengerDelegate.prototype.downloadData = function(url, iMsg) {
         console.assert(false, "implement me!");
         return null
     };
@@ -1577,11 +1577,11 @@
         }
         return msg
     };
-    Messenger.prototype.verifyMessage = function(msg) {
+    Messenger.prototype.verifyMessage = function(rMsg) {
         var facebook = this.getFacebook();
-        var sender = msg.envelope.sender;
+        var sender = rMsg.envelope.sender;
         sender = facebook.getIdentifier(sender);
-        var meta = Meta.getInstance(msg.getMeta());
+        var meta = Meta.getInstance(rMsg.getMeta());
         if (meta) {
             if (!facebook.saveMeta(meta, sender)) {
                 throw Error("save meta error: " + sender + ", " + meta)
@@ -1589,27 +1589,18 @@
         } else {
             meta = facebook.getMeta(sender);
             if (!meta) {
-                this.suspendMessage(msg);
+                this.suspendMessage(rMsg);
                 return null
             }
         }
-        return Transceiver.prototype.verifyMessage.call(this, msg)
+        return Transceiver.prototype.verifyMessage.call(this, rMsg)
     };
-    Messenger.prototype.encryptMessage = function(msg) {
-        var sMsg = Transceiver.prototype.encryptMessage.call(this, msg);
-        var group = msg.content.getGroup();
-        if (group) {
-            sMsg.envelope.setGroup(group)
+    Messenger.prototype.decryptMessage = function(sMsg) {
+        var msg = trim.call(this, sMsg);
+        if (!msg) {
+            throw Error("receiver error:" + sMsg)
         }
-        sMsg.envelope.setType(msg.content.type);
-        return sMsg
-    };
-    Messenger.prototype.decryptMessage = function(msg) {
-        var sMsg = trim.call(this, msg);
-        if (!sMsg) {
-            throw Error("receiver error:" + msg)
-        }
-        return Transceiver.prototype.decryptMessage.call(this, sMsg)
+        return Transceiver.prototype.decryptMessage.call(this, msg)
     };
     Messenger.prototype.deserializeMessage = function(data) {
         if (!data) {
@@ -1617,40 +1608,40 @@
         }
         return Transceiver.prototype.deserializeMessage.call(this, data)
     };
-    Messenger.prototype.encryptContent = function(content, pwd, msg) {
+    Messenger.prototype.encryptContent = function(content, pwd, iMsg) {
         var key = SymmetricKey.getInstance(pwd);
         if (content instanceof FileContent) {
             var data = content.getData();
             data = key.encrypt(data);
-            var url = this.delegate.uploadData(data, msg);
+            var url = this.delegate.uploadData(data, iMsg);
             if (url) {
                 content.setURL(url);
                 content.setData(null)
             }
         }
-        return Transceiver.prototype.encryptContent.call(this, content, pwd, msg)
+        return Transceiver.prototype.encryptContent.call(this, content, pwd, iMsg)
     };
-    Messenger.prototype.encryptKey = function(pwd, receiver, msg) {
+    Messenger.prototype.encryptKey = function(pwd, receiver, iMsg) {
         var facebook = this.getFacebook();
         receiver = facebook.getIdentifier(receiver);
         var key = facebook.getPublicKeyForEncryption(receiver);
         if (!key) {
             var meta = facebook.getMeta(receiver);
             if (!meta) {
-                this.suspendMessage(msg);
+                this.suspendMessage(iMsg);
                 return null
             }
         }
-        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, msg)
+        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, iMsg)
     };
-    Messenger.prototype.decryptContent = function(data, pwd, msg) {
+    Messenger.prototype.decryptContent = function(data, pwd, sMsg) {
         var key = SymmetricKey.getInstance(pwd);
-        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, msg);
+        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, sMsg);
         if (!content) {
-            throw Error("failed to decrypt message content: " + msg)
+            throw Error("failed to decrypt message content: " + sMsg)
         }
         if (content instanceof FileContent) {
-            var iMsg = InstantMessage.newMessage(content, msg.envelope);
+            var iMsg = InstantMessage.newMessage(content, sMsg.envelope);
             var fileData = this.delegate.downloadData(content.getURL(), iMsg);
             if (fileData) {
                 content.setData(key.decrypt(fileData))
@@ -1664,21 +1655,25 @@
         var facebook = this.getFacebook();
         var user = facebook.getCurrentUser();
         var env = Envelope.newEnvelope(user.identifier, receiver, 0);
-        var msg = InstantMessage.newMessage(content, env);
-        return this.sendMessage(msg, callback, split)
+        var iMsg = InstantMessage.newMessage(content, env);
+        return this.sendMessage(iMsg, callback, split)
     };
     Messenger.prototype.sendMessage = function(msg, callback, split) {
-        if (msg instanceof ReliableMessage) {
-            return send_message.call(this, msg, callback)
+        if (msg instanceof InstantMessage) {
+            return send_instant_message.call(this, msg, callback, split)
         } else {
-            if (!(msg instanceof InstantMessage)) {
+            if (msg instanceof ReliableMessage) {
+                return send_reliable_message.call(this, msg, callback)
+            } else {
                 throw TypeError("message error: " + msg)
             }
         }
+    };
+    var send_instant_message = function(iMsg, callback, split) {
         var facebook = this.getFacebook();
-        var receiver = msg.envelope.receiver;
+        var receiver = iMsg.envelope.receiver;
         receiver = facebook.getIdentifier(receiver);
-        var sMsg = this.encryptMessage(msg);
+        var sMsg = this.encryptMessage(iMsg);
         var rMsg = this.signMessage(sMsg);
         var ok = true;
         if (split && receiver.isGroup()) {
@@ -1689,31 +1684,31 @@
             }
             if (messages) {
                 for (var i = 0; i < messages.length; ++i) {
-                    if (send_message.call(this, messages[i], callback)) {
+                    if (send_reliable_message.call(this, messages[i], callback)) {
                         ok = false
                     }
                 }
             } else {
-                ok = send_message.call(this, rMsg, callback)
+                ok = send_reliable_message.call(this, rMsg, callback)
             }
         } else {
-            ok = send_message.call(this, rMsg, callback)
+            ok = send_reliable_message.call(this, rMsg, callback)
         }
-        if (!this.saveMessage(msg)) {
+        if (!this.saveMessage(iMsg)) {
             return false
         }
         return ok
     };
-    var send_message = function(msg, callback) {
+    var send_reliable_message = function(rMsg, callback) {
         var handler = CompletionHandler.newHandler(function() {
-            callback.onFinished(msg, null)
+            callback.onFinished(rMsg, null)
         }, function(error) {
             callback.onFinished(error)
         });
-        var data = this.serializeMessage(msg);
+        var data = this.serializeMessage(rMsg);
         return this.delegate.sendPackage(data, handler)
     };
-    Messenger.prototype.saveMessage = function(msg) {
+    Messenger.prototype.saveMessage = function(iMsg) {
         console.assert(false, "implement me!");
         return false
     };
@@ -1732,8 +1727,8 @@
         }
         return this.serializeMessage(rMsg)
     };
-    Messenger.prototype.processReliableMessage = function(msg) {
-        var sMsg = this.verifyMessage(msg);
+    Messenger.prototype.processReliableMessage = function(rMsg) {
+        var sMsg = this.verifyMessage(rMsg);
         if (!sMsg) {
             return null
         }
@@ -1743,8 +1738,8 @@
         }
         return this.signMessage(sMsg)
     };
-    Messenger.prototype.processSecureMessage = function(msg) {
-        var iMsg = this.decryptMessage(msg);
+    Messenger.prototype.processSecureMessage = function(sMsg) {
+        var iMsg = this.decryptMessage(sMsg);
         if (!iMsg) {
             return null
         }
@@ -1754,13 +1749,13 @@
         }
         return this.encryptMessage(iMsg)
     };
-    Messenger.prototype.processInstantMessage = function(msg) {
+    Messenger.prototype.processInstantMessage = function(iMsg) {
         var facebook = this.getFacebook();
-        var content = msg.content;
-        var env = msg.envelope;
+        var content = iMsg.content;
+        var env = iMsg.envelope;
         var sender = facebook.getIdentifier(env.sender);
-        var res = this.cpu.process(content, sender, msg);
-        if (!this.saveMessage(msg)) {
+        var res = this.cpu.process(content, sender, iMsg);
+        if (!this.saveMessage(iMsg)) {
             return null
         }
         if (!res) {

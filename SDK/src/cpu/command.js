@@ -53,7 +53,7 @@
     //
     //  Main
     //
-    CommandProcessor.prototype.process = function (cmd, sender, msg) {
+    CommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         // process command content by name
         var cpu = this.getCPU(cmd.getCommand());
         // if (!cpu) {
@@ -61,7 +61,7 @@
         // } else if (cpu === this) {
         //     throw Error('Dead cycle!');
         // }
-        return cpu.process(cmd, sender, msg);
+        return cpu.process(cmd, sender, iMsg);
     };
 
     //-------- Runtime --------

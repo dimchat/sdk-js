@@ -119,10 +119,10 @@
      *  Upload encrypted data to CDN
      *
      * @param {Uint8Array} data - encrypted file data
-     * @param {InstantMessage} msg
+     * @param {InstantMessage} iMsg
      * @returns {String} - download URL
      */
-    MessengerDelegate.prototype.uploadData = function (data, msg) {
+    MessengerDelegate.prototype.uploadData = function (data, iMsg) {
         console.assert(false, 'implement me!');
         return null;
     };
@@ -132,10 +132,10 @@
      *  Download encrypted data from CDN
      *
      * @param {URL} url - download URL
-     * @param {InstantMessage} msg
+     * @param {InstantMessage} iMsg
      * @returns {Uint8Array} - encrypted file data
      */
-    MessengerDelegate.prototype.downloadData = function (url, msg) {
+    MessengerDelegate.prototype.downloadData = function (url, iMsg) {
         console.assert(false, 'implement me!');
         return null;
     };

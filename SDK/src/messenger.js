@@ -143,12 +143,12 @@
     //  Transform
     //
 
-    Messenger.prototype.verifyMessage = function (msg) {
+    Messenger.prototype.verifyMessage = function (rMsg) {
         // Notice: check meta before calling me
         var facebook = this.getFacebook();
-        var sender = msg.envelope.sender;
+        var sender = rMsg.envelope.sender;
         sender = facebook.getIdentifier(sender);
-        var meta = Meta.getInstance(msg.getMeta());
+        var meta = Meta.getInstance(rMsg.getMeta());
         if (meta) {
             // [Meta Protocol]
             // save meta for sender
@@ -161,39 +161,23 @@
             if (!meta) {
                 // NOTICE: the application will query meta automatically
                 // save this message in a queue waiting sender's meta response
-                this.suspendMessage(msg);
+                this.suspendMessage(rMsg);
                 // throw Error('failed to get meta for sender: ' + sender);
                 return null;
             }
         }
-        return Transceiver.prototype.verifyMessage.call(this, msg);
+        return Transceiver.prototype.verifyMessage.call(this, rMsg);
     };
 
-    Messenger.prototype.encryptMessage = function (msg) {
-        var sMsg = Transceiver.prototype.encryptMessage.call(this, msg);
-        var group = msg.content.getGroup();
-        if (group) {
-            // NOTICE: this help the receiver knows the group ID
-            //         when the group message separated to multi-messages,
-            //         if don't want the others know you are the group members,
-            //         remove it.
-            sMsg.envelope.setGroup(group);
-        }
-        // NOTICE: copy content type to envelope
-        //         this help the intermediate nodes to recognize message type
-        sMsg.envelope.setType(msg.content.type);
-        return sMsg;
-    };
-
-    Messenger.prototype.decryptMessage = function (msg) {
+    Messenger.prototype.decryptMessage = function (sMsg) {
         // trim message
-        var sMsg = trim.call(this, msg);
-        if (!sMsg) {
+        var msg = trim.call(this, sMsg);
+        if (!msg) {
             // not for you?
-            throw Error('receiver error:' + msg);
+            throw Error('receiver error:' + sMsg);
         }
         // decrypt message
-        return Transceiver.prototype.decryptMessage.call(this, sMsg);
+        return Transceiver.prototype.decryptMessage.call(this, msg);
     };
 
     //-------- De/serialize message, content and symmetric key
@@ -209,24 +193,24 @@
     //  InstantMessageDelegate
     //
 
-    Messenger.prototype.encryptContent = function (content, pwd, msg) {
+    Messenger.prototype.encryptContent = function (content, pwd, iMsg) {
         var key = SymmetricKey.getInstance(pwd);
         // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
             var data = content.getData();
             // encrypt and upload file data onto CDN and save the URL in message content
             data = key.encrypt(data);
-            var url = this.delegate.uploadData(data, msg);
+            var url = this.delegate.uploadData(data, iMsg);
             if (url) {
                 // replace 'data' with 'URL'
                 content.setURL(url);
                 content.setData(null);
             }
         }
-        return Transceiver.prototype.encryptContent.call(this, content, pwd, msg);
+        return Transceiver.prototype.encryptContent.call(this, content, pwd, iMsg);
     };
 
-    Messenger.prototype.encryptKey = function (pwd, receiver, msg) {
+    Messenger.prototype.encryptKey = function (pwd, receiver, iMsg) {
         var facebook = this.getFacebook();
         receiver = facebook.getIdentifier(receiver);
         var key = facebook.getPublicKeyForEncryption(receiver);
@@ -234,27 +218,27 @@
             var meta = facebook.getMeta(receiver);
             if (!meta) {
                 // save this message in a queue waiting receiver's meta response
-                this.suspendMessage(msg);
+                this.suspendMessage(iMsg);
                 // throw Error('failed to get encrypt key for receiver: ' + receiver);
                 return null;
             }
         }
-        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, msg);
+        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, iMsg);
     };
 
     //
     //  SecureMessageDelegate
     //
 
-    Messenger.prototype.decryptContent = function (data, pwd, msg) {
+    Messenger.prototype.decryptContent = function (data, pwd, sMsg) {
         var key = SymmetricKey.getInstance(pwd);
-        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, msg);
+        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, sMsg);
         if (!content) {
-            throw Error('failed to decrypt message content: ' + msg);
+            throw Error('failed to decrypt message content: ' + sMsg);
         }
         // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
-            var iMsg = InstantMessage.newMessage(content, msg.envelope);
+            var iMsg = InstantMessage.newMessage(content, sMsg.envelope);
             // download from CDN
             var fileData = this.delegate.downloadData(content.getURL(), iMsg);
             if (fileData) {
@@ -286,8 +270,8 @@
         var facebook = this.getFacebook();
         var user = facebook.getCurrentUser();
         var env = Envelope.newEnvelope(user.identifier, receiver, 0);
-        var msg = InstantMessage.newMessage(content, env);
-        return this.sendMessage(msg, callback, split);
+        var iMsg = InstantMessage.newMessage(content, env);
+        return this.sendMessage(iMsg, callback, split);
     };
 
     /**
@@ -299,16 +283,21 @@
      * @returns {boolean}
      */
     Messenger.prototype.sendMessage = function (msg, callback, split) {
-        if (msg instanceof ReliableMessage) {
-            return send_message.call(this, msg, callback);
-        } else if (!(msg instanceof InstantMessage)) {
+        if (msg instanceof InstantMessage) {
+            return send_instant_message.call(this, msg, callback, split);
+        } else if (msg instanceof ReliableMessage) {
+            return send_reliable_message.call(this, msg, callback);
+        } else {
             throw TypeError('message error: ' + msg);
         }
+    };
+
+    var send_instant_message = function (iMsg, callback, split) {
         var facebook = this.getFacebook();
-        var receiver = msg.envelope.receiver;
+        var receiver = iMsg.envelope.receiver;
         receiver = facebook.getIdentifier(receiver);
         // Send message (secured + certified) to target station
-        var sMsg = this.encryptMessage(msg);
+        var sMsg = this.encryptMessage(iMsg);
         var rMsg = this.signMessage(sMsg);
         var ok = true;
         if (split && receiver.isGroup()) {
@@ -320,35 +309,35 @@
             }
             if (messages) {
                 for (var i = 0; i < messages.length; ++i) {
-                    if (send_message.call(this, messages[i], callback)) {
+                    if (send_reliable_message.call(this, messages[i], callback)) {
                         ok = false;
                     }
                 }
             } else {
                 // failed to split message, send it to group
-                ok = send_message.call(this, rMsg, callback);
+                ok = send_reliable_message.call(this, rMsg, callback);
             }
         } else {
-            ok = send_message.call(this, rMsg, callback);
+            ok = send_reliable_message.call(this, rMsg, callback);
         }
         // TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
 
-        if (!this.saveMessage(msg)) {
+        if (!this.saveMessage(iMsg)) {
             return false;
         }
         return ok;
     };
 
-    var send_message = function (msg, callback) {
+    var send_reliable_message = function (rMsg, callback) {
         var handler = CompletionHandler.newHandler(
             function () {
-                callback.onFinished(msg, null);
+                callback.onFinished(rMsg, null);
             },
             function (error) {
                 callback.onFinished(error);
             }
         );
-        var data = this.serializeMessage(msg);
+        var data = this.serializeMessage(rMsg);
         return this.delegate.sendPackage(data, handler);
     };
 
@@ -360,10 +349,10 @@
     /**
      *  Save the message into local storage
      *
-     * @param {InstantMessage} msg
+     * @param {InstantMessage} iMsg
      * @returns {boolean}
      */
-    Messenger.prototype.saveMessage = function (msg) {
+    Messenger.prototype.saveMessage = function (iMsg) {
         console.assert(false, 'implement me!');
         return false;
     };
@@ -404,9 +393,9 @@
 
     // TODO: override to check broadcast message before calling it
     // TODO: override to deliver to the receiver when catch exception "receiver error ..."
-    Messenger.prototype.processReliableMessage = function (msg) {
+    Messenger.prototype.processReliableMessage = function (rMsg) {
         // 1. verify message
-        var sMsg = this.verifyMessage(msg);
+        var sMsg = this.verifyMessage(rMsg);
         if (!sMsg) {
             // waiting for sender's meta if not exists
             return null;
@@ -421,9 +410,9 @@
         return this.signMessage(sMsg);
     };
 
-    Messenger.prototype.processSecureMessage = function (msg) {
+    Messenger.prototype.processSecureMessage = function (sMsg) {
         // 1. decrypt message
-        var iMsg = this.decryptMessage(msg);
+        var iMsg = this.decryptMessage(sMsg);
         if (!iMsg) {
             // cannot decrypt this message, not for you?
             // delivering message to other receiver?
@@ -441,15 +430,15 @@
 
     // TODO: override to check group
     // TODO: override to filter the response
-    Messenger.prototype.processInstantMessage = function (msg) {
+    Messenger.prototype.processInstantMessage = function (iMsg) {
         var facebook = this.getFacebook();
-        var content = msg.content;
-        var env = msg.envelope;
+        var content = iMsg.content;
+        var env = iMsg.envelope;
         var sender = facebook.getIdentifier(env.sender);
 
         // process content from sender
-        var res = this.cpu.process(content, sender, msg);
-        if (!this.saveMessage(msg)) {
+        var res = this.cpu.process(content, sender, iMsg);
+        if (!this.saveMessage(iMsg)) {
             // error
             return null;
         }

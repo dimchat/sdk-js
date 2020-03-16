@@ -69,10 +69,10 @@
      *
      * @param {Content} content - content received
      * @param {ID} sender
-     * @param {InstantMessage} msg
+     * @param {InstantMessage} iMsg
      * @returns {Content} - responding to sender
      */
-    ContentProcessor.prototype.process = function (content, sender, msg) {
+    ContentProcessor.prototype.process = function (content, sender, iMsg) {
         // process content by type
         var cpu = this.getCPU(content.type);
         // if (!cpu) {
@@ -80,7 +80,7 @@
         // } else if (cpu === this) {
         //     throw Error('Dead cycle!');
         // }
-        return cpu.process(content, sender, msg);
+        return cpu.process(content, sender, iMsg);
     };
 
     //-------- Runtime --------

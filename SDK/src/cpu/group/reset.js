@@ -117,7 +117,7 @@
     //
     //  Main
     //
-    ResetCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    ResetCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -135,7 +135,7 @@
         // 1. check permission
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error('sender is not the owner/admin of group: ' + msg);
+                throw Error('sender is not the owner/admin of group: ' + iMsg);
             }
         }
         // 2. do reset
