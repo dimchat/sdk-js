@@ -38,8 +38,8 @@
 
     var TextContent = ns.protocol.TextContent;
     var GroupCommand = ns.protocol.GroupCommand;
-    var InviteCommand = ns.protocol.InviteCommand;
-    var ResetCommand = ns.protocol.ResetCommand;
+    var InviteCommand = ns.protocol.group.InviteCommand;
+    var ResetCommand = ns.protocol.group.ResetCommand;
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
