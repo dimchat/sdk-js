@@ -2263,6 +2263,14 @@ if (typeof DaoKeDao !== "object") {
         this.time = env["time"]
     };
     ns.Class(Envelope, Dictionary, null);
+    Envelope.prototype.getTime = function() {
+        var time = this.time;
+        if (time) {
+            return new Date(time * 1000)
+        } else {
+            return null
+        }
+    };
     Envelope.newEnvelope = function(sender, receiver, time) {
         var env = {
             "sender": sender,
