@@ -97,9 +97,9 @@
     };
 
     RSAPublicKey.prototype.verify = function (data, signature) {
-        // convert Int8Array to WordArray
+        // convert Uint8Array to WordArray
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
-        // convert Int8Array to Base64
+        // convert Uint8Array to Base64
         signature = Base64.encode(signature);
         // create signer
         var cipher = parse_key.call(this);
@@ -113,7 +113,7 @@
     };
 
     RSAPublicKey.prototype.encrypt = function (plaintext) {
-        // convert Int8Array to String
+        // convert Uint8Array to String
         var str = new ns.type.String(plaintext, 'UTF-8');
         plaintext = str.toString();
         // create cipher
@@ -125,11 +125,26 @@
         //
         var base64 = cipher.encrypt(plaintext);
         if (base64) {
-            // convert Base64 to Int8Array
-            return Base64.decode(base64);
-        } else {
-            throw Error('RSA encrypt error: ' + plaintext);
+            // convert Base64 to Uint8Array
+            var res = Base64.decode(base64);
+            if (res.length === this.getSize()) {
+                return res;
+            }
+            // FIXME: There is a bug in JSEncrypt
+            //        that result.length may be 127 bytes sometimes,
+            //        here we just do it again to reduce error opportunities,
+            //        but it's still going to happen one in about ten thousand times.
+            var hex = cipher.getKey().encrypt(plaintext);
+            if (hex) {
+                // convert Hex to Uint8Array
+                res = Hex.decode(hex);
+                if (res.length === this.getSize()) {
+                    return res;
+                }
+                throw Error('Error encrypt result: ' + plaintext);
+            }
         }
+        throw Error('RSA encrypt error: ' + plaintext);
     };
 
     //-------- register --------
@@ -233,7 +248,7 @@
     };
 
     RSAPrivateKey.prototype.sign = function (data) {
-        // convert Int8Array to WordArray
+        // convert Uint8Array to WordArray
         data = CryptoJS.enc.Hex.parse(Hex.encode(data));
         // create signer
         var cipher = parse_key.call(this);
@@ -244,7 +259,7 @@
         //
         var base64 = cipher.sign(data, CryptoJS.SHA256, 'sha256');
         if (base64) {
-            // convert Base64 to Int8Array
+            // convert Base64 to Uint8Array
             return Base64.decode(base64);
         } else {
             throw Error('RSA sign error: ' + data);
@@ -252,7 +267,7 @@
     };
 
     RSAPrivateKey.prototype.decrypt = function (data) {
-        // convert Int8Array to Base64
+        // convert Uint8Array to Base64
         data = Base64.encode(data);
         // create cipher
         var cipher = parse_key.call(this);
@@ -263,7 +278,7 @@
         //
         var string = cipher.decrypt(data);
         if (string) {
-            // convert String to Int8Array
+            // convert String to Uint8Array
             return ns.type.String.from(string).getBytes('UTF-8');
         } else {
             throw Error('RSA decrypt error: ' + data);
