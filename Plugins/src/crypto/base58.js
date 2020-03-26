@@ -30,6 +30,19 @@
 !function (ns) {
     'use strict';
 
+    //
+    //  Patch for String.repeat()
+    //
+    if (typeof String.prototype.repeat !== 'function') {
+        String.prototype.repeat = function (count) {
+            var string = '';
+            for (var i = 0; i < count; ++i) {
+                string += this;
+            }
+            return string;
+        };
+    }
+
     //-------- Base algorithm begin --------
     //
     //  See: https://github.com/cryptocoinjs/base-x
