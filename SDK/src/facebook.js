@@ -41,10 +41,9 @@
 !function (ns) {
     'use strict';
 
-    var DecryptKey = ns.crypto.DecryptKey;
-
     var NetworkType = ns.protocol.NetworkType;
 
+    var ID = ns.ID;
     var Profile = ns.Profile;
 
     var User = ns.User;
@@ -64,7 +63,6 @@
         this.ans = null;
         // memory caches
         this.profileMap    = {};  // ID -> Profile
-        this.privateKeyMap = {};  // ID -> PrivateKey
         this.contactsMap   = {};  // ID -> List<ID>
         this.membersMap    = {};  // ID -> List<ID>
     };
@@ -223,53 +221,6 @@
     };
 
     //
-    //  Private Key
-    //
-    Facebook.prototype.verifyPrivateKey = function (key, identifier) {
-        var meta = this.getMeta(identifier);
-        if (meta) {
-            return meta.key.matches(key);
-        } else {
-            throw Error('failed to get meta for user: ' + identifier);
-        }
-    };
-    Facebook.prototype.cachePrivateKey = function (key, identifier) {
-        if (!key) {
-            // remove from cache if exists
-            delete this.privateKeyMap[identifier];
-            return false;
-        }
-        if (!this.verifyPrivateKey(key, identifier)) {
-            return false;
-        }
-        this.privateKeyMap[identifier] = key;
-        return true;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save private key for user ID
-     *
-     * @param {PrivateKey} key
-     * @param {ID} identifier
-     * @returns {boolean}
-     */
-    Facebook.prototype.savePrivateKey = function (key, identifier) {
-        console.assert(false, 'implement me!');
-        return false;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Load private key for user ID
-     *
-     * @param {ID} identifier
-     * @returns {PrivateKey}
-     */
-    Facebook.prototype.loadPrivateKey = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    //
     //  User contacts
     //
     Facebook.prototype.cacheContacts = function (contacts, identifier) {
@@ -375,8 +326,7 @@
         if (identifier) {
             return identifier;
         }
-        // super.create
-        return Barrack.prototype.createIdentifier.call(this, string);
+        return ID.getInstance(string);
     };
 
     Facebook.prototype.createUser = function (identifier) {
@@ -478,32 +428,6 @@
             this.cacheContacts(contacts, identifier);
         }
         return contacts;
-    };
-
-    Facebook.prototype.getPrivateKeyForSignature = function (identifier) {
-        var key = this.privateKeyMap[identifier];
-        if (key) {
-            return key;
-        }
-        // load from local storage
-        key = this.loadPrivateKey(identifier);
-        if (key) {
-            // no need to verify private key from local storage
-            this.privateKeyMap[identifier] = key;
-        }
-        return key;
-    };
-
-    Facebook.prototype.getPrivateKeysForDecryption = function (identifier) {
-        var keys = [];
-        // DIMP v1.0:
-        //     decrypt key and the sign key are the same keys
-        var sKey = this.getPrivateKeyForSignature(identifier);
-        if (sKey && ns.Interface.conforms(sKey, DecryptKey)) {
-            keys.push(sKey);
-        }
-        // TODO: support profile.key
-        return keys;
     };
 
     //
