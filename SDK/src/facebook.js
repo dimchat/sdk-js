@@ -61,8 +61,6 @@
         Barrack.call(this);
         // Address Name Service
         this.ans = null;
-        // memory caches
-        this.profileMap    = {};  // ID -> Profile
     };
     ns.Class(Facebook, Barrack, null);
 
@@ -112,8 +110,6 @@
     //
     //  Profile
     //
-    var EXPIRES_KEY = 'expires';
-    Facebook.prototype.EXPIRES = 3600;  // profile expires (1 hour)
 
     Facebook.prototype.verifyProfile = function (profile, identifier) {
         if (identifier) {
@@ -175,25 +171,7 @@
         }
         return meta && profile.verify(meta.key);
     };
-    Facebook.prototype.cacheProfile = function (profile, identifier) {
-        if (!profile) {
-            // remove from cache if exists
-            delete this.profileMap[identifier];
-            return false;
-        }
-        if (!this.verifyProfile(profile, identifier)) {
-            return false;
-        }
-        if (!identifier) {
-            identifier = profile.getIdentifier();
-            identifier = this.getIdentifier(identifier);
-            if (!identifier) {
-                throw Error('profile ID error: ' + profile);
-            }
-        }
-        this.profileMap[identifier] = profile;
-        return true;
-    };
+
     // noinspection JSUnusedLocalSymbols
     /**
      *  Save profile with entity ID (must verify first)
@@ -205,17 +183,6 @@
     Facebook.prototype.saveProfile = function (profile, identifier) {
         console.assert(false, 'implement me!');
         return false;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Load profile for entity ID
-     *
-     * @param {ID} identifier
-     * @returns {Profile}
-     */
-    Facebook.prototype.loadProfile = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
     };
 
     //
@@ -328,34 +295,6 @@
             Barrack.prototype.cacheMeta.call(this, meta, identifier);
         }
         return meta;
-    };
-
-    Facebook.prototype.getProfile = function (identifier) {
-        var profile = this.profileMap[identifier];
-        if (profile) {
-            // check expired time
-            var now = new Date();
-            var timestamp = now.getTime() / 1000 + this.EXPIRES;
-            var expires = profile.getValue(EXPIRES_KEY);
-            if (!expires) {
-                // set expired time
-                profile.setValue(EXPIRES_KEY, timestamp);
-                return profile;
-            } else if (expires < timestamp) {
-                // not expired yet
-                return profile;
-            }
-        }
-        // load from local storage
-        profile = this.loadProfile(identifier);
-        if (profile instanceof Profile) {
-            profile.setValue(EXPIRES_KEY, null);
-        } else {
-            profile = new Profile(identifier);
-        }
-        // no need to verify profile from local storage
-        this.profileMap[identifier] = profile;
-        return profile;
     };
 
     //
