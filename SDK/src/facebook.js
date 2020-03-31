@@ -64,7 +64,6 @@
         // memory caches
         this.profileMap    = {};  // ID -> Profile
         this.contactsMap   = {};  // ID -> List<ID>
-        this.membersMap    = {};  // ID -> List<ID>
     };
     ns.Class(Facebook, Barrack, null);
 
@@ -258,14 +257,7 @@
     //
     //  Group members
     //
-    Facebook.prototype.cacheMembers = function (members, identifier) {
-        if (!members) {
-            delete this.membersMap[identifier];
-            return false;
-        }
-        this.membersMap[identifier] = members;
-        return true;
-    };
+
     // noinspection JSUnusedLocalSymbols
     /**
      *  Save members of group
@@ -277,17 +269,6 @@
     Facebook.prototype.saveMembers = function (members, identifier) {
         console.assert(false, 'implement me!');
         return false;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Load members of group
-     *
-     * @param {ID} identifier
-     * @returns {ID[]}
-     */
-    Facebook.prototype.loadMembers = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
     };
 
     //
@@ -474,23 +455,6 @@
         }
         // TODO: load owner from database
         return null;
-    };
-
-    Facebook.prototype.getMembers = function (identifier) {
-        var members = Barrack.prototype.getMembers.call(this, identifier);
-        if (!members) {
-            // get from cache
-            members = this.membersMap[identifier];
-        }
-        if (members) {
-            return members;
-        }
-        // load from local storage
-        members = this.loadMembers(identifier);
-        if (members) {
-            this.cacheMembers(members, identifier);
-        }
-        return members;
     };
 
     Facebook.prototype.isFounder = function (member, group) {
