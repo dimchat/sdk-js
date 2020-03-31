@@ -39,6 +39,7 @@
     'use strict';
 
     var SymmetricKey = ns.crypto.SymmetricKey;
+    var EncryptKey = ns.crypto.EncryptKey;
 
     var Meta = ns.Meta;
 
@@ -210,17 +211,33 @@
         return Transceiver.prototype.encryptContent.call(this, content, pwd, iMsg);
     };
 
+    var is_broadcast_msg = function (msg) {
+        var receiver;
+        if (msg instanceof InstantMessage) {
+            receiver = msg.content.getGroup();
+        } else {
+            receiver = msg.envelope.getGroup();
+        }
+        if (!receiver) {
+            receiver = msg.envelope.receiver;
+        }
+        receiver = this.entityDelegate.getIdentifier(receiver);
+        return receiver && receiver.isBroadcast();
+    };
+
     Messenger.prototype.encryptKey = function (pwd, receiver, iMsg) {
-        var facebook = this.getFacebook();
-        receiver = facebook.getIdentifier(receiver);
-        var key = facebook.getPublicKeyForEncryption(receiver);
-        if (!key) {
-            var meta = facebook.getMeta(receiver);
-            if (!meta) {
-                // save this message in a queue waiting receiver's meta response
-                this.suspendMessage(iMsg);
-                // throw Error('failed to get encrypt key for receiver: ' + receiver);
-                return null;
+        if (!is_broadcast_msg.call(this, iMsg)) {
+            var facebook = this.getFacebook();
+            receiver = facebook.getIdentifier(receiver);
+            var key = facebook.getPublicKeyForEncryption(receiver);
+            if (!key) {
+                var meta = facebook.getMeta(receiver);
+                if (!meta || !ns.Interface.conforms(meta.key, EncryptKey)) {
+                    // save this message in a queue waiting receiver's meta/profile response
+                    this.suspendMessage(iMsg);
+                    // throw Error('failed to get encrypt key for receiver: ' + receiver);
+                    return null;
+                }
             }
         }
         return Transceiver.prototype.encryptKey.call(this, pwd, receiver, iMsg);
