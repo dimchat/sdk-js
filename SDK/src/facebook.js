@@ -77,12 +77,7 @@
     Facebook.prototype.verifyMeta = function (meta, identifier) {
         return meta.matches(identifier);
     };
-    Facebook.prototype.cacheMeta = function (meta, identifier) {
-        if (!this.verifyMeta(meta, identifier)) {
-            return false;
-        }
-        return Barrack.prototype.cacheMeta.call(this, meta, identifier);
-    };
+
     // noinspection JSUnusedLocalSymbols
     /**
      *  Save meta for entity ID (must verify first)
@@ -95,22 +90,10 @@
         console.assert(false, 'implement me!');
         return false;
     };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Load meta for entity ID
-     *
-     * @param {ID} identifier
-     * @returns {Meta}
-     */
-    Facebook.prototype.loadMeta = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
 
     //
     //  Profile
     //
-
     Facebook.prototype.verifyProfile = function (profile, identifier) {
         if (identifier) {
             if (!profile || !identifier.equals(profile.getIdentifier())) {
@@ -277,24 +260,6 @@
             return new ServiceProvider(identifier);
         }
         throw TypeError('Unsupported group type: ' + type);
-    };
-
-    //
-    //  EntityDataSource
-    //
-
-    Facebook.prototype.getMeta = function (identifier) {
-        var meta = Barrack.prototype.getMeta.call(this, identifier);
-        if (meta) {
-            return meta;
-        }
-        // load from local storage
-        meta = this.loadMeta(identifier);
-        if (meta) {
-            // no need to verify meta from local storage
-            Barrack.prototype.cacheMeta.call(this, meta, identifier);
-        }
-        return meta;
     };
 
     //
