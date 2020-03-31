@@ -63,7 +63,6 @@
         this.ans = null;
         // memory caches
         this.profileMap    = {};  // ID -> Profile
-        this.contactsMap   = {};  // ID -> List<ID>
     };
     ns.Class(Facebook, Barrack, null);
 
@@ -220,41 +219,6 @@
     };
 
     //
-    //  User contacts
-    //
-    Facebook.prototype.cacheContacts = function (contacts, identifier) {
-        if (!contacts) {
-            delete this.contactsMap[identifier];
-            return false;
-        }
-        this.contactsMap[identifier] = contacts;
-        return true;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save contacts for user
-     *
-     * @param {ID[]} contacts - contact ID list
-     * @param {ID} identifier - user ID
-     * @returns {boolean}
-     */
-    Facebook.prototype.saveContacts = function (contacts, identifier) {
-        console.assert(false, 'implement me!');
-        return false;
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Load contacts for user
-     *
-     * @param {ID} identifier
-     * @returns {ID[]}
-     */
-    Facebook.prototype.loadContacts = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    //
     //  Group members
     //
 
@@ -392,23 +356,6 @@
         // no need to verify profile from local storage
         this.profileMap[identifier] = profile;
         return profile;
-    };
-
-    //
-    //  UserDataSource
-    //
-
-    Facebook.prototype.getContacts = function (identifier) {
-        var contacts = this.contactsMap[identifier];
-        if (contacts) {
-            return contacts;
-        }
-        // load from local storage
-        contacts = this.loadContacts(identifier);
-        if (contacts) {
-            this.cacheContacts(contacts, identifier);
-        }
-        return contacts;
     };
 
     //
