@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Mar. 31, 2020
+ * @date      Apr. 1, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -1437,7 +1437,7 @@
         }
         return Transceiver.prototype.deserializeMessage.call(this, data)
     };
-    Messenger.prototype.encryptContent = function(content, pwd, iMsg) {
+    Messenger.prototype.serializeContent = function(content, pwd, iMsg) {
         var key = SymmetricKey.getInstance(pwd);
         if (content instanceof FileContent) {
             var data = content.getData();
@@ -1448,7 +1448,7 @@
                 content.setData(null)
             }
         }
-        return Transceiver.prototype.encryptContent.call(this, content, pwd, iMsg)
+        return Transceiver.prototype.serializeContent.call(this, content, key, iMsg)
     };
     var is_broadcast_msg = function(msg) {
         var receiver;
@@ -1463,7 +1463,7 @@
         receiver = this.entityDelegate.getIdentifier(receiver);
         return receiver && receiver.isBroadcast()
     };
-    Messenger.prototype.encryptKey = function(pwd, receiver, iMsg) {
+    Messenger.prototype.encryptKey = function(data, receiver, iMsg) {
         if (!is_broadcast_msg.call(this, iMsg)) {
             var facebook = this.getFacebook();
             receiver = facebook.getIdentifier(receiver);
@@ -1476,11 +1476,11 @@
                 }
             }
         }
-        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, iMsg)
+        return Transceiver.prototype.encryptKey.call(this, data, receiver, iMsg)
     };
-    Messenger.prototype.decryptContent = function(data, pwd, sMsg) {
+    Messenger.prototype.deserializeContent = function(data, pwd, sMsg) {
         var key = SymmetricKey.getInstance(pwd);
-        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, sMsg);
+        var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
         if (!content) {
             throw Error("failed to decrypt message content: " + sMsg)
         }

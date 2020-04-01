@@ -194,7 +194,7 @@
     //  InstantMessageDelegate
     //
 
-    Messenger.prototype.encryptContent = function (content, pwd, iMsg) {
+    Messenger.prototype.serializeContent = function (content, pwd, iMsg) {
         var key = SymmetricKey.getInstance(pwd);
         // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
@@ -208,7 +208,7 @@
                 content.setData(null);
             }
         }
-        return Transceiver.prototype.encryptContent.call(this, content, pwd, iMsg);
+        return Transceiver.prototype.serializeContent.call(this, content, key, iMsg);
     };
 
     var is_broadcast_msg = function (msg) {
@@ -225,7 +225,7 @@
         return receiver && receiver.isBroadcast();
     };
 
-    Messenger.prototype.encryptKey = function (pwd, receiver, iMsg) {
+    Messenger.prototype.encryptKey = function (data, receiver, iMsg) {
         if (!is_broadcast_msg.call(this, iMsg)) {
             var facebook = this.getFacebook();
             receiver = facebook.getIdentifier(receiver);
@@ -240,16 +240,16 @@
                 }
             }
         }
-        return Transceiver.prototype.encryptKey.call(this, pwd, receiver, iMsg);
+        return Transceiver.prototype.encryptKey.call(this, data, receiver, iMsg);
     };
 
     //
     //  SecureMessageDelegate
     //
 
-    Messenger.prototype.decryptContent = function (data, pwd, sMsg) {
+    Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
         var key = SymmetricKey.getInstance(pwd);
-        var content = Transceiver.prototype.decryptContent.call(this, data, pwd, sMsg);
+        var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
         if (!content) {
             throw Error('failed to decrypt message content: ' + sMsg);
         }
