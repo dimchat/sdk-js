@@ -181,7 +181,11 @@
         return Transceiver.prototype.decryptMessage.call(this, msg);
     };
 
-    //-------- De/serialize message, content and symmetric key
+    //-------- Serialization
+
+    // Messenger.prototype.serializeMessage = function (rMsg) {
+    //     return Transceiver.prototype.serializeMessage.call(this, rMsg);
+    // };
 
     Messenger.prototype.deserializeMessage = function (data) {
         if (!data) {
