@@ -181,17 +181,45 @@
         return Transceiver.prototype.decryptMessage.call(this, msg);
     };
 
-    //-------- Serialization
+    //
+    //  Serialization
+    //
 
-    // Messenger.prototype.serializeMessage = function (rMsg) {
-    //     return Transceiver.prototype.serializeMessage.call(this, rMsg);
-    // };
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     *  Encode reliable message to JSON string data
+     *
+     * @param {ReliableMessage} rMsg
+     * @returns {Uint8Array}
+     */
+    Messenger.prototype.serializeMessage = function (rMsg) {
+        var json = ns.format.JSON.encode(rMsg);
+        return ns.type.String.from(json).getBytes('UTF-8');
+    };
 
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     *  Decode reliable message from JSON string data
+     *
+     * @param {Uint8Array} data
+     * @returns {ReliableMessage}
+     */
     Messenger.prototype.deserializeMessage = function (data) {
-        if (!data) {
-            return null;
-        }
-        return Transceiver.prototype.deserializeMessage.call(this, data);
+        var str = new ns.type.String(data, 'UTF-8');
+        var dict = ns.format.JSON.decode(str.toString());
+        // TODO: translate short keys
+        //       'S' -> 'sender'
+        //       'R' -> 'receiver'
+        //       'W' -> 'time'
+        //       'T' -> 'type'
+        //       'G' -> 'group'
+        //       ------------------
+        //       'D' -> 'data'
+        //       'V' -> 'signature'
+        //       'K' -> 'key'
+        //       ------------------
+        //       'M' -> 'meta'
+        return ReliableMessage.getInstance(dict);
     };
 
     //
