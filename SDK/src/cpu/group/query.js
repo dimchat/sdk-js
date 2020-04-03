@@ -38,8 +38,6 @@
 
     var TextContent = ns.protocol.TextContent;
     var GroupCommand = ns.protocol.GroupCommand;
-    var InviteCommand = ns.protocol.group.InviteCommand;
-    var ResetCommand = ns.protocol.group.ResetCommand;
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
@@ -76,9 +74,9 @@
         // 3. respond
         var user = facebook.getCurrentUser();
         if (facebook.isOwner(user.identifier, group)) {
-            return new ResetCommand(group, members);
+            return GroupCommand.reset(group, members);
         } else {
-            return new InviteCommand(group, members);
+            return GroupCommand.invite(group, members);
         }
     };
 
