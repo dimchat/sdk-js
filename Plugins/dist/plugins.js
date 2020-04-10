@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Mar. 10, 2020
+ * @date      Apr. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -264,9 +264,8 @@
             return Base64.decode(pem)
         }
     };
-    var KeyParser = ns.format.KeyParser;
     var pem = function() {};
-    ns.Class(pem, ns.type.Object, [KeyParser]);
+    ns.Class(pem, ns.type.Object, null);
     pem.prototype.encodePublicKey = function(key) {
         return encode_public(key)
     };
@@ -279,7 +278,7 @@
     pem.prototype.decodePrivateKey = function(pem) {
         return decode_rsa_private(pem)
     };
-    ns.format.PEM.parser = new pem()
+    ns.format.PEM = new pem()
 }(DIMP);
 ! function(ns) {
     var SymmetricKey = ns.crypto.SymmetricKey;
@@ -429,8 +428,7 @@
         return cipher.verify(data, signature, CryptoJS.SHA256)
     };
     RSAPublicKey.prototype.encrypt = function(plaintext) {
-        var str = new ns.type.String(plaintext, "UTF-8");
-        plaintext = str.toString();
+        plaintext = ns.format.UTF8.decode(plaintext);
         var cipher = parse_key.call(this);
         var base64 = cipher.encrypt(plaintext);
         if (base64) {
@@ -535,7 +533,7 @@
         var cipher = parse_key.call(this);
         var string = cipher.decrypt(data);
         if (string) {
-            return ns.type.String.from(string).getBytes("UTF-8")
+            return ns.format.UTF8.encode(string)
         } else {
             throw Error("RSA decrypt error: " + data)
         }

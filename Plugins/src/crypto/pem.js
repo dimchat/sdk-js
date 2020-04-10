@@ -120,14 +120,12 @@
 
     //-------- PEM functions end --------
 
-    var KeyParser = ns.format.KeyParser;
-
     //
     //  PEM
     //
     var pem = function () {
     };
-    ns.Class(pem, ns.type.Object, [KeyParser]);
+    ns.Class(pem, ns.type.Object, null);
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };
@@ -142,6 +140,6 @@
     };
 
     //-------- register --------
-    ns.format.PEM.parser = new pem();
+    ns.format.PEM = new pem();
 
 }(DIMP);

@@ -174,6 +174,7 @@
         var json = null;
         if (container) {
             json = DIMP.format.JSON.encode(container);
+            json = DIMP.format.UTF8.decode(json);
         }
         return this.saveText(json, path);
     };

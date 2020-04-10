@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Apr. 1, 2020
+ * @date      Apr. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -244,8 +244,7 @@
         if (!this.password) {
             var key = this.getKey();
             key = privateKey.decrypt(key);
-            var json = new ns.type.String(key, "UTF-8");
-            var dict = ns.format.JSON.decode(json);
+            var dict = ns.format.JSON.decode(key);
             this.password = SymmetricKey.getInstance(dict)
         }
         return this.password
@@ -1429,15 +1428,6 @@
         }
         return Transceiver.prototype.decryptMessage.call(this, msg)
     };
-    Messenger.prototype.serializeMessage = function(rMsg) {
-        var json = ns.format.JSON.encode(rMsg);
-        return ns.type.String.from(json).getBytes("UTF-8")
-    };
-    Messenger.prototype.deserializeMessage = function(data) {
-        var str = new ns.type.String(data, "UTF-8");
-        var dict = ns.format.JSON.decode(str.toString());
-        return ReliableMessage.getInstance(dict)
-    };
     Messenger.prototype.serializeContent = function(content, pwd, iMsg) {
         var key = SymmetricKey.getInstance(pwd);
         if (content instanceof FileContent) {
@@ -1468,7 +1458,7 @@
         var key = SymmetricKey.getInstance(pwd);
         var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
         if (!content) {
-            throw Error("failed to decrypt message content: " + sMsg)
+            throw Error("failed to deserialize message content: " + sMsg)
         }
         if (content instanceof FileContent) {
             var iMsg = InstantMessage.newMessage(content, sMsg.envelope);

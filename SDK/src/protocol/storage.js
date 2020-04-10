@@ -183,8 +183,7 @@
         if (!this.password) {
             var key = this.getKey();
             key = privateKey.decrypt(key);
-            var json = new ns.type.String(key, 'UTF-8');
-            var dict = ns.format.JSON.decode(json);
+            var dict = ns.format.JSON.decode(key);
             this.password = SymmetricKey.getInstance(dict);
         }
         return this.password;

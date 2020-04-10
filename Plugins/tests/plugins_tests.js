@@ -43,8 +43,7 @@ plugins_tests = [];
         var data;
         var signature;
 
-        str = new ns.type.String(str, 'UTF-8');
-        data = str.getBytes('UTF-8');
+        data = ns.format.UTF8.encode(str);
         signature = moki_sk.sign(data);
         assert(moki_pk.verify(data, signature) === true, 'verify error');
 

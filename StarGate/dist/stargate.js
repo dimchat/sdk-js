@@ -3,7 +3,7 @@
  *  (Interfaces for network connection)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Mar. 10, 2020
+ * @date      Apr. 10, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -298,7 +298,8 @@ if (typeof StarGate !== "object") {
     Storage.prototype.saveJSON = function(container, path) {
         var json = null;
         if (container) {
-            json = DIMP.format.JSON.encode(container)
+            json = DIMP.format.JSON.encode(container);
+            json = DIMP.format.UTF8.decode(json)
         }
         return this.saveText(json, path)
     };
