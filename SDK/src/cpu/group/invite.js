@@ -95,7 +95,7 @@
     //
     //  Main
     //
-    InviteCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
+    InviteCommandProcessor.prototype.process = function (cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -104,7 +104,7 @@
             // NOTICE:
             //     group membership lost?
             //     reset group members
-            return reset.call(this, cmd, sender, iMsg);
+            return reset.call(this, cmd, sender, msg);
         }
         // 1. check permission
         if (!facebook.existsMember(sender, group)) {
@@ -123,7 +123,7 @@
         if (is_reset.call(this, inviteList, sender, group)) {
             // NOTICE: owner invites owner?
             //         it means this should be a 'reset' command
-            return reset.call(this, cmd, sender, iMsg);
+            return reset.call(this, cmd, sender, msg);
         }
         // 2. do invite (get invited-list)
         var added = invite.call(this, inviteList, group);

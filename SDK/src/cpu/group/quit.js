@@ -51,7 +51,7 @@
     //
     //  Main
     //
-    QuitCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
+    QuitCommandProcessor.prototype.process = function (cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -69,7 +69,7 @@
         }
         if (members.indexOf(sender) < 0) {
             // FIXME:
-            throw Error('sender is not a member of group: ' + iMsg);
+            throw Error(sender + ' is not a member of group: ' + group);
             // return;
         }
         ns.type.Arrays.remove(members, sender);

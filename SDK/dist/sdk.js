@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Apr. 10, 2020
+ * @date      Apr. 12, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -274,9 +274,9 @@
     ContentProcessor.prototype.getFacebook = function() {
         return this.messenger.getFacebook()
     };
-    ContentProcessor.prototype.process = function(content, sender, iMsg) {
+    ContentProcessor.prototype.process = function(content, sender, msg) {
         var cpu = this.getCPU(content.type);
-        return cpu.process(content, sender, iMsg)
+        return cpu.process(content, sender, msg)
     };
     ContentProcessor.prototype.getCPU = function(type) {
         var value;
@@ -329,9 +329,9 @@
         this.commandProcessors = {}
     };
     ns.Class(CommandProcessor, ContentProcessor, null);
-    CommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    CommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu = this.getCPU(cmd.getCommand());
-        return cpu.process(cmd, sender, iMsg)
+        return cpu.process(cmd, sender, msg)
     };
     CommandProcessor.prototype.getCPU = function(command) {
         var cpu = this.commandProcessors[command];
@@ -370,7 +370,7 @@
         ContentProcessor.call(this, messenger)
     };
     ns.Class(DefaultContentProcessor, ContentProcessor, null);
-    DefaultContentProcessor.prototype.process = function(content, sender, iMsg) {
+    DefaultContentProcessor.prototype.process = function(content, sender, msg) {
         var type = content.type.toString();
         var text = "Content (type: " + type + ") not support yet!";
         var res = new TextContent(text);
@@ -391,7 +391,7 @@
         CommandProcessor.call(this, messenger)
     };
     ns.Class(DefaultCommandProcessor, CommandProcessor, null);
-    DefaultCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    DefaultCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var name = cmd.getCommand();
         var text = "Command (name: " + name + ") not support yet!";
         var res = new TextContent(text);
@@ -413,12 +413,12 @@
         ContentProcessor.call(this, messenger)
     };
     ns.Class(ForwardContentProcessor, ContentProcessor, null);
-    ForwardContentProcessor.prototype.process = function(content, sender, iMsg) {
-        var rMsg = content.getMessage();
+    ForwardContentProcessor.prototype.process = function(content, sender, msg) {
+        var secret = content.getMessage();
         var messenger = this.messenger;
-        rMsg = messenger.processReliableMessage(rMsg);
-        if (rMsg) {
-            return new ForwardContent(rMsg)
+        secret = messenger.processMessage(secret);
+        if (secret) {
+            return new ForwardContent(secret)
         }
         return null
     };
@@ -455,7 +455,7 @@
         }
         return new ReceiptCommand("Meta received: " + identifier)
     };
-    MetaCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    MetaCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);
@@ -508,7 +508,7 @@
         }
         return new ReceiptCommand("Profile received: " + identifier)
     };
-    ProfileCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    ProfileCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var identifier = cmd.getIdentifier();
         identifier = facebook.getIdentifier(identifier);
@@ -533,7 +533,7 @@
         this.gpu = null
     };
     ns.Class(HistoryCommandProcessor, CommandProcessor, null);
-    HistoryCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    HistoryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var cpu;
         if (cmd.getGroup()) {
             if (!this.gpu) {
@@ -544,7 +544,7 @@
             var name = cmd.getCommand();
             cpu = this.getCPU(name)
         }
-        return cpu.process(cmd, sender, iMsg)
+        return cpu.process(cmd, sender, msg)
     };
     HistoryCommandProcessor.register = function(command, clazz) {
         CommandProcessor.register.call(this, command, clazz)
@@ -603,10 +603,10 @@
         var owner = facebook.getOwner(group);
         return !owner
     };
-    GroupCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    GroupCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var name = cmd.getCommand();
         var cpu = this.getCPU(name);
-        return cpu.process(cmd, sender, iMsg)
+        return cpu.process(cmd, sender, msg)
     };
     GroupCommandProcessor.register = function(command, clazz) {
         HistoryCommandProcessor.register.call(this, command, clazz)
@@ -659,12 +659,12 @@
         }
         return null
     };
-    InviteCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    InviteCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (this.isEmpty(group)) {
-            return reset.call(this, cmd, sender, iMsg)
+            return reset.call(this, cmd, sender, msg)
         }
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
@@ -678,7 +678,7 @@
             throw Error("Invite command error: " + cmd)
         }
         if (is_reset.call(this, inviteList, sender, group)) {
-            return reset.call(this, cmd, sender, iMsg)
+            return reset.call(this, cmd, sender, msg)
         }
         var added = invite.call(this, inviteList, group);
         if (added) {
@@ -697,13 +697,13 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
-    ExpelCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    ExpelCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error("sender is not the owner/admin of group: " + iMsg)
+                throw Error(sender + " is not the owner/admin of group: " + group)
             }
         }
         var expelList = this.getMembers(cmd);
@@ -742,7 +742,7 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
-    QuitCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    QuitCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -757,7 +757,7 @@
             throw Error("Group members not found: " + group)
         }
         if (members.indexOf(sender) < 0) {
-            throw Error("sender is not a member of group: " + iMsg)
+            throw Error(sender + " is not a member of group: " + group)
         }
         ns.type.Arrays.remove(members, sender);
         facebook.saveMembers(members, group);
@@ -775,14 +775,14 @@
         GroupCommandProcessor.call(this, messenger)
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
-    QueryCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    QueryCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         if (!facebook.existsMember(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
                 if (!facebook.isOwner(sender, group)) {
-                    throw Error("sender is not a member/assistant of group: " + iMsg)
+                    throw Error(sender + " is not a member/assistant of group: " + group)
                 }
             }
         }
@@ -861,7 +861,7 @@
         }
         return result
     };
-    ResetCommandProcessor.prototype.process = function(cmd, sender, iMsg) {
+    ResetCommandProcessor.prototype.process = function(cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
@@ -874,7 +874,7 @@
         }
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error("sender is not the owner/admin of group: " + iMsg)
+                throw Error(sender + " is not the owner/admin of group: " + group)
             }
         }
         var result = reset.call(this, newMembers, group);
@@ -1364,7 +1364,7 @@
         }
         return facebook
     };
-    var select = function(receiver) {
+    Messenger.prototype.select = function(receiver) {
         var facebook = this.getFacebook();
         var users = facebook.getLocalUsers();
         if (!users || users.length === 0) {
@@ -1393,7 +1393,7 @@
         var facebook = this.getFacebook();
         var receiver = msg.envelope.receiver;
         receiver = facebook.getIdentifier(receiver);
-        var user = select.call(this, receiver);
+        var user = this.select(receiver);
         if (!user) {
             msg = null
         } else {
@@ -1541,40 +1541,40 @@
         if (!rMsg) {
             return null
         }
-        rMsg = this.processReliableMessage(rMsg);
+        rMsg = this.processMessage(rMsg);
         if (!rMsg) {
             return null
         }
         return this.serializeMessage(rMsg)
     };
-    Messenger.prototype.processReliableMessage = function(rMsg) {
+    Messenger.prototype.processMessage = function(rMsg) {
         var sMsg = this.verifyMessage(rMsg);
         if (!sMsg) {
             return null
         }
-        sMsg = this.processSecureMessage(sMsg);
+        sMsg = processSecure.call(this, sMsg, rMsg);
         if (!sMsg) {
             return null
         }
         return this.signMessage(sMsg)
     };
-    Messenger.prototype.processSecureMessage = function(sMsg) {
+    var processSecure = function(sMsg, rMsg) {
         var iMsg = this.decryptMessage(sMsg);
         if (!iMsg) {
             return null
         }
-        iMsg = this.processInstantMessage(iMsg);
+        iMsg = processInstant.call(this, iMsg, rMsg);
         if (!iMsg) {
             return null
         }
         return this.encryptMessage(iMsg)
     };
-    Messenger.prototype.processInstantMessage = function(iMsg) {
+    var processInstant = function(iMsg, rMsg) {
         var facebook = this.getFacebook();
         var content = iMsg.content;
         var env = iMsg.envelope;
         var sender = facebook.getIdentifier(env.sender);
-        var res = this.cpu.process(content, sender, iMsg);
+        var res = this.processContent(content, sender, rMsg);
         if (!this.saveMessage(iMsg)) {
             return null
         }
@@ -1582,9 +1582,12 @@
             return null
         }
         var receiver = facebook.getIdentifier(env.receiver);
-        var user = select.call(this, receiver);
+        var user = this.select(receiver);
         env = Envelope.newEnvelope(user.identifier, sender, 0);
         return InstantMessage.newMessage(res, env)
+    };
+    Messenger.prototype.processContent = function(content, sender, rMsg) {
+        return this.cpu.process(content, sender, rMsg)
     };
     ns.Messenger = Messenger;
     ns.register("Messenger")

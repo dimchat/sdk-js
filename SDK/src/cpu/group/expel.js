@@ -51,14 +51,14 @@
     //
     //  Main
     //
-    ExpelCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
+    ExpelCommandProcessor.prototype.process = function (cmd, sender, msg) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         group = facebook.getIdentifier(group);
         // 1. check permission
         if (!facebook.isOwner(sender, group)) {
             if (!facebook.existsAssistant(sender, group)) {
-                throw Error('sender is not the owner/admin of group: ' + iMsg);
+                throw Error(sender + ' is not the owner/admin of group: ' + group);
             }
         }
         // 1.2. get expelling members from command content

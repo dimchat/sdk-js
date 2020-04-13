@@ -94,7 +94,7 @@
         return facebook;
     };
 
-    var select = function (receiver) {
+    Messenger.prototype.select = function (receiver) {
         var facebook = this.getFacebook();
         var users = facebook.getLocalUsers();
         if (!users || users.length === 0) {
@@ -129,7 +129,7 @@
         var facebook = this.getFacebook();
         var receiver = msg.envelope.receiver;
         receiver = facebook.getIdentifier(receiver);
-        var user = select.call(this, receiver);
+        var user = this.select(receiver);
         if (!user) {
             // current users not match
             msg = null;
@@ -374,7 +374,7 @@
             return null;
         }
         // 2. process message
-        rMsg = this.processReliableMessage(rMsg);
+        rMsg = this.processMessage(rMsg);
         if (!rMsg) {
             // nothing to response
             return null;
@@ -385,7 +385,7 @@
 
     // TODO: override to check broadcast message before calling it
     // TODO: override to deliver to the receiver when catch exception "receiver error ..."
-    Messenger.prototype.processReliableMessage = function (rMsg) {
+    Messenger.prototype.processMessage = function (rMsg) {
         // 1. verify message
         var sMsg = this.verifyMessage(rMsg);
         if (!sMsg) {
@@ -393,7 +393,7 @@
             return null;
         }
         // 2. process message
-        sMsg = this.processSecureMessage(sMsg);
+        sMsg = processSecure.call(this, sMsg, rMsg);
         if (!sMsg) {
             // nothing to respond
             return null;
@@ -402,7 +402,7 @@
         return this.signMessage(sMsg);
     };
 
-    Messenger.prototype.processSecureMessage = function (sMsg) {
+    var processSecure = function (sMsg, rMsg) {
         // 1. decrypt message
         var iMsg = this.decryptMessage(sMsg);
         if (!iMsg) {
@@ -411,7 +411,7 @@
             return null;
         }
         // 2. process message
-        iMsg = this.processInstantMessage(iMsg);
+        iMsg = processInstant.call(this, iMsg, rMsg);
         if (!iMsg) {
             // nothing to respond
             return null;
@@ -420,16 +420,14 @@
         return this.encryptMessage(iMsg);
     };
 
-    // TODO: override to check group
-    // TODO: override to filter the response
-    Messenger.prototype.processInstantMessage = function (iMsg) {
+    var processInstant = function (iMsg, rMsg) {
         var facebook = this.getFacebook();
         var content = iMsg.content;
         var env = iMsg.envelope;
         var sender = facebook.getIdentifier(env.sender);
 
         // process content from sender
-        var res = this.cpu.process(content, sender, iMsg);
+        var res = this.processContent(content, sender, rMsg);
         if (!this.saveMessage(iMsg)) {
             // error
             return null;
@@ -441,11 +439,18 @@
 
         // check receiver
         var receiver = facebook.getIdentifier(env.receiver);
-        var user = select.call(this, receiver);
+        var user = this.select(receiver);
 
         // pack message
         env = Envelope.newEnvelope(user.identifier, sender, 0);
         return InstantMessage.newMessage(res, env);
+    };
+
+    // TODO: override to check group
+    // TODO: override to filter the response
+    Messenger.prototype.processContent = function (content, sender, rMsg) {
+        // call CPU to process it
+        return this.cpu.process(content, sender, rMsg);
     };
 
     //-------- namespace --------

@@ -53,7 +53,7 @@
     //
     //  Main
     //
-    DefaultContentProcessor.prototype.process = function (content, sender, iMsg) {
+    DefaultContentProcessor.prototype.process = function (content, sender, msg) {
         var type = content.type.toString();
         var text = 'Content (type: ' + type + ') not support yet!';
         var res = new TextContent(text);
@@ -93,7 +93,7 @@
     //
     //  Main
     //
-    DefaultCommandProcessor.prototype.process = function (cmd, sender, iMsg) {
+    DefaultCommandProcessor.prototype.process = function (cmd, sender, msg) {
         var name = cmd.getCommand();
         var text = 'Command (name: ' + name + ') not support yet!';
         var res = new TextContent(text);

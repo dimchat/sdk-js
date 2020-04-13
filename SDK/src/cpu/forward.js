@@ -53,15 +53,15 @@
     //
     //  Main
     //
-    ForwardContentProcessor.prototype.process = function (content, sender, iMsg) {
-        var rMsg = content.getMessage();
+    ForwardContentProcessor.prototype.process = function (content, sender, msg) {
+        var secret = content.getMessage();
         var messenger = this.messenger;
         // call messenger to process it
-        rMsg = messenger.processReliableMessage(rMsg);
+        secret = messenger.processMessage(secret);
         // check response
-        if (rMsg) {
+        if (secret) {
             // Over The Top
-            return new ForwardContent(rMsg);
+            return new ForwardContent(secret);
         }/* else {
             var receiver = content.getMessage().envelope.receiver;
             var text = 'Message forwarded: ' + receiver;
