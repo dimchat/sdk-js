@@ -84,32 +84,6 @@
 !function (ns) {
     'use strict';
 
-    var ConnectionDelegate = function () {
-    };
-    ns.Interface(ConnectionDelegate, null);
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Receive data package
-     *
-     * @param {Uint8Array} data - package from network connection
-     * @returns {Uint8Array} data response to sender
-     */
-    ConnectionDelegate.prototype.onReceivePackage = function (data) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    //-------- namespace --------
-    ns.ConnectionDelegate = ConnectionDelegate;
-
-    ns.register('ConnectionDelegate');
-
-}(DIMP);
-
-!function (ns) {
-    'use strict';
-
     var MessengerDelegate = function () {
     };
     ns.Interface(MessengerDelegate, null);

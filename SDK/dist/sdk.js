@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Apr. 12, 2020
+ * @date      Apr. 18, 2020
  * @copyright (c) 2020 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */
@@ -83,6 +83,200 @@
     Command.register(Command.RECEIPT, ReceiptCommand);
     ns.protocol.ReceiptCommand = ReceiptCommand;
     ns.protocol.register("ReceiptCommand")
+}(DIMP);
+! function(ns) {
+    var HandshakeState = ns.type.Enum(null, {
+        INIT: 0,
+        START: 1,
+        AGAIN: 2,
+        RESTART: 3,
+        SUCCESS: 4
+    });
+    var Command = ns.protocol.Command;
+    var HandshakeCommand = function(info) {
+        var message = null;
+        if (!info) {
+            info = Command.HANDSHAKE
+        } else {
+            if (typeof info === "string") {
+                message = info;
+                info = Command.HANDSHAKE
+            }
+        }
+        Command.call(this, info);
+        if (message) {
+            this.setMessage(message)
+        }
+    };
+    ns.Class(HandshakeCommand, Command, null);
+    HandshakeCommand.prototype.getMessage = function() {
+        return this.getValue("message")
+    };
+    HandshakeCommand.prototype.setMessage = function(text) {
+        this.setValue("message", text)
+    };
+    HandshakeCommand.prototype.getSessionKey = function() {
+        return this.getValue("session")
+    };
+    HandshakeCommand.prototype.setSessionKey = function(session) {
+        this.setValue("session", session)
+    };
+    HandshakeCommand.prototype.getState = function() {
+        var text = this.getMessage();
+        var session = this.getSessionKey();
+        if (!text) {
+            return HandshakeState.INIT
+        }
+        if (text === "DIM?") {
+            return HandshakeState.AGAIN
+        }
+        if (text === "DIM!" || text === "OK!") {
+            return HandshakeState.SUCCESS
+        }
+        if (session) {
+            return HandshakeState.RESTART
+        } else {
+            return HandshakeState.START
+        }
+    };
+    var handshake = function(text, session) {
+        var cmd = new HandshakeCommand(text);
+        if (session) {
+            cmd.setSessionKey(session)
+        }
+        return cmd
+    };
+    HandshakeCommand.start = function() {
+        return handshake("Hello world!")
+    };
+    HandshakeCommand.restart = function(session) {
+        return handshake("Hello world!", session)
+    };
+    HandshakeCommand.again = function(session) {
+        return handshake("DIM?", session)
+    };
+    HandshakeCommand.success = function() {
+        return handshake("DIM!")
+    };
+    Command.register(Command.HANDSHAKE, HandshakeCommand);
+    ns.protocol.HandshakeCommand = HandshakeCommand;
+    ns.protocol.HandshakeState = HandshakeState;
+    ns.protocol.register("HandshakeCommand");
+    ns.protocol.register("HandshakeState")
+}(DIMP);
+! function(ns) {
+    var Dictionary = ns.type.Dictionary;
+    var ID = ns.ID;
+    var Command = ns.protocol.Command;
+    var LoginCommand = function(info) {
+        var identifier = null;
+        var time = null;
+        if (!info) {
+            time = new Date();
+            info = Command.LOGIN
+        } else {
+            if (info instanceof ID) {
+                identifier = info;
+                time = new Date();
+                info = Command.LOGIN
+            }
+        }
+        Command.call(this, info);
+        if (identifier) {
+            this.setIdentifier(identifier)
+        }
+        if (time) {
+            this.setTime(time)
+        }
+    };
+    ns.Class(LoginCommand, Command, null);
+    LoginCommand.prototype.getTime = function() {
+        var time = this.getValue("time");
+        if (time) {
+            return new Date(time * 1000)
+        } else {
+            return null
+        }
+    };
+    LoginCommand.prototype.setTime = function(time) {
+        if (!time) {
+            time = new Date()
+        }
+        if (time instanceof Date) {
+            this.setValue("time", time.getTime() / 1000)
+        } else {
+            if (typeof time === "number") {
+                this.setValue("time", time)
+            } else {
+                throw TypeError("time error: " + time)
+            }
+        }
+    };
+    LoginCommand.prototype.getIdentifier = function() {
+        return this.getValue("ID")
+    };
+    LoginCommand.prototype.setIdentifier = function(identifier) {
+        this.setValue("ID", identifier)
+    };
+    LoginCommand.prototype.getDevice = function() {
+        return this.getValue("device")
+    };
+    LoginCommand.prototype.setDevice = function(device) {
+        this.setValue("device", device)
+    };
+    LoginCommand.prototype.getAgent = function() {
+        return this.getValue("agent")
+    };
+    LoginCommand.prototype.setAgent = function(UA) {
+        this.setValue("agent", UA)
+    };
+    LoginCommand.prototype.getStation = function() {
+        return this.getValue("station")
+    };
+    LoginCommand.prototype.setStation = function(station) {
+        var info;
+        if (station instanceof ns.Station) {
+            info = {
+                "host": station.host,
+                "port": station.port,
+                "ID": station.identifier
+            }
+        } else {
+            if (station instanceof Dictionary) {
+                info = station.getMap(false)
+            } else {
+                info = station
+            }
+        }
+        this.setValue("station", info)
+    };
+    LoginCommand.prototype.getProvider = function() {
+        return this.getValue("provider")
+    };
+    LoginCommand.prototype.setProvider = function(provider) {
+        var info;
+        if (provider instanceof ns.ServiceProvider) {
+            info = {
+                "ID": provider.identifier
+            }
+        } else {
+            if (provider instanceof ID) {
+                info = {
+                    "ID": provider
+                }
+            } else {
+                if (provider instanceof Dictionary) {
+                    info = provider.getMap(false)
+                } else {
+                    info = provider
+                }
+            }
+        }
+        this.setValue("provider", info)
+    };
+    Command.register(Command.LOGIN, LoginCommand);
+    ns.protocol.LoginCommand = LoginCommand;
+    ns.protocol.register("LoginCommand")
 }(DIMP);
 ! function(ns) {
     var Command = ns.protocol.Command;
@@ -1050,16 +1244,6 @@
     ns.register("CompletionHandler")
 }(DIMP);
 ! function(ns) {
-    var ConnectionDelegate = function() {};
-    ns.Interface(ConnectionDelegate, null);
-    ConnectionDelegate.prototype.onReceivePackage = function(data) {
-        console.assert(false, "implement me!");
-        return null
-    };
-    ns.ConnectionDelegate = ConnectionDelegate;
-    ns.register("ConnectionDelegate")
-}(DIMP);
-! function(ns) {
     var MessengerDelegate = function() {};
     ns.Interface(MessengerDelegate, null);
     MessengerDelegate.prototype.uploadData = function(data, iMsg) {
@@ -1337,7 +1521,6 @@
     var FileContent = ns.protocol.FileContent;
     var ContentProcessor = ns.cpu.ContentProcessor;
     var CompletionHandler = ns.CompletionHandler;
-    var ConnectionDelegate = ns.ConnectionDelegate;
     var Transceiver = ns.core.Transceiver;
     var Facebook = ns.Facebook;
     var Messenger = function() {
@@ -1346,7 +1529,7 @@
         this.cpu = new ContentProcessor(this);
         this.delegate = null
     };
-    ns.Class(Messenger, Transceiver, [ConnectionDelegate]);
+    ns.Class(Messenger, Transceiver, null);
     Messenger.prototype.getContext = function(key) {
         return this.context[key]
     };
@@ -1536,7 +1719,7 @@
         console.assert(false, "implement me!");
         return false
     };
-    Messenger.prototype.onReceivePackage = function(data) {
+    Messenger.prototype.processPackage = function(data) {
         var rMsg = this.deserializeMessage(data);
         if (!rMsg) {
             return null

@@ -52,7 +52,6 @@
     var ContentProcessor = ns.cpu.ContentProcessor;
 
     var CompletionHandler = ns.CompletionHandler;
-    var ConnectionDelegate = ns.ConnectionDelegate;
 
     var Transceiver = ns.core.Transceiver;
 
@@ -67,7 +66,7 @@
         // Messenger delegate for sending data
         this.delegate = null;
     };
-    ns.Class(Messenger, Transceiver, [ConnectionDelegate]);
+    ns.Class(Messenger, Transceiver, null);
 
     //
     //  Environment variables as context
@@ -259,8 +258,17 @@
      * @returns {boolean}
      */
     Messenger.prototype.sendContent = function (content, receiver, callback, split) {
+        // Application Layer should make sure user is already login before it send message to server.
+        // Application layer should put message into queue so that it will send automatically after user login.
         var facebook = this.getFacebook();
         var user = facebook.getCurrentUser();
+        /*
+        if (receiver.isGroup()) {
+            if (!content.getGroup()) {
+                content.setGroup(receiver);
+            }
+        }
+         */
         var env = Envelope.newEnvelope(user.identifier, receiver, 0);
         var iMsg = InstantMessage.newMessage(content, env);
         return this.sendMessage(iMsg, callback, split);
@@ -363,10 +371,16 @@
     };
 
     //
-    //  ConnectionDelegate
+    //  Processing message
     //
 
-    Messenger.prototype.onReceivePackage = function (data) {
+    /**
+     *  Process received data package
+     *
+     * @param {Uint8Array} data - package from network connection
+     * @returns {Uint8Array} data response to sender
+     */
+    Messenger.prototype.processPackage = function (data) {
         // 1. deserialize message
         var rMsg = this.deserializeMessage(data);
         if (!rMsg) {
