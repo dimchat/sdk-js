@@ -298,6 +298,9 @@
         receiver = facebook.getIdentifier(receiver);
         // Send message (secured + certified) to target station
         var sMsg = this.encryptMessage(iMsg);
+        if (!sMsg) {
+            return false;
+        }
         var rMsg = this.signMessage(sMsg);
         var ok = true;
         if (split && receiver.isGroup()) {

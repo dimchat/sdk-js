@@ -36,7 +36,6 @@
 //! require 'network/robot.js'
 //! require 'network/station.js'
 //! require 'network/provider.js'
-//! require 'ans.js'
 
 !function (ns) {
     'use strict';
@@ -59,17 +58,8 @@
 
     var Facebook = function() {
         Barrack.call(this);
-        // Address Name Service
-        this.ans = null;
     };
     ns.Class(Facebook, Barrack, null);
-
-    Facebook.prototype.ansGet = function (name) {
-        if (!this.ans) {
-            return null;
-        }
-        return this.ans.getIdentifier(name);
-    };
 
     //
     //  Meta
@@ -216,11 +206,6 @@
     //
 
     Facebook.prototype.createIdentifier = function (string) {
-        // try ANS record
-        var identifier = this.ansGet(string);
-        if (identifier) {
-            return identifier;
-        }
         return ID.getInstance(string);
     };
 
@@ -346,12 +331,9 @@
     //  Group Assistants
     //
 
+    // noinspection JSUnusedLocalSymbols
     Facebook.prototype.getAssistants = function (group) {
-        // try ANS record
-        var identifier = this.ansGet('assistant');
-        if (identifier) {
-            return [identifier];
-        }
+        console.assert(false, 'implement me!');
         return null;
     };
 
