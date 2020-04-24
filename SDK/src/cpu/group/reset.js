@@ -63,7 +63,7 @@
                 // NOTICE: to prevent counterfeit,
                 //         query the owner for newest member-list
                 var cmd = GroupCommand.query(group);
-                this.messenger.sendContent(cmd, owner, null, false);
+                this.messenger.sendContent(cmd, owner, null);
             }
         }
         // response (no need to response this group command)

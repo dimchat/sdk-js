@@ -254,10 +254,9 @@
      * @param {Content} content
      * @param {ID|String} receiver
      * @param {Callback} callback - OPTIONAL
-     * @param {boolean} split - OPTIONAL; whether split group message
      * @returns {boolean}
      */
-    Messenger.prototype.sendContent = function (content, receiver, callback, split) {
+    Messenger.prototype.sendContent = function (content, receiver, callback) {
         // Application Layer should make sure user is already login before it send message to server.
         // Application layer should put message into queue so that it will send automatically after user login.
         var facebook = this.getFacebook();
@@ -271,7 +270,7 @@
          */
         var env = Envelope.newEnvelope(user.identifier, receiver, 0);
         var iMsg = InstantMessage.newMessage(content, env);
-        return this.sendMessage(iMsg, callback, split);
+        return this.sendMessage(iMsg, callback);
     };
 
     /**
@@ -279,12 +278,11 @@
      *
      * @param {InstantMessage|ReliableMessage} msg
      * @param {Callback} callback - OPTIONAL; if needs callback, set it here
-     * @param {boolean} split - OPTIONAL; whether split group message
      * @returns {boolean}
      */
-    Messenger.prototype.sendMessage = function (msg, callback, split) {
+    Messenger.prototype.sendMessage = function (msg, callback) {
         if (msg instanceof InstantMessage) {
-            return send_instant_message.call(this, msg, callback, split);
+            return send_instant_message.call(this, msg, callback);
         } else if (msg instanceof ReliableMessage) {
             return send_reliable_message.call(this, msg, callback);
         } else {
@@ -292,37 +290,20 @@
         }
     };
 
-    var send_instant_message = function (iMsg, callback, split) {
-        var facebook = this.getFacebook();
-        var receiver = iMsg.envelope.receiver;
-        receiver = facebook.getIdentifier(receiver);
+    var send_instant_message = function (iMsg, callback) {
         // Send message (secured + certified) to target station
         var sMsg = this.encryptMessage(iMsg);
         if (!sMsg) {
+            // failed to encrypt message (public key not found)
             return false;
         }
         var rMsg = this.signMessage(sMsg);
-        var ok = true;
-        if (split && receiver.isGroup()) {
-            // split for each members
-            var messages = null;
-            var members = facebook.getMembers(receiver);
-            if (members && members.length > 0) {
-                messages = rMsg.split(members);
-            }
-            if (messages) {
-                for (var i = 0; i < messages.length; ++i) {
-                    if (send_reliable_message.call(this, messages[i], callback)) {
-                        ok = false;
-                    }
-                }
-            } else {
-                // failed to split message, send it to group
-                ok = send_reliable_message.call(this, rMsg, callback);
-            }
-        } else {
-            ok = send_reliable_message.call(this, rMsg, callback);
+        if (!rMsg) {
+            // TODO: set iMsg.state = error
+            throw Error('failed to sign message: ' + sMsg);
         }
+
+        var ok = send_reliable_message.call(this, rMsg, callback);
         // TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
 
         if (!this.saveMessage(iMsg)) {
