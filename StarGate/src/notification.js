@@ -89,6 +89,7 @@
     "use strict";
 
     var Notification = ns.Notification;
+    var Observer = ns.Observer;
 
     /**
      *  Notification center
@@ -101,7 +102,7 @@
     /**
      *  Add observer with notification name
      *
-     * @param {Observer} observer
+     * @param {Observer|Function} observer
      * @param {String} name
      */
     Center.prototype.addObserver = function (observer, name) {
@@ -121,7 +122,7 @@
     /**
      *  Remove observer from notification center
      *
-     * @param {Observer} observer
+     * @param {Observer|Function} observer
      * @param {String} name - OPTIONAL
      */
     Center.prototype.removeObserver = function (observer, name) {
@@ -156,8 +157,14 @@
             return;
         }
         // send to all observers with this notification name
+        var obs;
         for (var i = 0; i < observers.length; ++i) {
-            observers[i].onReceiveNotification(notification);
+            obs = observers[i];
+            if (DIMP.Interface.conforms(obs, Observer)) {
+                obs.onReceiveNotification(notification);
+            } else if (typeof obs === 'function') {
+                obs.call(notification);
+            }
         }
     };
 
