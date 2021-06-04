@@ -26,31 +26,31 @@
 //
 
 //! require <crypto-js/core.js> (https://github.com/brix/crypto-js)
-//! require <crypto-js/md5.js>
+//! require <crypto-js/ripemd160.js>
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Hash = ns.digest.Hash;
 
     //
-    //  MD5
+    //  RIPEMD160
     //
-    var md5 = function () {
+    var ripemd160 = function () {
     };
-    ns.Class(md5, ns.type.Object, [Hash]);
-    md5.prototype.digest = function (data) {
+    ns.Class(ripemd160, ns.type.Object, [Hash]);
+    ripemd160.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
-        var result = CryptoJS.MD5(array);
+        var result = CryptoJS.RIPEMD160(array);
         // words2bytes
         return ns.format.Hex.decode(result.toString());
     };
 
     //-------- register --------
-    ns.digest.MD5.hash = new md5();
+    ns.digest.RIPEMD160.hash = new ripemd160();
 
-}(DIMP);
+})(DIMP);

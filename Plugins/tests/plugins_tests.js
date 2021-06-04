@@ -8,7 +8,7 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
-    var ID = ns.ID;
+    var ID = ns.protocol.ID;
 
     var Immortals = ns.Immortals;
 
@@ -21,11 +21,11 @@ plugins_tests = [];
         var moki = Immortals.MOKI;
         var hulk = Immortals.HULK;
 
-        var moky = ID.getInstance('moky@4DnqXWdTV8wuZgfqSCX9GjE2kNq7HJrUgQ');
+        var moky = ID.parse('moky@4DnqXWdTV8wuZgfqSCX9GjE2kNq7HJrUgQ');
 
-        log('moky ID: ' + moky + ' (' + moky.getNumber() + ')');
-        log('moki ID: ' + moki + ' (' + moki.getNumber() + ')');
-        log('hulk ID: ' + hulk + ' (' + hulk.getNumber() + ')');
+        log('moky ID: ' + moky + ' (' + moky.getType() + ')');
+        log('moki ID: ' + moki + ' (' + moki.getType() + ')');
+        log('hulk ID: ' + hulk + ' (' + hulk.getType() + ')');
 
         var moki_meta = immortals.getMeta(moki);
         var hulk_meta = immortals.getMeta(hulk);
@@ -57,7 +57,7 @@ plugins_tests = [];
 
     var SymmetricKey = ns.crypto.SymmetricKey;
 
-    var Meta = ns.Meta;
+    var Meta = ns.protocol.Meta;
 
     var test_encrypt_key = function () {
         var key = {
@@ -65,7 +65,7 @@ plugins_tests = [];
             "data": "7uAlY2VZr9VaEexUg1gAeFrLhDheE8GITZLsFJHtLxQ=",
             "iv": "BMqauKb8kV1LwpDkStPWIQ=="
         };
-        key = SymmetricKey.getInstance(key);
+        key = SymmetricKey.parse(key);
 
         // var receiver = "chatroom-admin@2Pc5gJrEQYoz9D9TJrL35sA3wvprNdenPi7";
 
@@ -81,9 +81,9 @@ plugins_tests = [];
             },
             "fingerprint": "QY9SoCopLFBYcoa6IWd5x16Uf+VEAGiFCy34USlNOyVJr7MWJrGFONVtQDxhNzLVOV3xeSyY+VAr8mRFsyZILASQf+iWdrPUJMFAqryRsh1RLVVm7KY+1gDyL9/Xz1bzUKQ7V1h0uIzXWsZpAehBng7KZTN1zXth+ViXyF55rFM="
         };
-        meta = Meta.getInstance(meta);
+        meta = Meta.parse(meta);
 
-        var json = ns.format.JSON.encode(key);
+        var json = ns.format.JSON.encode(key.getMap());
 
         var ciphertext;
         for (var i = 0; i < 10000; ++i) {

@@ -5,13 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DIM Plugins Test Cases</title>
-    <script src="../libs/crypto-js/core.js"></script>
-    <script src="../libs/crypto-js/cipher-core.js"></script>
-    <script src="../libs/crypto-js/aes.js"></script>
-    <script src="../libs/crypto-js/md5.js"></script>
-    <script src="../libs/crypto-js/sha256.js"></script>
-    <script src="../libs/crypto-js/ripemd160.js"></script>
-    <script src="../libs/jsencrypt.js"></script>
+    <script src="../libs/3rd/crypto-js/core.js"></script>
+    <script src="../libs/3rd/crypto-js/cipher-core.js"></script>
+    <script src="../libs/3rd/crypto-js/aes.js"></script>
+    <script src="../libs/3rd/crypto-js/md5.js"></script>
+    <script src="../libs/3rd/crypto-js/sha256.js"></script>
+    <script src="../libs/3rd/crypto-js/ripemd160.js"></script>
+    <script src="../libs/3rd/jsencrypt.js"></script>
 
     <link href="/Crypto/tests/test.css" type="text/css" rel="stylesheet" />
     <script src="/Crypto/libs/loader.js"></script>
@@ -23,19 +23,20 @@
     <script>
         !function (ns) {
             var sources = [
-                'src/crypto/base58.js',
+                'src/format/base58.js',
 
-                'src/crypto/md5.js',
-                'src/crypto/sha256.js',
-                'src/crypto/ripemd160.js',
+                'src/digest/md5.js',
+                'src/digest/sha256.js',
+                'src/digest/ripemd160.js',
 
                 'src/crypto/pem.js',
-
-                'src/crypto/aes.js',
                 'src/crypto/rsa.js',
+                'src/crypto/aes.js',
+                'src/crypto/pwd.js',
 
                 'src/address.js',
                 'src/meta.js',
+                'src/factories.js',
 
                 // 'src/immortals.js',
                 null

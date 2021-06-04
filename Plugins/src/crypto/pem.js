@@ -27,7 +27,7 @@
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     //-------- PEM functions begin --------
@@ -142,4 +142,4 @@
     //-------- register --------
     ns.format.PEM = new pem();
 
-}(DIMP);
+})(DIMP);

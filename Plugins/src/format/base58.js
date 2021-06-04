@@ -27,7 +27,7 @@
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     //
@@ -199,4 +199,4 @@
     //-------- register --------
     ns.format.Base58.coder = new base58();
 
-}(DIMP);
+})(DIMP);

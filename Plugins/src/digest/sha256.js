@@ -30,7 +30,7 @@
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Hash = ns.digest.Hash;
@@ -53,4 +53,4 @@
     //-------- register --------
     ns.digest.SHA256.hash = new sha256();
 
-}(DIMP);
+})(DIMP);

@@ -32,9 +32,10 @@
 
 //! require <mkm.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
+    var str = ns.type.String;
     var Data = ns.type.Data;
 
     var SHA256 = ns.digest.SHA256;
@@ -43,7 +44,7 @@
     var Base58 = ns.format.Base58;
 
     var NetworkType = ns.protocol.NetworkType;
-    var Address = ns.Address;
+    var Address = ns.protocol.Address;
 
     /**
      *  Address like BitCoin
@@ -59,8 +60,63 @@
      *          code        = sha256(sha256(network + digest)).prefix(4);
      *          address     = base58_encode(network + digest + code);
      */
-    var DefaultAddress = function (string) {
-        Address.call(this, string);
+    var BTCAddress = function (string, network) {
+        str.call(this, string);
+        this.network = network;
+    };
+    ns.Class(BTCAddress, str, [Address]);
+
+    BTCAddress.prototype.getNetwork = function () {
+        return this.network;
+    };
+
+    BTCAddress.prototype.isBroadcast = function () {
+        return false;
+    };
+    BTCAddress.prototype.isUser = function () {
+        return NetworkType.isUser(this.network);
+    };
+    BTCAddress.prototype.isGroup = function () {
+        return NetworkType.isGroup(this.network);
+    };
+
+    /**
+     *  Generate address with fingerprint and network ID
+     *
+     * @param {Uint8Array} fingerprint
+     * @param {NetworkType|Number|char|*} network
+     * @returns {BTCAddress}
+     */
+    BTCAddress.generate = function (fingerprint, network) {
+        if (network instanceof NetworkType) {
+            network = network.valueOf();
+        }
+        // 1. digest = ripemd160(sha256(fingerprint))
+        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
+        // 2. head = network + digest
+        var head = new Data(21);
+        head.setByte(0, network);
+        head.append(digest);
+        // 3. cc = sha256(sha256(head)).prefix(4)
+        var cc = check_code(head.getBytes(false));
+        // 4. data = base58_encode(head + cc)
+        var data = new Data(25);
+        data.append(head);
+        data.append(cc);
+        return new BTCAddress(Base58.encode(data.getBytes(false)), network);
+    };
+
+    /**
+     *  Parse a string for BTC address
+     *
+     * @param {String} string - address string
+     * @return {BTCAddress} null on error
+     */
+    BTCAddress.parse = function (string) {
+        var len = string.length;
+        if (len < 26/* || len > 34*/) {
+            return null;
+        }
         // decode
         var data = Base58.decode(string);
         if (data.length !== 25) {
@@ -70,46 +126,11 @@
         var prefix = data.subarray(0, 21);
         var suffix = data.subarray(21, 25);
         var cc = check_code(prefix);
-        if (!ns.type.Arrays.equals(cc, suffix)) {
-            throw Error('address check code error: ' + string);
+        if (ns.type.Arrays.equals(cc, suffix)) {
+            return new BTCAddress(string, data[0]);
+        } else {
+            return null;
         }
-        this.network = data[0];
-        this.code = search_number(cc);
-    };
-    ns.Class(DefaultAddress, Address, null);
-
-    DefaultAddress.prototype.getNetwork = function () {
-        return this.network;
-    };
-
-    DefaultAddress.prototype.getCode = function () {
-        return this.code;
-    };
-
-    /**
-     *  Generate address with fingerprint and network ID
-     *
-     * @param {Uint8Array} fingerprint
-     * @param {NetworkType|Number|char|*} network
-     * @returns {DefaultAddress}
-     */
-    DefaultAddress.generate = function (fingerprint, network) {
-        if (network instanceof NetworkType) {
-            network = network.valueOf();
-        }
-        // 1. digest = ripemd160(sha256(fingerprint))
-        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
-        // 2. head = network + digest
-        var head = new Data(21);
-        head.push(network);
-        head.push(digest);
-        // 3. cc = sha256(sha256(head)).prefix(4)
-        var cc = check_code(head.getBytes(false));
-        // 4. data = base58_encode(head + cc)
-        var data = new Data(25);
-        data.push(head);
-        data.push(cc);
-        return new DefaultAddress(Base58.encode(data.getBytes(false)));
     };
 
     var check_code = function (data) {
@@ -117,20 +138,9 @@
         return sha256d.subarray(0, 4);
     };
 
-    var search_number = function (cc) {
-        // return (cc[0] & 0xFF)
-        //     | ((cc[1] & 0xFF) << 8)
-        //     | ((cc[2] & 0xFF) << 16)
-        //     | ((cc[3] & 0xFF) << 24);
-        return (cc[0] | cc[1] << 8 | cc[2] << 16) + cc[3] * 0x1000000;
-    };
-
-    //-------- register --------
-    Address.register(DefaultAddress);
-
     //-------- namespace --------
-    ns.plugins.DefaultAddress = DefaultAddress;
+    ns.BTCAddress = BTCAddress;
 
-    // ns.plugins.register('DefaultAddress');
+    ns.register('BTCAddress');
 
-}(DIMP);
+})(DIMP);

@@ -31,21 +31,20 @@
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
+    var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
-    var Base64 = ns.format.Base64;
-    var Hex = ns.format.Hex;
-
     var bytes2words = function (data) {
-        var string = Hex.encode(data);
+        var string = ns.format.Hex.encode(data);
         return CryptoJS.enc.Hex.parse(string);
     };
     var words2bytes = function (array) {
         var result = array.toString();
-        return Hex.decode(result);
+        return ns.format.Hex.decode(result);
     };
 
     var random_data = function (size) {
@@ -71,12 +70,12 @@
      *      }
      */
     var AESKey = function (key) {
-        SymmetricKey.call(this, key);
+        Dictionary.call(this, key);
         // TODO: check algorithm parameters
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
     };
-    ns.Class(AESKey, SymmetricKey, null);
+    ns.Class(AESKey, Dictionary, [SymmetricKey]);
 
     AESKey.prototype.getSize = function () {
         var size = this.getValue('keySize');
@@ -100,7 +99,7 @@
     AESKey.prototype.getData = function () {
         var data = this.getValue('data');
         if (data) {
-            return Base64.decode(data);
+            return ns.format.Base64.decode(data);
         }
 
         //
@@ -110,12 +109,12 @@
         // random key data
         var keySize = this.getSize();
         var pwd = random_data(keySize);
-        this.setValue('data', Base64.encode(pwd));
+        this.setValue('data', ns.format.Base64.encode(pwd));
 
         // random initialization vector
         var blockSize = this.getBlockSize();
         var iv = random_data(blockSize);
-        this.setValue('iv', Base64.encode(iv));
+        this.setValue('iv', ns.format.Base64.encode(iv));
 
         // // other parameters
         // this.setValue('mode', 'CBC');
@@ -127,11 +126,11 @@
     AESKey.prototype.getInitVector = function () {
         var iv = this.getValue('iv');
         if (iv) {
-            return Base64.decode(iv);
+            return ns.format.Base64.decode(iv);
         }
         // zero iv
         var zeros = zero_data(this.getBlockSize());
-        this.setValue('iv', Base64.encode(zeros));
+        this.setValue('iv', ns.format.Base64.encode(zeros));
         return zeros;
     };
 
@@ -167,13 +166,17 @@
         return words2bytes(plaintext);
     };
 
+    AESKey.prototype.matches = function (pKey) {
+        return CryptographyKey.matches(pKey, this);
+    };
+
     //-------- register --------
     SymmetricKey.register(SymmetricKey.AES, AESKey);
     SymmetricKey.register('AES/CBC/PKCS7Padding', AESKey);
 
     //-------- namespace --------
-    ns.plugins.AESKey = AESKey;
+    ns.crypto.AESKey = AESKey;
 
-    // ns.plugins.register('AESKey');
+    ns.crypto.register('AESKey');
 
-}(DIMP);
+})(DIMP);

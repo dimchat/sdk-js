@@ -39,20 +39,20 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var DecryptKey = ns.crypto.DecryptKey;
     var PrivateKey = ns.crypto.PrivateKey;
-    var ID = ns.ID;
-    var Meta = ns.Meta;
-    var Profile = ns.Profile;
+    var ID = ns.protocol.ID;
+    var Meta = ns.protocol.Meta;
+    var Profile = ns.protocol.Document;
     var User = ns.User;
 
     // Immortal Hulk (195-183-9394)
-    var HULK = ID.getInstance('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
+    var HULK = ID.parse('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
     // Monkey King (184-083-9527)
-    var MOKI = ID.getInstance('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
+    var MOKI = ID.parse('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
 
     var accounts = {
         'hulk': {
@@ -108,8 +108,6 @@
         }
     };
 
-    var UserDataSource = ns.UserDataSource;
-
     var Immortals = function () {
         // memory caches
         this.idMap         = {};  // String -> ID
@@ -121,7 +119,7 @@
         load_account.call(this, HULK);
         load_account.call(this, MOKI);
     };
-    ns.Class(Immortals, ns.type.Object, [UserDataSource]);
+    ns.Class(Immortals, ns.type.Object, [User.DataSource]);
 
     var load_account = function (identifier) {
         // ID
@@ -138,14 +136,14 @@
         if (!info) {
             return null;
         }
-        return Meta.getInstance(info['meta']);
+        return Meta.parse(info['meta']);
     };
     var load_private_key = function (identifier) {
         var info = accounts[identifier.name];
         if (!info) {
             return null;
         }
-        return PrivateKey.getInstance(info['secret']);
+        return PrivateKey.parse(info['secret']);
     };
     var load_profile = function (identifier) {
         var info = accounts[identifier.name];
@@ -153,7 +151,7 @@
             return null;
         }
         var dict = info['profile'];
-        var profile = Profile.getInstance(dict);
+        var profile = Profile.parse(dict);
         if (!profile) {
             return null;
         }
@@ -226,7 +224,7 @@
     };
 
     //
-    //  UserDataSource
+    //  User DataSource
     //
 
     Immortals.prototype.getContacts = function (identifier) {
@@ -276,4 +274,4 @@
 
     // ns.register('Immortals');
 
-}(DIMP);
+})(DIMP);

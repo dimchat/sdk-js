@@ -31,7 +31,7 @@
 
 //! require <crypto.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Hex = ns.format.Hex;
@@ -39,6 +39,7 @@
     var PEM = ns.format.PEM;
 
     var Data = ns.type.Data;
+    var Dictionary = ns.type.Dictionary;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
@@ -53,9 +54,9 @@
      *      }
      */
     var RSAPublicKey = function (key) {
-        PublicKey.call(this, key);
+        Dictionary.call(this, key);
     };
-    ns.Class(RSAPublicKey, PublicKey, [EncryptKey]);
+    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
 
     RSAPublicKey.prototype.getData = function () {
         var data = this.getValue('data');
@@ -80,20 +81,17 @@
     var x509_header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
     x509_header = new Data(x509_header);
     var parse_key = function () {
-        if (!this.cipher) {
-            var der = this.getData();
-            var key = Base64.encode(der);
-            var cipher = new JSEncrypt();
+        var der = this.getData();
+        var key = Base64.encode(der);
+        var cipher = new JSEncrypt();
+        cipher.setPublicKey(key);
+        if (cipher.key.e === 0 || cipher.key.n === null) {
+            // FIXME: PKCS#1 -> X.509
+            der = x509_header.concat(der).getBytes();
+            key = Base64.encode(der);
             cipher.setPublicKey(key);
-            if (cipher.key.e === 0 || cipher.key.n === null) {
-                // FIXME: PKCS#1 -> X.509
-                der = x509_header.concat(der).getBytes();
-                key = Base64.encode(der);
-                cipher.setPublicKey(key);
-            }
-            this.cipher = cipher;
         }
-        return this.cipher;
+        return cipher;
     };
 
     RSAPublicKey.prototype.verify = function (data, signature) {
@@ -110,6 +108,10 @@
         //    return boolean
         //
         return cipher.verify(data, signature, CryptoJS.SHA256);
+    };
+
+    RSAPublicKey.prototype.matches = function (sKey) {
+        return AsymmetricKey.matches(sKey, this);
     };
 
     RSAPublicKey.prototype.encrypt = function (plaintext) {
@@ -152,19 +154,21 @@
     PublicKey.register('RSA/ECB/PKCS1Padding', RSAPublicKey);
 
     //-------- namespace --------
-    ns.plugins.RSAPublicKey = RSAPublicKey;
+    ns.crypto.RSAPublicKey = RSAPublicKey;
 
-    // ns.plugins.register('RSAPublicKey');
+    ns.crypto.register('RSAPublicKey');
 
-}(DIMP);
+})(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
+    var Dictionary = ns.type.Dictionary;
     var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
 
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
@@ -180,9 +184,9 @@
      *      }
      */
     var RSAPrivateKey = function (key) {
-        PrivateKey.call(this, key);
+        Dictionary.call(this, key);
     };
-    ns.Class(RSAPrivateKey, PrivateKey, [DecryptKey]);
+    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
 
     RSAPrivateKey.prototype.getData = function () {
         var data = this.getValue('data');
@@ -232,18 +236,15 @@
             padding: 'PKCS1',
             digest: 'SHA256'
         };
-        return PublicKey.getInstance(info);
+        return PublicKey.parse(info);
     };
 
     var parse_key = function () {
-        if (!this.cipher) {
-            var der = this.getData();
-            var key = Base64.encode(der);
-            var cipher = new JSEncrypt();
-            cipher.setPrivateKey(key);
-            this.cipher = cipher;
-        }
-        return this.cipher;
+        var der = this.getData();
+        var key = Base64.encode(der);
+        var cipher = new JSEncrypt();
+        cipher.setPrivateKey(key);
+        return cipher;
     };
 
     RSAPrivateKey.prototype.sign = function (data) {
@@ -284,14 +285,18 @@
         }
     };
 
+    RSAPrivateKey.prototype.matches = function (pKey) {
+        return CryptographyKey.matches(pKey, this);
+    };
+
     //-------- register --------
     PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
     PrivateKey.register('SHA256withRSA', RSAPrivateKey);
     PrivateKey.register('RSA/ECB/PKCS1Padding', RSAPrivateKey);
 
     //-------- namespace --------
-    ns.plugins.RSAPrivateKey = RSAPrivateKey;
+    ns.crypto.RSAPrivateKey = RSAPrivateKey;
 
-    // ns.plugins.register('RSAPrivateKey');
+    ns.crypto.register('RSAPrivateKey');
 
-}(DIMP);
+})(DIMP);

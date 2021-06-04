@@ -30,79 +30,69 @@
 // =============================================================================
 //
 
+/**
+ *  Default Meta to build ID with 'name@address'
+ *
+ *  version:
+ *      0x01 - MKM
+ *
+ *  algorithm:
+ *      CT      = fingerprint; // or key.data for BTC address
+ *      hash    = ripemd160(sha256(CT));
+ *      code    = sha256(sha256(network + hash)).prefix(4);
+ *      address = base58_encode(network + hash + code);
+ *      number  = uint(code);
+ */
+
 //! require <crypto.js>
 //! require <mkm.js>
 //! require 'address.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var NetworkType = ns.protocol.NetworkType;
-    var MetaType = ns.protocol.MetaType;
-    var Meta = ns.Meta;
 
-    var DefaultAddress = ns.plugins.DefaultAddress;
+    var BTCAddress = ns.BTCAddress;
+    var BaseMeta = ns.BaseMeta;
 
     /**
-     *  Default Meta to build ID with 'name@address'
+     *  Create default meta
      *
-     *  version:
-     *      0x01 - MKM
-     *
-     *  algorithm:
-     *      CT      = fingerprint; // or key.data for BTC address
-     *      hash    = ripemd160(sha256(CT));
-     *      code    = sha256(sha256(network + hash)).prefix(4);
-     *      address = base58_encode(network + hash + code);
-     *      number  = uint(code);
+     *  Usages:
+     *      1. new DefaultMeta(map);
+     *      2. new DefaultMeta(type, key, seed, fingerprint);
      */
-    var DefaultMeta = function (meta) {
-        Meta.call(this, meta);
+    var DefaultMeta = function () {
+        if (arguments.length === 1) {
+            // new DefaultMeta(map);
+            BaseMeta.call(this, arguments[0]);
+        } else if (arguments.length === 4) {
+            // new DefaultMeta(type, key, seed, fingerprint);
+            BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
+        }
         // memory cache
-        this.idMap = {};  // int -> ID
+        this.addresses = {};  // uint -> Address
     };
-    ns.Class(DefaultMeta, Meta, null);
+    ns.Class(DefaultMeta, BaseMeta, null);
 
-    // @Override
-    DefaultMeta.prototype.generateIdentifier = function (network) {
-        if (network instanceof NetworkType) {
-            network = network.valueOf();
-        }
-        // check cache
-        var identifier = this.idMap[network];
-        if (!identifier) {
-            // generate and cache it
-            identifier = Meta.prototype.generateIdentifier.call(this, network);
-            if (identifier) {
-                this.idMap[network] = identifier;
-            }
-        }
-        return identifier;
-    };
-
-    // @Override
     DefaultMeta.prototype.generateAddress = function (network) {
-        if (!this.isValid()) {
-            throw Error('meta invalid: ' + this);
-        }
         if (network instanceof NetworkType) {
             network = network.valueOf();
         }
         // check cache
-        var identifier = this.idMap[network];
-        if (identifier) {
-            return identifier.address;
+        var address = this.addresses[network];
+        if (!address && this.isValid()) {
+            // generate and cache it
+            address = BTCAddress.generate(this.getFingerprint(), network);
+            this.addresses[network] = address;
         }
-        // generate
-        return DefaultAddress.generate(this.fingerprint, network);
+        return address;
     };
 
     //-------- register --------
-    Meta.register(MetaType.MKM, DefaultMeta);
+    ns.DefaultMeta = DefaultMeta;
 
-    //-------- register --------
-    ns.plugins.DefaultMeta = DefaultMeta;
+    ns.register('DefaultMeta');
 
-    // ns.plugins.register('DefaultMeta');
-
-}(DIMP);
+})(DIMP);
