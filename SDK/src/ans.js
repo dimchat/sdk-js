@@ -35,92 +35,7 @@
 !function (ns) {
     'use strict';
 
-    var ID = ns.ID;
-    var Address = ns.Address;
-
-    var AddressNameService = function() {
-        // constant ANS records
-        var caches = {
-            'all':      ID.EVERYONE,
-            'everyone': ID.EVERYONE,
-            'anyone':   ID.ANYONE,
-            'owner':    ID.ANYONE,
-            'founder':  AddressNameService.FOUNDER
-        };
-        // reserved names
-        var reserved = {};
-        var keywords = AddressNameService.KEYWORDS;
-        for (var i = 0; i < keywords.length; ++i) {
-            reserved[keywords[i]] = true;
-        }
-        // init
-        this.reserved = reserved;
-        this.caches = caches;
-    };
-    ns.Class(AddressNameService, ns.type.Object, null);
-
-    AddressNameService.prototype.isReserved = function (name) {
-        return this.reserved[name] === true;
-    };
-
-    AddressNameService.prototype.cache = function (name, identifier) {
-        if (this.isReserved(name)) {
-            // this name is reserved, cannot register
-            return false;
-        }
-        if (identifier) {
-            this.caches[name] = identifier;
-            return true;
-        } else {
-            delete this.caches[name];
-            return false;
-        }
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save ANS record
-     *
-     * @param {String} name - short name
-     * @param {ID} identifier
-     * @returns {boolean}
-     */
-    AddressNameService.prototype.save = function (name, identifier) {
-        console.assert(false, 'implement me!');
-        return false;
-    };
-
-    /**
-     *  Get ID by short name
-     *
-     * @param {String} name - short name
-     * @returns {ID}
-     */
-    AddressNameService.prototype.getIdentifier = function (name) {
-        return this.caches[name];
-    };
-
-    /**
-     *  Get all short names with the same ID
-     *
-     * @param {ID} identifier
-     * @returns {String[]}
-     */
-    AddressNameService.prototype.getNames = function (identifier) {
-        var array = [];
-        var keys = Object.keys(this.caches);
-        var name;
-        for (var i = 0; i < keys.length; ++i) {
-            name = keys[i];
-            if (this.caches[name] === identifier) {
-                array.push(name);
-            }
-        }
-        return array;
-    };
-
-    AddressNameService.FOUNDER = new ID('moky', Address.ANYWHERE);
-    AddressNameService.KEYWORDS = [
+    var KEYWORDS = [
         "all", "everyone", "anyone", "owner", "founder",
         // --------------------------------
         "dkd", "mkm", "dimp", "dim", "dimt",
@@ -154,6 +69,89 @@
         "ans", "facebook", "store", "messenger",
         "root", "supervisor"
     ];
+
+    var ID = ns.protocol.ID;
+
+    var AddressNameService = function() {
+        // constant ANS records
+        var caches = {
+            'all':      ID.EVERYONE,
+            'everyone': ID.EVERYONE,
+            'anyone':   ID.ANYONE,
+            'owner':    ID.ANYONE,
+            'founder':  ID.FOUNDER
+        };
+        // reserved names
+        var reserved = {};
+        var keywords = AddressNameService.KEYWORDS;
+        for (var i = 0; i < keywords.length; ++i) {
+            reserved[keywords[i]] = true;
+        }
+        // init
+        this.reserved = reserved;
+        this.caches = caches;
+    };
+    ns.Class(AddressNameService, ns.type.Object, null);
+
+    AddressNameService.KEYWORDS = KEYWORDS;
+
+    AddressNameService.prototype.isReserved = function (name) {
+        return this.reserved[name] === true;
+    };
+
+    AddressNameService.prototype.cache = function (name, identifier) {
+        if (this.isReserved(name)) {
+            // this name is reserved, cannot register
+            return false;
+        }
+        if (identifier) {
+            this.caches[name] = identifier;
+        } else {
+            delete this.caches[name];
+        }
+        return true;
+    };
+
+    /**
+     *  Get ID by short name
+     *
+     * @param {String} name - short name
+     * @returns {ID}
+     */
+    AddressNameService.prototype.getIdentifier = function (name) {
+        return this.caches[name];
+    };
+
+    /**
+     *  Get all short names with the same ID
+     *
+     * @param {ID} identifier
+     * @returns {String[]}
+     */
+    AddressNameService.prototype.getNames = function (identifier) {
+        var array = [];
+        var keys = Object.keys(this.caches);
+        var name;
+        for (var i = 0; i < keys.length; ++i) {
+            name = keys[i];
+            if (this.caches[name] === identifier) {
+                array.push(name);
+            }
+        }
+        return array;
+    };
+
+    /**
+     *  Save ANS record
+     *
+     * @param {String} name - short name
+     * @param {ID} identifier
+     * @returns {boolean}
+     */
+    AddressNameService.prototype.save = function (name, identifier) {
+        return this.cache(name, identifier);
+        // TODO: override to save this record
+    };
 
     //-------- namespace --------
     ns.AddressNameService = AddressNameService;

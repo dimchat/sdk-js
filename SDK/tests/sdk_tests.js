@@ -35,21 +35,31 @@ sdk_tests = [];
 !function (ns) {
     'use strict';
 
-    var ID = ns.ID;
+    var ID = ns.protocol.ID;
 
     var PlainKey = ns.plugins.PlainKey;
 
     var TextContent = ns.protocol.TextContent;
-    var Envelope = ns.Envelope;
-    var InstantMessage = ns.InstantMessage;
+    var Envelope = ns.protocol.Envelope;
+    var InstantMessage = ns.protocol.InstantMessage;
 
     var KeyStore = ns.KeyStore;
     var ClientFacebook = ns.ClientFacebook;
+
+    var MessagePacker = ns.MessagePacker;
+    var MessageProcessor = ns.MessageProcessor;
+    var MessageTransmitter = ns.MessageTransmitter;
     var Messenger = ns.Messenger;
 
-    var key_cache;
-    var barrack;
-    var transceiver;
+    var key_cache = new KeyStore();
+    var barrack = new ClientFacebook();
+
+    var transceiver = new Messenger();
+    transceiver.cipherKeyDelegate = key_cache;
+    transceiver.entityDelegate = barrack;
+    transceiver.setPacker(new MessagePacker(transceiver));
+    transceiver.setProcessor(new MessageProcessor(transceiver));
+    transceiver.setTransmitter(new MessageTransmitter(transceiver));
 
     var hulk = ID.parse('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
     var moki = ID.parse('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
@@ -58,7 +68,6 @@ sdk_tests = [];
     var receiver = ID.EVERYONE;
 
     var test_key_store = function () {
-        key_cache = new KeyStore();
         // get key
         var key = key_cache.getCipherKey(sender, receiver);
         log('plain key: ', key);
@@ -67,7 +76,6 @@ sdk_tests = [];
     sdk_tests.push(test_key_store);
 
     var test_facebook = function () {
-        barrack = new ClientFacebook();
         // get user
         var user = barrack.getUser(sender);
         log('user: ', user);
@@ -83,15 +91,12 @@ sdk_tests = [];
     sdk_tests.push(test_facebook);
 
     var test_messenger = function () {
-        transceiver = new Messenger();
-        transceiver.cipherKeyDelegate = key_cache;
-        transceiver.entityDelegate = barrack;
         // test
         var content = new TextContent('Hello world!');
         log('content: ', content);
-        var env = Envelope.newEnvelope(sender, receiver, 0);
+        var env = Envelope.create(sender, receiver, 0);
         log('envelope: ', env);
-        var iMsg = InstantMessage.newMessage(content, env);
+        var iMsg = InstantMessage.create(content, env);
         log('instant message: ', iMsg);
 
         var sMsg = transceiver.encryptMessage(iMsg);

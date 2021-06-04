@@ -50,7 +50,7 @@
 !function (ns) {
     'use strict';
 
-    var Envelope = ns.Envelope;
+    var Envelope = ns.protocol.Envelope;
     var Command = ns.protocol.Command;
 
     /**

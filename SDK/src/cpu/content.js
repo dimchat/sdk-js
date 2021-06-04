@@ -36,107 +36,80 @@
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
+    var Content = ns.protocol.Content;
+    var TextContent = ns.protocol.TextContent;
 
     /**
-     *  Content/Command Processing Units
+     *  Content Processing Unit
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var ContentProcessor = function (messenger) {
-        this.messenger = messenger;
-        // CPU pool (ContentType -> ContentProcessor)
-        this.contentProcessors = {};
+    var ContentProcessor = function () {
+        this.messenger = null;
     };
     ns.Class(ContentProcessor, ns.type.Object, null);
 
-    //
-    //  Environment variables as context
-    //
-    ContentProcessor.prototype.getContext = function (key) {
-        return this.messenger.getContext(key);
+    ContentProcessor.prototype.getMessenger = function () {
+        return this.messenger;
     };
-    ContentProcessor.prototype.setContext = function (key, value) {
-        this.messenger.setContext(key, value);
+    ContentProcessor.prototype.setMessenger = function (messenger) {
+        this.messenger = messenger;
     };
 
-    //
-    //  Data source for getting entity info
-    //
     ContentProcessor.prototype.getFacebook = function () {
         return this.messenger.getFacebook();
     };
 
+    // noinspection JSUnusedLocalSymbols
     /**
-     *  Main function for process message content
+     *  Process message content
      *
-     * @param {Content} content - content received
-     * @param {ID} sender
-     * @param {ReliableMessage} msg
-     * @returns {Content} - responding to sender
+     * @param {Content} content      - content received
+     * @param {ReliableMessage} rMsg - reliable message
+     * @returns {Content} response to sender
      */
-    ContentProcessor.prototype.process = function (content, sender, msg) {
-        // process content by type
-        var cpu = this.getCPU(content.type);
-        // if (!cpu) {
-        //     throw TypeError('failed to get CPU for content: ' + content);
-        // } else if (cpu === this) {
-        //     throw Error('Dead cycle!');
-        // }
-        return cpu.process(content, sender, msg);
+    ContentProcessor.prototype.process = function (content, rMsg) {
+        var text = 'Content (type: ' + content.getType() + ') not support yet!';
+        var res = new TextContent(text)
+        // check group
+        var group = content.getGroup();
+        if (group) {
+            res.setGroup(group);
+        }
+        return res;
     };
 
-    //-------- Runtime --------
+    //
+    //  CPU factories
+    //
+    var contentProcessors = {};  // uint(ContentType) -> ContentProcessor
 
     /**
-     *  Get/create content processor with content type
+     *  Get content processor with content type
      *
-     * @param {ContentType} type
+     * @param {Content|ContentType} info
      * @returns {ContentProcessor}
      */
-    ContentProcessor.prototype.getCPU = function (type) {
-        var value;
-        if (type instanceof ContentType) {
-            value = type.valueOf();
+    ContentProcessor.getProcessor = function (info) {
+        if (info instanceof Content) {
+            return contentProcessors[info.getType()];
+        } else if (info instanceof ContentType) {
+            return contentProcessors[info.valueOf()];
         } else {
-            value = type;
+            return contentProcessors[info];
         }
-        // 1. get from pool
-        var cpu = this.contentProcessors[value];
-        if (cpu) {
-            return cpu;
-        }
-        // 2. get CPU class by content type
-        var clazz = cpu_classes[value];
-        if (!clazz) {
-            if (ContentType.UNKNOWN.equals(value)) {
-                throw TypeError('default CPU not register yet');
-            }
-            // call default CPU
-            return this.getCPU(ContentType.UNKNOWN);
-        }
-        // 3. create CPU with messenger
-        cpu = new clazz(this.messenger);
-        this.contentProcessors[value] = cpu;
-        return cpu;
     };
-
-    var cpu_classes = {}; // int -> Class
 
     /**
      *  Register content processor class with content type
      *
-     * @param {ContentType} type
-     * @param {Class} clazz
+     * @param {ContentType|uint} type
+     * @param {ContentProcessor} cpu
      */
-    ContentProcessor.register = function (type, clazz) {
-        var value;
+    ContentProcessor.register = function (type, cpu) {
         if (type instanceof ContentType) {
-            value = type.valueOf();
+            contentProcessors[type.valueOf()] = cpu;
         } else {
-            value = type;
-        }
-        if (clazz) {
-            cpu_classes[value] = clazz;
-        } else {
-            delete cpu_classes[value];
+            contentProcessors[type] = cpu;
         }
     };
 

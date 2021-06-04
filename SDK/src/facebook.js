@@ -41,9 +41,7 @@
     'use strict';
 
     var NetworkType = ns.protocol.NetworkType;
-
-    var ID = ns.ID;
-    var Profile = ns.Profile;
+    var ID = ns.protocol.ID;
 
     var User = ns.User;
     var Robot = ns.Robot;
@@ -61,11 +59,17 @@
     };
     ns.Class(Facebook, Barrack, null);
 
-    //
-    //  Meta
-    //
-    Facebook.prototype.verifyMeta = function (meta, identifier) {
-        return meta.matches(identifier);
+    /**
+     *  Get current user (for signing and sending message)
+     *
+     * @returns {User}
+     */
+    Facebook.prototype.getCurrentUser = function () {
+        var users = this.getLocalUsers();
+        if (!users || users.length === 0) {
+            return null;
+        }
+        return users[0];
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -81,86 +85,17 @@
         return false;
     };
 
-    //
-    //  Profile
-    //
-    Facebook.prototype.verifyProfile = function (profile, identifier) {
-        if (identifier) {
-            if (!profile || !identifier.equals(profile.getIdentifier())) {
-                // profile ID not match
-                return false;
-            }
-        } else {
-            identifier = profile.getIdentifier();
-            identifier = this.getIdentifier(identifier);
-            if (!identifier) {
-                throw Error('profile ID error: ' + profile);
-            }
-        }
-        // NOTICE: if this is a group profile,
-        //             verify it with each member's meta.key
-        //         else (this is a user profile)
-        //             verify it with the user's meta.key
-        var meta;
-        if (identifier.isGroup()) {
-            // check by each member
-            var members = this.getMembers(identifier);
-            if (members) {
-                var id;
-                for (var i = 0; i < members.length; ++i) {
-                    id = this.getIdentifier(members[i]);
-                    meta = this.getMeta(id);
-                    if (!meta) {
-                        // FIXME: meta not found for this member
-                        continue;
-                    }
-                    if (profile.verify(meta.key)) {
-                        return true;
-                    }
-                }
-            }
-            // DISCUSS: what to do about assistants?
-
-            // check by owner
-            var owner = this.getOwner(identifier);
-            if (!owner) {
-                if (NetworkType.Polylogue.equals(identifier.getType())) {
-                    // NOTICE: if this is a polylogue profile
-                    //             verify it with the founder's meta.key
-                    //             (which equals to the group's meta.key)
-                    meta = this.getMeta(identifier);
-                } else {
-                    // FIXME: owner not found for this group
-                    return false;
-                }
-            } else if (members && members.indexOf(owner) >= 0) {
-                // already checked
-                return false;
-            } else {
-                meta = this.getMeta(owner);
-            }
-        } else {
-            meta = this.getMeta(identifier);
-        }
-        return meta && profile.verify(meta.key);
-    };
-
     // noinspection JSUnusedLocalSymbols
     /**
      *  Save profile with entity ID (must verify first)
      *
-     * @param {Profile} profile
-     * @param {ID} identifier
+     * @param {Document} doc
      * @returns {boolean}
      */
-    Facebook.prototype.saveProfile = function (profile, identifier) {
+    Facebook.prototype.saveDocument = function (doc) {
         console.assert(false, 'implement me!');
         return false;
     };
-
-    //
-    //  Group members
-    //
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -175,38 +110,66 @@
         return false;
     };
 
-    //
-    //  Local Users
-    //
-
     /**
-     *  Get all local users (for decrypting received message)
+     *  Document checking
      *
-     * @returns {User[]}
+     * @param {Document} doc - entity document
+     * @return {boolean} true on accepted
      */
-    Facebook.prototype.getLocalUsers = function () {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-    /**
-     *  Get current user (for signing and sending message)
-     *
-     * @returns {User}
-     */
-    Facebook.prototype.getCurrentUser = function () {
-        var users = this.getLocalUsers();
-        if (!users || users.length === 0) {
-            return null;
+    Facebook.prototype.checkDocument = function (doc) {
+        var identifier = doc.getIdentifier();
+        if (!identifier) {
+            return false;
         }
-        return users[0];
+        // NOTICE: if this is a group profile,
+        //             verify it with each member's meta.key
+        //         else (this is a user profile)
+        //             verify it with the user's meta.key
+        var meta;
+        if (identifier.isGroup()) {
+            // check by owner
+            var owner = this.getOwner(identifier);
+            if (!owner) {
+                if (NetworkType.POLYLOGUE.equals(identifier.getType())) {
+                    // NOTICE: if this is a polylogue profile
+                    //             verify it with the founder's meta.key
+                    //             (which equals to the group's meta.key)
+                    meta = this.getMeta(identifier);
+                } else {
+                    // FIXME: owner not found for this group
+                    return false;
+                }
+            } else {
+                meta = this.getMeta(owner);
+            }
+        } else {
+            meta = this.getMeta(identifier);
+        }
+        return meta && doc.verify(meta.key);
     };
 
-    //
-    //  Override
-    //
+    //-------- group membership
 
-    Facebook.prototype.createIdentifier = function (string) {
-        return ID.parse(string);
+    Facebook.prototype.isFounder = function (member, group) {
+        // check member's public key with group's meta.key
+        var gMeta = this.getMeta(group);
+        if (!gMeta) {
+            // throw Error('failed to get meta for group: ' + group);
+            return false;
+        }
+        var mMeta = this.getMeta(member);
+        if (!mMeta) {
+            // throw Error('failed to get meta for member: ' + member);
+            return false;
+        }
+        return gMeta.matches(mMeta.key);
+    };
+
+    Facebook.prototype.isOwner = function (member, group) {
+        if (NetworkType.POLYLOGUE.equals(group.getType())) {
+            return this.isFounder(member, group);
+        }
+        throw Error('only Polylogue so far');
     };
 
     Facebook.prototype.createUser = function (identifier) {
@@ -216,13 +179,13 @@
         }
         // check user type
         var type = identifier.getType();
-        if (NetworkType.Main.equals(type) || NetworkType.BTCMain.equals(type)) {
+        if (NetworkType.MAIN.equals(type) || NetworkType.BTC_MAIN.equals(type)) {
             return new User(identifier);
         }
-        if (NetworkType.Robot.equals(type)) {
+        if (NetworkType.ROBOT.equals(type)) {
             return new Robot(identifier);
         }
-        if (NetworkType.Station.equals(type)) {
+        if (NetworkType.STATION.equals(type)) {
             return new Station(identifier);
         }
         throw TypeError('Unsupported user type: ' + type);
@@ -235,114 +198,16 @@
         }
         // check group type
         var type = identifier.getType();
-        if (NetworkType.Polylogue.equals(type)) {
+        if (NetworkType.POLYLOGUE.equals(type)) {
             return new Polylogue(identifier);
         }
-        if (NetworkType.Chatroom.equals(type)) {
+        if (NetworkType.CHATROOM.equals(type)) {
             return new Chatroom(identifier);
         }
-        if (NetworkType.Provider.equals(type)) {
+        if (NetworkType.PROVIDER.equals(type)) {
             return new ServiceProvider(identifier);
         }
         throw TypeError('Unsupported group type: ' + type);
-    };
-
-    //
-    //  GroupDataSource
-    //
-
-    Facebook.prototype.getFounder = function (identifier) {
-        var founder = Barrack.prototype.getFounder.call(this, identifier);
-        if (founder) {
-            return founder;
-        }
-        // check each member's public key with group meta
-        var members = this.getMembers(identifier);
-        if (members) {
-            var gMeta = this.getMeta(identifier);
-            if (gMeta) {
-                // if the member's public key matches with the group's meta,
-                // it means this meta was generate by the member's private key
-                var id;
-                var meta;
-                for (var i = 0; i < members.length; ++i) {
-                    id = this.getIdentifier(members[i]);
-                    meta = this.getMeta(id);
-                    if (meta && meta.matches(meta.key)) {
-                        // got it
-                        return id;
-                    }
-                }
-            }
-        }
-        // TODO: load founder from database
-        return null;
-    };
-
-    Facebook.prototype.getOwner = function (identifier) {
-        var owner = Barrack.prototype.getOwner.call(this, identifier);
-        if (owner) {
-            return owner;
-        }
-        // check group type
-        if (NetworkType.Polylogue.equals(identifier.getType())) {
-            // Polylogue's owner is its founder
-            return this.getFounder(identifier);
-        }
-        // TODO: load owner from database
-        return null;
-    };
-
-    Facebook.prototype.isFounder = function (member, group) {
-        // check member's public key with group's meta.key
-        var gMeta = this.getMeta(group);
-        if (!gMeta) {
-            throw Error('failed to get meta for group: ' + group);
-        }
-        var mMeta = this.getMeta(member);
-        if (!mMeta) {
-            throw Error('failed to get meta for member: ' + member);
-        }
-        return gMeta.matches(mMeta.key);
-    };
-
-    Facebook.prototype.isOwner = function (member, group) {
-        if (NetworkType.Polylogue.equals(group.getType())) {
-            return this.isFounder(member, group);
-        }
-        throw Error('only Polylogue so far');
-    };
-
-    Facebook.prototype.existsMember = function (member, group) {
-        var list = this.getMembers(group);
-        if (list && list.indexOf(member) >= 0) {
-            return true;
-        }
-        var owner = this.getOwner(group);
-        if (owner) {
-            owner = this.getIdentifier(owner);
-            return owner.equals(member);
-        } else {
-            return false;
-        }
-    };
-
-    //
-    //  Group Assistants
-    //
-
-    // noinspection JSUnusedLocalSymbols
-    Facebook.prototype.getAssistants = function (group) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    Facebook.prototype.existsAssistant = function (user, group) {
-        var assistants = this.getAssistants(group);
-        if (assistants) {
-            return assistants.indexOf(user) >= 0;
-        }
-        return false;
     };
 
     //-------- namespace --------

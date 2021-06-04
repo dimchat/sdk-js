@@ -35,6 +35,10 @@
 !function (ns) {
     'use strict';
 
+    /**
+     *  Messenger Callback
+     *  ~~~~~~~~~~~~~~~~~~
+     */
     var Callback = function () {
     };
     ns.Interface(Callback, null);
@@ -54,6 +58,10 @@
 !function (ns) {
     'use strict';
 
+    /**
+     *  Messenger Completion Handler
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     var CompletionHandler = function () {
     };
     ns.Interface(CompletionHandler, null);
@@ -67,13 +75,6 @@
         console.assert(false, 'implement me!');
     };
 
-    CompletionHandler.newHandler = function (onSuccess, onFailed) {
-        var handler = new CompletionHandler();
-        handler.onSuccess = onSuccess;
-        handler.onFailed = onFailed;
-        return handler;
-    };
-
     //-------- namespace --------
     ns.CompletionHandler = CompletionHandler;
 
@@ -84,6 +85,10 @@
 !function (ns) {
     'use strict';
 
+    /**
+     *  Messenger Delegate
+     *  ~~~~~~~~~~~~~~~~~~
+     */
     var MessengerDelegate = function () {
     };
     ns.Interface(MessengerDelegate, null);
@@ -120,9 +125,10 @@
      *
      * @param {Uint8Array} data - package data
      * @param {CompletionHandler} handler
+     * @param {int} priority
      * @returns {boolean}
      */
-    MessengerDelegate.prototype.sendPackage = function (data, handler) {
+    MessengerDelegate.prototype.sendPackage = function (data, handler, priority) {
         console.assert(false, 'implement me!');
         return false;
     };
@@ -131,5 +137,56 @@
     ns.MessengerDelegate = MessengerDelegate;
 
     ns.register('MessengerDelegate');
+
+}(DIMP);
+
+!function (ns) {
+    'use strict';
+
+    /**
+     *  Messenger DataSource
+     *  ~~~~~~~~~~~~~~~~~~~~
+     */
+    var MessengerDataSource = function () {
+    };
+    ns.Interface(MessengerDataSource, null);
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     * Save the message into local storage
+     *
+     * @param {InstantMessage} iMsg - instant message
+     * @return true on success
+     */
+    MessengerDataSource.prototype.saveMessage = function (iMsg) {
+        console.assert(false, 'implement me!');
+        return false;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Suspend the received message for the sender's meta
+     *
+     * @param {ReliableMessage} rMsg - message received from network
+     */
+    MessengerDataSource.prototype.suspendReliableMessage = function (rMsg) {
+        console.assert(false, 'implement me!');
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Suspend the sending message for the receiver's meta & visa,
+     *  or group meta when received new message
+     *
+     * @param {InstantMessage} iMsg - instant message to be sent
+     */
+    MessengerDataSource.prototype.suspendInstantMessage = function (iMsg) {
+        console.assert(false, 'implement me!');
+    };
+
+    //-------- namespace --------
+    ns.MessengerDataSource = MessengerDataSource;
+
+    ns.register('MessengerDataSource');
 
 }(DIMP);

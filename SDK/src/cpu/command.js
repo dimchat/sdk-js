@@ -37,67 +37,86 @@
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
+    var TextContent = ns.protocol.TextContent;
+    var Command = ns.protocol.Command;
+    var GroupCommand = ns.protocol.GroupCommand;
 
     var ContentProcessor = ns.cpu.ContentProcessor;
 
     /**
-     *  Default Command Processor
+     *  Command Processing Unit
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var CommandProcessor = function (messenger) {
-        ContentProcessor.call(this, messenger);
-        // CPU pool (String -> CommandProcessor)
-        this.commandProcessors = {};
+    var CommandProcessor = function () {
+        ContentProcessor.call(this);
     };
     ns.Class(CommandProcessor, ContentProcessor, null);
 
-    //
-    //  Main
-    //
-    CommandProcessor.prototype.process = function (cmd, sender, msg) {
-        // process command content by name
-        var cpu = this.getCPU(cmd.getCommand());
-        // if (!cpu) {
-        //     throw TypeError('failed to get CPU for command: ' + cmd);
-        // } else if (cpu === this) {
-        //     throw Error('Dead cycle!');
-        // }
-        return cpu.process(cmd, sender, msg);
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Execute command
+     *
+     * @param {Command} cmd          - command received
+     * @param {ReliableMessage} rMsg - reliable message
+     * @returns {Content} response to sender
+     */
+    CommandProcessor.prototype.execute = function (cmd, rMsg) {
+        var text = 'Content (type: ' + cmd.getCommand() + ') not support yet!';
+        var res = new TextContent(text)
+        // check group
+        var group = cmd.getGroup();
+        if (group) {
+            res.setGroup(group);
+        }
+        return res;
     };
 
-    //-------- Runtime --------
-
-    CommandProcessor.prototype.getCPU = function (command) {
-        // 1. get from pool
-        var cpu = this.commandProcessors[command];
-        if (cpu) {
-            return cpu;
-        }
-        // 2. get CPU class by command name
-        var clazz = cpu_classes[command];
-        if (!clazz) {
-            if (command === ContentProcessor.UNKNOWN) {
-                throw TypeError('default CPU not register yet');
+    // @Override
+    CommandProcessor.prototype.process = function (cmd, rMsg) {
+        // get CPU by command name
+        var cpu = CommandProcessor.getProcessor(cmd);
+        if (!cpu) {
+            // check for group command
+            if (cmd instanceof GroupCommand) {
+                cpu = CommandProcessor.getProcessor('group');
             }
-            // call default CPU
-            return this.getCPU(CommandProcessor.UNKNOWN);
         }
-        // 3. create CPU with messenger
-        cpu = new clazz(this.messenger);
-        this.commandProcessors[command] = cpu;
-        return cpu;
-    };
-
-    var cpu_classes = {}; // String -> Class
-
-    CommandProcessor.register = function (command, clazz) {
-        if (clazz) {
-            cpu_classes[command] = clazz;
+        if (cpu) {
+            cpu.setMessage(this.getMessenger());
         } else {
-            delete cpu_classes[command];
+            cpu = this;
+        }
+        return cpu.execute(cmd, rMsg);
+    };
+
+    //
+    //  CPU factory
+    //
+    var commandProcessors = {};  // String -> CommandProcessor
+
+    /**
+     *  Get command processor with name
+     *
+     * @param {Command|String} command - name
+     * @returns {CommandProcessor}
+     */
+    CommandProcessor.getProcessor = function (command) {
+        if (command instanceof Command) {
+            return commandProcessors[command.getCommand()];
+        } else {
+            return commandProcessors[command];
         }
     };
 
-    CommandProcessor.UNKNOWN = 'unknown';
+    /**
+     *  Register command processor with name
+     *
+     * @param {String} command - name
+     * @param {CommandProcessor} cpu
+     */
+    CommandProcessor.register = function (command, cpu) {
+        commandProcessors[command] = cpu;
+    };
 
     //-------- register --------
     ContentProcessor.register(ContentType.COMMAND, CommandProcessor);

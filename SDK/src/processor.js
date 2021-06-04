@@ -31,56 +31,48 @@
 //
 
 //! require <dimp.js>
+//! require 'cpu/content.js'
 
 !function (ns) {
     'use strict';
 
-    var KeyCache = ns.core.KeyCache;
+    var Processor = ns.core.Processor;
 
-    var KeyStore = function() {
-        KeyCache.call(this);
-        // current user
-        this.user = null;
+    var MessageProcessor = function (messenger) {
+        Processor.call(this, messenger);
     };
-    ns.Class(KeyStore, KeyCache, null);
+    ns.Class(MessageProcessor, Processor, null);
 
-    KeyStore.prototype.getUser = function () {
-        return this.user;
+    MessageProcessor.prototype.getMessenger = function () {
+        return this.getTransceiver();
     };
-    KeyStore.prototype.setUser = function (user) {
-        if (this.user) {
-            // save key map for old user
-            this.flush();
-            if (this.user.equals(user)) {
-                // user not changed
-                return;
-            }
-        }
-        if (!user) {
-            this.user = null;
-            return;
-        }
-        // change current user
-        this.user = user;
-        var keys = this.loadKeys();
-        if (keys) {
-            this.updateKeys(keys);
+
+    // TODO: override to check broadcast message before calling it
+    // TODO: override to deliver to the receiver when catch exception "receiver error ..."
+    MessageProcessor.prototype.processInstantMessage = function (iMsg, rMsg) {
+        var res = Processor.prototype.processInstantMessage.call(this, iMsg, rMsg);
+        if (this.getMessenger().saveMessage(iMsg)) {
+            return res;
+        } else {
+            // error
+            return null;
         }
     };
 
-    // noinspection JSUnusedLocalSymbols
-    KeyStore.prototype.saveKeys = function(map) {
-        // do nothing
-        return false
-    };
-    KeyStore.prototype.loadKeys = function() {
-        // do nothing
-        return null
+    MessageProcessor.prototype.processContent = function (content, rMsg) {
+        // TODO: override to check group
+        var cpu = ns.cpu.ContentProcessor.getProcessor(content);
+        if (cpu == null) {
+            cpu = ns.cpu.ContentProcessor.getProcessor(0);  // unknown
+        }
+        cpu.setMessenger(this.getMessenger());
+        return cpu.process(content, rMsg);
+        // TODO: override to filter the response
     };
 
     //-------- namespace --------
-    ns.KeyStore = KeyStore;
+    ns.MessageProcessor = MessageProcessor;
 
-    ns.register('KeyStore');
+    ns.register('MessageProcessor');
 
 }(DIMP);

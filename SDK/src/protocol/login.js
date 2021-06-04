@@ -59,7 +59,7 @@
     'use strict';
 
     var Dictionary = ns.type.Dictionary;
-    var ID = ns.ID;
+    var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
     var Station = ns.Station;
 

@@ -78,11 +78,11 @@
                 return new TextContent('Meta not accept: ' + identifier);
             }
         }
-        if (!facebook.verifyProfile(profile, identifier)) {
+        if (!facebook.checkDocument(profile)) {
             // profile not match
             return new TextContent('Profile not match ID: ' + identifier);
         }
-        if (!facebook.saveProfile(profile, identifier)) {
+        if (!facebook.saveDocument(profile)) {
             // save profile failed
             return new TextContent('Profile not accept: ' + identifier);
         }
