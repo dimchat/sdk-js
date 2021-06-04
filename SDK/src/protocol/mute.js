@@ -45,39 +45,64 @@
 !function (ns) {
     'use strict';
 
+    var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
 
+    /**
+     *  Create mute command
+     *
+     *  Usages:
+     *      1. new MuteCommand();
+     *      2. new MuteCommand(list);
+     *      3. new MuteCommand(map);
+     */
     var MuteCommand = function (info) {
-        var list = null;
-        if (!info) {
-            // create empty mute command
-            info = MuteCommand.MUTE;
-        } else if (info instanceof Array) {
-            // create new command with mute-list
-            list = info;
-            info = MuteCommand.MUTE;
-        }
-        // create mute command
-        Command.call(this, info);
-        if (list) {
-            this.setMuteCList(list);
+        if (arguments.length === 0) {
+            // new MuteCommand();
+            Command.call(this, MuteCommand.MUTE)
+            this.list = null;
+        } else if (arguments[0] instanceof Array) {
+            // new MuteCommand(list);
+            Command.call(this, MuteCommand.MUTE)
+            this.setBlockCList(arguments[0]);
+        } else {
+            // new MuteCommand(map);
+            Command.call(this, arguments[0]);
+            this.list = null;
         }
     };
     ns.Class(MuteCommand, Command, null);
 
     MuteCommand.MUTE = 'mute';
 
+    MuteCommand.getMuteList = function (cmd) {
+        var list = cmd['list'];
+        if (list && list.length > 0) {
+            return ID.convert(list);
+        } else {
+            return list;
+        }
+    };
+    MuteCommand.setMuteList = function (list, cmd) {
+        if (list && list.length > 0) {
+            cmd['list'] = ID.revert(list);
+        } else {
+            delete cmd['list'];
+        }
+    };
+
     //-------- setter/getter --------
 
     MuteCommand.prototype.getMuteCList = function () {
-        return this.getValue('list');
+        if (!this.list) {
+            this.list = MuteCommand.getMuteList(this.getMap());
+        }
+        return this.list;
     };
     MuteCommand.prototype.setMuteCList = function (list) {
-        this.setValue('list', list);
+        MuteCommand.setMuteList(list, this.getMap());
+        this.list = list;
     };
-
-    //-------- register --------
-    Command.register(MuteCommand.MUTE, MuteCommand);
 
     //-------- namespace --------
     ns.protocol.MuteCommand = MuteCommand;

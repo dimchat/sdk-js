@@ -54,27 +54,53 @@
         SUCCESS: 4  // S -> C, handshake accepted
     });
 
+    var START_MESSAGE = 'Hello world!';
+    var AGAIN_MESSAGE = 'DIM?';
+    var SUCCESS_MESSAGE = 'DIM!';
+
+    var get_state = function (text, session) {
+        if (text === SUCCESS_MESSAGE || text === 'OK!') {
+            return HandshakeState.SUCCESS;
+        } else if (text === AGAIN_MESSAGE) {
+            return HandshakeState.AGAIN;
+        } else if (text !== START_MESSAGE) {
+            // error!
+            return HandshakeState.INIT;
+        } else if (session) {
+            return HandshakeState.RESTART;
+        } else {
+            return HandshakeState.START;
+        }
+    };
+
     var Command = ns.protocol.Command;
 
     /**
      *  Create handshake command
      *
-     * @param {{}|String} info - command info; or message text
-     * @constructor
+     *  Usages:
+     *      1. new HandshakeCommand(map);
+     *      2. new HandshakeCommand(text, session);
      */
-    var HandshakeCommand = function (info) {
-        var message = null;
-        if (!info) {
-            // create empty handshake command
-            info = Command.HANDSHAKE;
-        } else if (typeof info === 'string') {
-            // create handshake command with message string
-            message = info;
-            info = Command.HANDSHAKE;
-        }
-        Command.call(this, info);
-        if (message) {
-            this.setMessage(message);
+    var HandshakeCommand = function () {
+        if (arguments.length === 1) {
+            // new HandshakeCommand(map);
+            Command.call(this, arguments[0]);
+        } else if (arguments.length === 2) {
+            // new HandshakeCommand(text, session);
+            Command.call(this, Command.HANDSHAKE);
+            // message text
+            var text = arguments[0];
+            if (text) {
+                this.setValue('message', text);
+            } else {
+                this.setValue('message', START_MESSAGE);
+            }
+            // session key
+            var session = arguments[1];
+            if (session) {
+                this.setValue('session', session);
+            }
         }
     };
     ns.Class(HandshakeCommand, Command, null);
@@ -89,9 +115,6 @@
     HandshakeCommand.prototype.getMessage = function () {
         return this.getValue('message');
     };
-    HandshakeCommand.prototype.setMessage = function (text) {
-        this.setValue('message', text);
-    };
 
     /**
      *  Get session key
@@ -101,59 +124,30 @@
     HandshakeCommand.prototype.getSessionKey = function () {
         return this.getValue('session');
     };
-    HandshakeCommand.prototype.setSessionKey = function (session) {
-        this.setValue('session', session);
-    };
 
     /**
-     *  Get state
+     *  Get handshake state
      *
-     * @returns {HandshakeState}
+     * @return {HandshakeState}
      */
     HandshakeCommand.prototype.getState = function () {
-        var text = this.getMessage();
-        var session = this.getSessionKey();
-        if (!text) {
-            return HandshakeState.INIT;
-        }
-        if (text === 'DIM?') {
-            return HandshakeState.AGAIN;
-        }
-        if (text === 'DIM!' || text === 'OK!') {
-            return HandshakeState.SUCCESS;
-        }
-        if (session) {
-            return HandshakeState.RESTART;
-        } else {
-            return HandshakeState.START;
-        }
+        return get_state(this.getMessage(), this.getSessionKey());
     };
 
     //-------- factories --------
 
-    var handshake = function (text, session) {
-        var cmd = new HandshakeCommand(text);
-        if (session) {
-            cmd.setSessionKey(session);
-        }
-        return cmd;
-    };
-
     HandshakeCommand.start = function () {
-        return handshake('Hello world!');
+        return new HandshakeCommand(null, null);
     };
     HandshakeCommand.restart = function (session) {
-        return handshake('Hello world!', session);
+        return new HandshakeCommand(null, session);
     };
     HandshakeCommand.again = function (session) {
-        return handshake('DIM?', session);
+        return new HandshakeCommand(AGAIN_MESSAGE, session);
     };
     HandshakeCommand.success = function () {
-        return handshake('DIM!');
+        return new HandshakeCommand(SUCCESS_MESSAGE, null);
     };
-
-    //-------- register --------
-    Command.register(Command.HANDSHAKE, HandshakeCommand);
 
     //-------- namespace --------
     ns.protocol.HandshakeCommand = HandshakeCommand;

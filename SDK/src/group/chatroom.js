@@ -35,36 +35,6 @@
 !function (ns) {
     'use strict';
 
-    var GroupDataSource = ns.GroupDataSource;
-
-    /**
-     *  This interface is for getting information for chatroom
-     *  Chatroom admins should be set complying with the consensus algorithm
-     */
-    var ChatroomDataSource = function () {
-    };
-    ns.Interface(ChatroomDataSource, [GroupDataSource]);
-
-    /**
-     *  Get all admins in the chatroom
-     *
-     * @returns {ID[]}
-     */
-    ChatroomDataSource.prototype.getAdmins = function () {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    //-------- namespace --------
-    ns.ChatroomDataSource = ChatroomDataSource;
-
-    ns.register('ChatroomDataSource');
-
-}(DIMP);
-
-!function (ns) {
-    'use strict';
-
     var Group = ns.Group;
 
     /**
@@ -76,8 +46,28 @@
     ns.Class(Chatroom, Group, null);
 
     Chatroom.prototype.getAdmins = function () {
-        return this.delegate.getAdmins(this.identifier);
+        return this.getDataSource().getAdmins(this.identifier);
     };
+
+    /**
+     *  This interface is for getting information for chatroom
+     *  Chatroom admins should be set complying with the consensus algorithm
+     */
+    var ChatroomDataSource = function () {
+    };
+    ns.Interface(ChatroomDataSource, [Group.DataSource]);
+
+    /**
+     *  Get all admins in the chatroom
+     *
+     * @returns {ID[]}
+     */
+    ChatroomDataSource.prototype.getAdmins = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    Chatroom.DataSource = ChatroomDataSource;
 
     //-------- namespace --------
     ns.Chatroom = Chatroom;

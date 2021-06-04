@@ -206,7 +206,7 @@
     //
 
     Facebook.prototype.createIdentifier = function (string) {
-        return ID.getInstance(string);
+        return ID.parse(string);
     };
 
     Facebook.prototype.createUser = function (identifier) {

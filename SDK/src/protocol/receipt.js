@@ -35,12 +35,13 @@
  *      type : 0x88,
  *      sn   : 123,  // the same serial number with the original message
  *
- *      command  : "receipt",
- *      message  : "...",
+ *      command   : "receipt",
+ *      message   : "...",
  *      // -- extra info
- *      sender   : "...",
- *      receiver : "...",
- *      time     : 0
+ *      sender    : "...",
+ *      receiver  : "...",
+ *      time      : 0,
+ *      signature : "..." // the same signature with the original message
  *  }
  */
 
@@ -55,39 +56,28 @@
     /**
      *  Create receipt command
      *
-     * @param {{}|Number|String|Envelope} info - command info; or serial number; or message; or envelope
-     * @constructor
+     *  Usages:
+     *      1. new ReceiptCommand(map);
+     *      2. new ReceiptCommand(text);
+     *      3. new ReceiptCommand(text, sn, envelope);
      */
-    var ReceiptCommand = function (info) {
-        var sn = null;
-        var message = null;
-        var envelope = null;
-        if (!info) {
-            // create empty receipt command
-            info = Command.RECEIPT;
-        } else if (typeof info === 'number') {
-            // create new receipt with serial number
-            sn = info;
-            info = Command.RECEIPT;
-        } else if (typeof info === 'string') {
-            // create new receipt with message
-            message = info;
-            info = Command.RECEIPT;
-        } else if (info instanceof Envelope) {
-            envelope = info;
-            info = Command.RECEIPT;
-        }
-        // create receipt command
-        Command.call(this, info);
-        if (sn) {
-            this.setSerialNumber(sn);
-        }
-        if (message) {
-            this.setMessage(message);
-        }
-        if (envelope) {
-            this.setEnvelope(envelope);
+    var ReceiptCommand = function () {
+        if (arguments.length === 3) {
+            // new ReceiptCommand(text, sn, envelope);
+            Command.call(this, Command.RECEIPT);
+            this.setMessage(arguments[0]);
+            if (arguments[1] > 0) {
+                this.setSerialNumber(arguments[1]);
+            }
+            this.setEnvelope(arguments[2]);
+        } else if (typeof arguments[0] === 'string') {
+            // new ReceiptCommand(text);
+            Command.call(this, Command.RECEIPT);
+            this.setMessage(arguments[0]);
+            this.envelope = null;
         } else {
+            // new ReceiptCommand(map);
+            Command.call(this, arguments[0]);
             this.envelope = null;
         }
     };
@@ -114,26 +104,45 @@
                 var sender = this.getValue('sender');
                 var receiver = this.getValue('receiver');
                 if (sender && receiver) {
-                    env = this.getMap(false);
+                    env = this.getMap();
                 }
             }
-            this.envelope = Envelope.getInstance(env);
+            this.envelope = Envelope.parse(env);
         }
         return this.envelope;
     };
     ReceiptCommand.prototype.setEnvelope = function (env) {
         this.setValue('envelope', null);
         if (env) {
-            this.setValue('sender', env.sender);
-            this.setValue('receiver', env.receiver);
-            this.setValue('time', env.time);
-            this.setValue('group', env.getGroup());
+            this.setValue('sender', env.getValue('sender'));
+            this.setValue('receiver', env.getValue('receiver'));
+            var time = env.getValue('time');
+            if (time) {
+                this.setValue('time', time);
+            }
+            var group = env.getValue('group');
+            if (group) {
+                this.setValue('group', group);
+            }
         }
         this.envelope = env;
     };
 
-    //-------- register --------
-    Command.register(Command.RECEIPT, ReceiptCommand);
+    ReceiptCommand.prototype.getSignature = function () {
+        var signature = this.getValue('signature');
+        if (typeof signature === 'string') {
+            signature = ns.format.Base64.decode(signature);
+        }
+        return signature;
+    };
+    ReceiptCommand.prototype.setSignature = function (signature) {
+        if (signature instanceof Uint8Array) {
+            signature = ns.format.Base64.encode(signature);
+        }
+        if (typeof signature === 'string') {
+            this.setValue('signature', signature);
+        }
+    };
 
     //-------- namespace --------
     ns.protocol.ReceiptCommand = ReceiptCommand;

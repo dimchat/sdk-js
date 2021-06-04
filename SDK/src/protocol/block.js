@@ -45,39 +45,64 @@
 !function (ns) {
     'use strict';
 
+    var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
 
-    var BlockCommand = function (info) {
-        var list = null;
-        if (!info) {
-            // create empty block command
-            info = BlockCommand.BLOCK;
-        } else if (info instanceof Array) {
-            // create new command with block-list
-            list = info;
-            info = BlockCommand.BLOCK;
-        }
-        // create block command
-        Command.call(this, info);
-        if (list) {
-            this.setBlockCList(list);
+    /**
+     *  Create block command
+     *
+     *  Usages:
+     *      1. new BlockCommand();
+     *      2. new BlockCommand(list);
+     *      3. new BlockCommand(map);
+     */
+    var BlockCommand = function () {
+        if (arguments.length === 0) {
+            // new BlockCommand();
+            Command.call(this, BlockCommand.BLOCK)
+            this.list = null;
+        } else if (arguments[0] instanceof Array) {
+            // new BlockCommand(list);
+            Command.call(this, BlockCommand.BLOCK)
+            this.setBlockCList(arguments[0]);
+        } else {
+            // new BlockCommand(map);
+            Command.call(this, arguments[0]);
+            this.list = null;
         }
     };
     ns.Class(BlockCommand, Command, null);
 
     BlockCommand.BLOCK = 'block';
 
+    BlockCommand.getBlockList = function (cmd) {
+        var list = cmd['list'];
+        if (list && list.length > 0) {
+            return ID.convert(list);
+        } else {
+            return list;
+        }
+    };
+    BlockCommand.setBlockList = function (list, cmd) {
+        if (list && list.length > 0) {
+            cmd['list'] = ID.revert(list);
+        } else {
+            delete cmd['list'];
+        }
+    };
+
     //-------- setter/getter --------
 
     BlockCommand.prototype.getBlockCList = function () {
-        return this.getValue('list');
+        if (!this.list) {
+            this.list = BlockCommand.getBlockList(this.getMap());
+        }
+        return this.list;
     };
     BlockCommand.prototype.setBlockCList = function (list) {
-        this.setValue('list', list);
+        BlockCommand.setBlockList(list, this.getMap());
+        this.list = list;
     };
-
-    //-------- register --------
-    Command.register(BlockCommand.BLOCK, BlockCommand);
 
     //-------- namespace --------
     ns.protocol.BlockCommand = BlockCommand;

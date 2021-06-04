@@ -148,7 +148,7 @@
         var facebook = this.getFacebook();
         var sender = rMsg.envelope.sender;
         sender = facebook.getIdentifier(sender);
-        var meta = Meta.getInstance(rMsg.getMeta());
+        var meta = Meta.parse(rMsg.getMeta());
         if (meta) {
             // [Meta Protocol]
             // save meta for sender
@@ -185,7 +185,7 @@
     //
 
     Messenger.prototype.serializeContent = function (content, pwd, iMsg) {
-        var key = SymmetricKey.getInstance(pwd);
+        var key = SymmetricKey.parse(pwd);
         // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
             var data = content.getData();
@@ -222,7 +222,7 @@
     //
 
     Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
-        var key = SymmetricKey.getInstance(pwd);
+        var key = SymmetricKey.parse(pwd);
         var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
         if (!content) {
             throw Error('failed to deserialize message content: ' + sMsg);

@@ -59,87 +59,38 @@
     'use strict';
 
     var Dictionary = ns.type.Dictionary;
-
     var ID = ns.ID;
-
     var Command = ns.protocol.Command;
+    var Station = ns.Station;
 
     /**
      *  Create login command
      *
-     * @param {{}|ID} info - command info; or user ID
-     * @constructor
+     *  Usages:
+     *      1. new LoginCommand(map);
+     *      2. new LoginCommand(identifier);
      */
     var LoginCommand = function (info) {
-        var identifier = null;
-        var time = null;
-        if (!info) {
-            // create empty login command
-            time = new Date();
-            info = Command.LOGIN;
-        } else if (info instanceof ID) {
-            // create login command with user ID
-            identifier = info;
-            time = new Date();
-            info = Command.LOGIN;
-        }
-        Command.call(this, info);
-        if (identifier) {
-            this.setIdentifier(identifier);
-        }
-        if (time) {
-            this.setTime(time);
+        if (info instanceof ID) {
+            // new LoginCommand(identifier);
+            Command.call(this, Command.LOGIN);
+            this.setValue('ID', info.toString());
+        } else {
+            // new LoginCommand(map);
+            Command.call(this, info);
         }
     };
     ns.Class(LoginCommand, Command, null);
-
-    //-------- setter/getter --------
-
-    /**
-     *  Command time
-     *
-     * @returns {Date}
-     */
-    LoginCommand.prototype.getTime = function () {
-        var time = this.getValue('time');
-        if (time) {
-            return new Date(time * 1000);
-        } else {
-            return null;
-        }
-    };
-    LoginCommand.prototype.setTime = function (time) {
-        if (!time) {
-            // get current time
-            time = new Date();
-        }
-        if (time instanceof Date) {
-            // set timestamp in seconds
-            this.setValue('time', time.getTime() / 1000);
-        } else if (typeof time === 'number') {
-            this.setValue('time', time);
-        } else {
-            throw TypeError('time error: ' + time);
-        }
-    };
 
     //-------- client info --------
 
     /**
      *  Get user ID
      *
-     * @returns {ID|String}
+     * @returns {ID}
      */
     LoginCommand.prototype.getIdentifier = function () {
-        return this.getValue('ID');
-    };
-    /**
-     *  Set user ID
-     *
-     * @param {ID} identifier
-     */
-    LoginCommand.prototype.setIdentifier = function (identifier) {
-        this.setValue('ID', identifier);
+        return ID.parse(this.getValue('ID'));
     };
 
     /**
@@ -181,7 +132,7 @@
     /**
      *  Get station info
      *
-     * @returns {map}
+     * @returns {{String:Object}}
      */
     LoginCommand.prototype.getStation = function () {
         return this.getValue('station');
@@ -189,18 +140,18 @@
     /**
      *  Set station info
      *
-     * @param {*} station
+     * @param {{String:Object}} station
      */
     LoginCommand.prototype.setStation = function (station) {
         var info;
-        if (station instanceof ns.Station) {
+        if (station instanceof Station) {
             info = {
-                'host': station.host,
-                'port': station.port,
-                'ID': station.identifier
+                'host': station.getHost(),
+                'port': station.getPort(),
+                'ID': station.identifier.toString()
             }
         } else if (station instanceof Dictionary) {
-            info = station.getMap(false);
+            info = station.getMap();
         } else {
             info = station;
         }
@@ -210,7 +161,7 @@
     /**
      *  Get provider info
      *
-     * @returns {map}
+     * @returns {{String:Object}}
      */
     LoginCommand.prototype.getProvider = function () {
         return this.getValue('provider');
@@ -218,28 +169,25 @@
     /**
      *  Set provider info
      *
-     * @param {*} provider
+     * @param {{String:Object}} provider
      */
     LoginCommand.prototype.setProvider = function (provider) {
         var info;
         if (provider instanceof ns.ServiceProvider) {
             info = {
-                'ID': provider.identifier
+                'ID': provider.identifier.toString()
             }
         } else if (provider instanceof ID) {
             info = {
-                'ID': provider
+                'ID': provider.toString()
             }
         } else if (provider instanceof Dictionary) {
-            info = provider.getMap(false);
+            info = provider.getMap();
         } else {
             info = provider;
         }
         this.setValue('provider', info);
     };
-
-    //-------- register --------
-    Command.register(Command.LOGIN, LoginCommand);
 
     //-------- namespace --------
     ns.protocol.LoginCommand = LoginCommand;

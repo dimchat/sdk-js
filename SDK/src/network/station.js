@@ -47,6 +47,32 @@
     };
     ns.Class(Station, User, null);
 
+    Station.prototype.getHost = function () {
+        if (!this.host) {
+            var doc = this.getDocument('*');
+            if (doc) {
+                this.host = doc.getProperty('host');
+            }
+            if (!this.host) {
+                this.host = '0.0.0.0';
+            }
+        }
+        return this.host;
+    };
+
+    Station.prototype.getPort = function () {
+        if (!this.port) {
+            var doc = this.getDocument('*');
+            if (doc) {
+                this.port = doc.getProperty('port');
+            }
+            if (!this.port) {
+                this.port = 9394;
+            }
+        }
+        return this.port;
+    };
+
     //-------- namespace --------
     ns.Station = Station;
 

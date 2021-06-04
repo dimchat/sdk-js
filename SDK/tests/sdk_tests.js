@@ -51,8 +51,8 @@ sdk_tests = [];
     var barrack;
     var transceiver;
 
-    var hulk = ID.getInstance('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
-    var moki = ID.getInstance('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
+    var hulk = ID.parse('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
+    var moki = ID.parse('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
 
     var sender = hulk;
     var receiver = ID.EVERYONE;

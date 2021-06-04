@@ -51,26 +51,26 @@
 !function (ns) {
     'use strict';
 
-    var Base64 = ns.format.Base64;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
-
+    var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
 
+    /**
+     *  Create storage command
+     *
+     *  Usages:
+     *      1. new StorageCommand(map);
+     *      2. new StorageCommand(title);
+     */
     var StorageCommand = function (info) {
-        var title = null;
-        if (!info) {
-            // create empty storage command
-            info = StorageCommand.STORAGE;
-        } else if (typeof info === 'string') {
-            // create new command with storage title
-            title = info;
-            info = StorageCommand.STORAGE;
-        }
-        // create storage command
-        Command.call(this, info);
-        if (title) {
-            this.setTitle(title);
+        if (typeof info === 'string') {
+            // new StorageCommand(title);
+            Command.call(this, StorageCommand.STORAGE);
+            this.setTitle(info);
+        } else {
+            // new StorageCommand(map);
+            Command.call(this, info);
         }
         // private properties
         this.data = null;      // encrypted data
@@ -84,7 +84,7 @@
 
     StorageCommand.prototype.getTitle = function () {
         var title = this.getValue('title');
-        if (title) {
+        if (title && title.length > 0) {
             return title;
         } else {
             // (compatible with v1.0)
@@ -101,10 +101,14 @@
     };
 
     StorageCommand.prototype.getIdentifier = function () {
-        return this.getValue('ID');
+        return ID.parse(this.getValue('ID'));
     };
     StorageCommand.prototype.setIdentifier = function (identifier) {
-        this.setValue('ID', identifier);
+        if (identifier instanceof ID) {
+            this.setValue('ID', identifier.toString());
+        } else {
+            this.setValue('ID', null);
+        }
     };
 
     //
@@ -115,7 +119,7 @@
         if (!this.data) {
             var base64 = this.getValue('data');
             if (base64) {
-                this.data = Base64.decode(base64);
+                this.data = ns.format.Base64.decode(base64);
             }
         }
         return this.data;
@@ -123,7 +127,7 @@
     StorageCommand.prototype.setData = function (data) {
         var base64 = null;
         if (data) {
-            base64 = Base64.encode(data);
+            base64 = ns.format.Base64.encode(data);
         }
         this.setValue('data', base64);
         this.data = data;
@@ -140,7 +144,7 @@
         if (!this.key) {
             var base64 = this.getValue('key');
             if (base64) {
-                this.key = Base64.decode(base64);
+                this.key = ns.format.Base64.decode(base64);
             }
         }
         return this.key;
@@ -148,7 +152,7 @@
     StorageCommand.prototype.setKey = function (data) {
         var base64 = null;
         if (data) {
-            base64 = Base64.encode(data);
+            base64 = ns.format.Base64.encode(data);
         }
         this.setValue('key', base64);
         this.key = data;
@@ -184,7 +188,7 @@
             var key = this.getKey();
             key = privateKey.decrypt(key);
             var dict = ns.format.JSON.decode(key);
-            this.password = SymmetricKey.getInstance(dict);
+            this.password = SymmetricKey.parse(dict);
         }
         return this.password;
     };
@@ -195,11 +199,6 @@
     // storage titles (should be encrypted)
     StorageCommand.CONTACTS = 'contacts';
     StorageCommand.PRIVATE_KEY = 'private_key';
-
-    //-------- register --------
-    Command.register(StorageCommand.STORAGE, StorageCommand);
-    Command.register(StorageCommand.CONTACTS, StorageCommand);
-    Command.register(StorageCommand.PRIVATE_KEY, StorageCommand);
 
     //-------- namespace --------
     ns.protocol.StorageCommand = StorageCommand;

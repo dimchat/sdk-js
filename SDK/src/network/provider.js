@@ -43,7 +43,7 @@
     ns.Class(ServiceProvider, Group, null);
 
     ServiceProvider.prototype.getStations = function () {
-        return this.delegate.getMembers(this.identifier);
+        return this.getMembers();
     };
 
     //-------- namespace --------
