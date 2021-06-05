@@ -37,40 +37,30 @@
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
-    var Command = ns.protocol.Command;
     var MetaCommand = ns.protocol.MetaCommand;
     var ReceiptCommand = ns.protocol.ReceiptCommand;
 
     var CommandProcessor = ns.cpu.CommandProcessor;
 
-    /**
-     *  Meta Command Processor
-     */
     var MetaCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
     };
     ns.Class(MetaCommandProcessor, CommandProcessor, null);
 
     // query meta for ID
-    var get_meta = function (identifier) {
-        var facebook = this.getFacebook();
+    var get_meta = function (identifier, facebook) {
         var meta = facebook.getMeta(identifier);
         if (!meta) {
             // meta not found
             var text = 'Sorry, meta not found for ID: ' + identifier;
             return new TextContent(text);
         }
-        // response meta info
+        // response
         return MetaCommand.response(identifier, meta);
     };
 
     // received a meta for ID
-    var put_meta = function (identifier, meta) {
-        var facebook = this.getFacebook();
-        if (!facebook.verifyMeta(meta, identifier)) {
-            // meta not match
-            return new TextContent('Meta not match ID: ' + identifier);
-        }
+    var put_meta = function (identifier, meta, facebook) {
         if (!facebook.saveMeta(meta, identifier)) {
             // save meta failed
             return new TextContent('Meta not accept: ' + identifier);
@@ -79,23 +69,20 @@
         return new ReceiptCommand('Meta received: ' + identifier);
     };
 
-    //
-    //  Main
-    //
-    MetaCommandProcessor.prototype.process = function (cmd, sender, msg) {
-        var facebook = this.getFacebook();
+    // @Override
+    MetaCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var identifier = cmd.getIdentifier();
-        identifier = facebook.getIdentifier(identifier);
-        var meta = cmd.getMeta();
-        if (meta) {
-            return put_meta.call(this, identifier, meta);
-        } else {
-            return get_meta.call(this, identifier);
+        if (identifier) {
+            var meta = cmd.getMeta();
+            if (meta) {
+                return put_meta.call(this, identifier, meta, this.getFacebook());
+            } else {
+                return get_meta.call(this, identifier, this.getFacebook());
+            }
         }
+        // command error
+        return null;
     };
-
-    //-------- register --------
-    CommandProcessor.register(Command.META, MetaCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.MetaCommandProcessor = MetaCommandProcessor;

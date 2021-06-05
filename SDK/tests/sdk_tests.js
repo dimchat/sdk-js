@@ -37,7 +37,7 @@ sdk_tests = [];
 
     var ID = ns.protocol.ID;
 
-    var PlainKey = ns.plugins.PlainKey;
+    var PlainKey = ns.crypto.PlainKey;
 
     var TextContent = ns.protocol.TextContent;
     var Envelope = ns.protocol.Envelope;
@@ -96,7 +96,7 @@ sdk_tests = [];
         log('content: ', content);
         var env = Envelope.create(sender, receiver, 0);
         log('envelope: ', env);
-        var iMsg = InstantMessage.create(content, env);
+        var iMsg = InstantMessage.create(env, content);
         log('instant message: ', iMsg);
 
         var sMsg = transceiver.encryptMessage(iMsg);

@@ -24,6 +24,8 @@
     <script>
         !function (ns) {
             var sources = [
+                'src/namespace.js',
+
                 'src/protocol/receipt.js',
                 'src/protocol/handshake.js',
                 'src/protocol/login.js',
@@ -35,7 +37,7 @@
                 'src/cpu/command.js',
                 'src/cpu/forward.js',
                 'src/cpu/meta.js',
-                'src/cpu/profile.js',
+                'src/cpu/document.js',
                 'src/cpu/history.js',
                 'src/cpu/group/group.js',
                 'src/cpu/group/invite.js',
@@ -65,6 +67,7 @@
 
             var tests = [
                 '../Plugins/src/immortals.js',
+                'tests/keycache.js',
 
                 '../Crypto/tests/crypto_tests.js',
                 '../MingKeMing/tests/mkm_tests.js',
@@ -173,9 +176,8 @@
                 ' ../Plugins/dist/plugins.js' +
                 ' dist/sdk.js' +
                 ' ../StarGate/dist/stargate.js' +
-                ' ../StarGate/src/exports.js' +
-                ' ../Plugins/src/immortals.js';
-            text += ' >> dist/all.js';
+                ' ../StarGate/src/exports.js';
+            text += ' >> dist/dimall.js';
             document.writeln(text);
         }());
     </script>

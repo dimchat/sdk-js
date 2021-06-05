@@ -61,7 +61,7 @@
      * @returns {Content} response to sender
      */
     CommandProcessor.prototype.execute = function (cmd, rMsg) {
-        var text = 'Content (type: ' + cmd.getCommand() + ') not support yet!';
+        var text = 'Command (name: ' + cmd.getCommand() + ') not support yet!';
         var res = new TextContent(text)
         // check group
         var group = cmd.getGroup();

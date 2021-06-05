@@ -30,56 +30,51 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'group.js'
 
 !function (ns) {
     'use strict';
 
-    var GroupCommand = ns.protocol.GroupCommand;
-
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    /**
-     *  Quit Group Command Processor
-     */
     var QuitCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
 
-    //
-    //  Main
-    //
-    QuitCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    // @Override
+    QuitCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var facebook = this.getFacebook();
+
+        // 0. check group
         var group = cmd.getGroup();
-        group = facebook.getIdentifier(group);
-        // 1. check permission
-        if (facebook.isOwner(sender, group)) {
-            throw Error('owner cannot quit: ' + sender + ', ' + group);
-        }
-        if (facebook.existsAssistant(sender, group)) {
-            throw Error('assistant cannot quit: ' + sender + ', ' + group);
-        }
-        // 2. do quit (remove the sender from group members)
+        var owner = facebook.getOwner(group);
         var members = facebook.getMembers(group);
-        if (!members || members.length === 0) {
-            throw Error('Group members not found: ' + group);
+        if (!owner || !members || members.length === 0) {
+            throw new EvalError('group not ready: ' + group.toString());
         }
-        if (members.indexOf(sender) < 0) {
-            // FIXME:
-            throw Error(sender + ' is not a member of group: ' + group);
-            // return;
+
+        // 1. check permission
+        var sender = rMsg.getSender();
+        if (owner.equals(sender)) {
+            throw new EvalError('owner cannot quit: ' + sender.toString() + ' -> ' + group.toString());
         }
-        ns.type.Arrays.remove(members, sender);
-        facebook.saveMembers(members, group);
+        var assistants = facebook.getAssistants(group);
+        if (assistants && assistants.indexOf(sender) >= 0) {
+            throw new EvalError('assistant cannot quit: ' + sender.toString() + ' -> ' + group.toString());
+        }
+
+        // 2. remove the sender from group members
+        var pos = members.indexOf(sender);
+        if (pos > 0) {
+            // NOTICE: the first member must be the owner
+            members = members.splice(pos, 1);
+            facebook.saveMembers(members, group);
+        }
+
         // 3. response (no need to response this group command)
         return null;
     };
-
-    //-------- register --------
-    GroupCommandProcessor.register(GroupCommand.QUIT, QuitCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;

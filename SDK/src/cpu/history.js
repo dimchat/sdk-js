@@ -36,50 +36,26 @@
 !function (ns) {
     'use strict';
 
-    var ContentType = ns.protocol.ContentType;
+    var TextContent = ns.protocol.TextContent;
 
-    var ContentProcessor = ns.cpu.ContentProcessor;
     var CommandProcessor = ns.cpu.CommandProcessor;
 
-    /**
-     *  History Command Processor
-     */
     var HistoryCommandProcessor = function (messenger) {
         CommandProcessor.call(this, messenger);
-        // Group Command Processor
-        this.gpu = null;
     };
     ns.Class(HistoryCommandProcessor, CommandProcessor, null);
 
-    //
-    //  Main
-    //
-    HistoryCommandProcessor.prototype.process = function (cmd, sender, msg) {
-        var cpu;
-        if (cmd.getGroup()) {
-            // call Group Command Processor
-            if (!this.gpu) {
-                this.gpu = new ns.cpu.GroupCommandProcessor(this.messenger);
-            }
-            cpu = this.gpu;
-        } else {
-            // process command content by name
-            var name = cmd.getCommand();
-            cpu = this.getCPU(name);
-            // if (!cpu) {
-            //     return new TextContent('History command (' + name + ') not support yet!')
-            // }
+    // @Override
+    HistoryCommandProcessor.prototype.execute = function (cmd, rMsg) {
+        var text = 'History command (name: ' + cmd.getCommand() + ') not support yet!';
+        var res = new TextContent(text)
+        // check group
+        var group = cmd.getGroup();
+        if (group) {
+            res.setGroup(group);
         }
-        return cpu.process(cmd, sender, msg);
+        return res;
     };
-
-    //-------- Runtime --------
-    HistoryCommandProcessor.register = function (command, clazz) {
-        CommandProcessor.register.call(this, command, clazz);
-    };
-
-    //-------- register --------
-    ContentProcessor.register(ContentType.HISTORY, HistoryCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;

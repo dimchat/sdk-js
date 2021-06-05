@@ -37,81 +37,70 @@
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
-    var Command = ns.protocol.Command;
-    var ProfileCommand = ns.protocol.ProfileCommand;
+    var DocumentCommand = ns.protocol.DocumentCommand;
     var ReceiptCommand = ns.protocol.ReceiptCommand;
 
-    var CommandProcessor = ns.cpu.CommandProcessor;
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
 
-    /**
-     *  Profile Command Processor
-     */
-    var ProfileCommandProcessor = function (messenger) {
+    var DocumentCommandProcessor = function (messenger) {
         MetaCommandProcessor.call(this, messenger);
     };
-    ns.Class(ProfileCommandProcessor, MetaCommandProcessor, null);
+    ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null);
 
-    // query profile for ID
-    var get_profile = function (identifier) {
-        var facebook = this.getFacebook();
-        var profile = facebook.getProfile(identifier);
-        if (!profile) {
-            // profile not found
-            var text = 'Sorry, profile not found for ID: ' + identifier;
+    // query document for ID
+    var get_doc = function (identifier, type, facebook) {
+        var doc = facebook.getDocument(identifier, type);
+        if (!doc) {
+            // document not found
+            var text = 'Sorry, document not found for ID: ' + identifier;
             return new TextContent(text);
         }
-        // response profile info
-        return ProfileCommand.response(identifier, profile, null);
+        // response
+        var meta = facebook.getMeta(identifier);
+        return DocumentCommand.response(identifier, meta, doc);
     };
 
-    // received a profile for ID
-    var put_profile = function (identifier, profile, meta) {
-        var facebook = this.getFacebook();
+    // received a document with ID
+    var put_doc = function (identifier, meta, doc, facebook) {
         if (meta) {
-            if (!facebook.verifyMeta(meta, identifier)) {
-                // meta not match
-                return new TextContent('Meta not match ID: ' + identifier);
-            }
+            // received a meta for ID
             if (!facebook.saveMeta(meta, identifier)) {
                 // save meta failed
                 return new TextContent('Meta not accept: ' + identifier);
             }
         }
-        if (!facebook.checkDocument(profile)) {
-            // profile not match
-            return new TextContent('Profile not match ID: ' + identifier);
-        }
-        if (!facebook.saveDocument(profile)) {
+        // received a document wit ID
+        if (!facebook.saveDocument(doc)) {
             // save profile failed
-            return new TextContent('Profile not accept: ' + identifier);
+            return new TextContent('Document not accept: ' + identifier);
         }
         // response receipt
-        return new ReceiptCommand('Profile received: ' + identifier);
+        return new ReceiptCommand('Document received: ' + identifier);
     };
 
-    //
-    //  Main
-    //
-    ProfileCommandProcessor.prototype.process = function (cmd, sender, msg) {
-        var facebook = this.getFacebook();
+    // @Override
+    DocumentCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var identifier = cmd.getIdentifier();
-        identifier = facebook.getIdentifier(identifier);
-        var profile = cmd.getProfile();
-        if (profile) {
-            var meta = cmd.getMeta();
-            return put_profile.call(this, identifier, profile, meta);
-        } else {
-            return get_profile.call(this, identifier);
+        if (identifier) {
+            var doc = cmd.getDocument();
+            if (!doc) {
+                var type = cmd.getValue('doc_type');
+                if (!type) {
+                    type = '*';  // ANY
+                }
+                return get_doc(identifier, type, this.getFacebook());
+            } else if (identifier.equals(doc.getIdentifier())) {
+                var meta = cmd.getMeta();
+                return put_doc(identifier, meta, doc, this.getFacebook());
+            }
         }
+        // command error
+        return null;
     };
-
-    //-------- register --------
-    CommandProcessor.register(Command.PROFILE, ProfileCommandProcessor);
 
     //-------- namespace --------
-    ns.cpu.ProfileCommandProcessor = ProfileCommandProcessor;
+    ns.cpu.DocumentCommandProcessor = DocumentCommandProcessor;
 
-    ns.cpu.register('ProfileCommandProcessor');
+    ns.cpu.register('DocumentCommandProcessor');
 
 }(DIMP);

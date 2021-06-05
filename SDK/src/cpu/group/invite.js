@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'group.js'
 
 !function (ns) {
@@ -40,102 +39,76 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    /**
-     *  Invite Command Processor
-     */
     var InviteCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
     ns.Class(InviteCommandProcessor, GroupCommandProcessor, null);
 
-    // check whether this is a Reset command
-    var is_reset = function (inviteList, sender, group) {
-        var facebook = this.getFacebook();
-        // NOTICE: owner invite owner?
-        //         it's a Reset command!
-        if (this.containsOwner(inviteList, group)) {
-            return facebook.isOwner(sender, group);
-        }
-        return false;
+    var call_reset = function (cmd, rMsg) {
+        var gpu = GroupCommandProcessor.getProcessor(GroupCommand.RESET);
+        gpu.setMessenger(this.getMessenger());
+        return gpu.execute(cmd, rMsg);
     };
 
-    var reset = function (cmd, sender, msg) {
-        var cpu = this.getCPU(GroupCommand.RESET);
-        // console.assert(cpu !== null, 'reset CPU not register yet');
-        return cpu.process(cmd, sender, msg);
-    };
-
-    var invite = function (inviteList, group) {
+    InviteCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var facebook = this.getFacebook();
-        // existed members
-        var members = facebook.getMembers(group);
-        if (!members) {
-            members = [];
-        }
-        // added list
-        var addedList = [];
-        var item;
-        for (var i = 0; i < inviteList.length; ++i) {
-            item = inviteList[i];
-            if (members.indexOf(item) >= 0) {
-                continue;
-            }
-            // adding member found
-            addedList.push(item);
-            members.push(item);
-        }
-        if (addedList.length > 0) {
-            if (facebook.saveMembers(members, group)) {
-                return addedList;
-            }
-        }
-        return null;
-    };
 
-    //
-    //  Main
-    //
-    InviteCommandProcessor.prototype.process = function (cmd, sender, msg) {
-        var facebook = this.getFacebook();
+        // 0. check group
         var group = cmd.getGroup();
-        group = facebook.getIdentifier(group);
-        // 0. check whether group info empty
-        if (this.isEmpty(group)) {
-            // NOTICE:
-            //     group membership lost?
-            //     reset group members
-            return reset.call(this, cmd, sender, msg);
+        var owner = facebook.getOwner(group);
+        var members = facebook.getMembers(group);
+        if (!owner || !members || members.length === 0) {
+            // NOTICE: group membership lost?
+            //         reset group members
+            return call_reset.call(this, cmd, rMsg);
         }
+
         // 1. check permission
-        if (!facebook.existsMember(sender, group)) {
-            if (!facebook.existsAssistant(sender, group)) {
-                if (!facebook.isOwner(sender, group)) {
-                    throw Error(sender + ' is not a member of group: ' + group);
-                }
+        var sender = rMsg.getSender();
+        if (members.indexOf(sender) < 0) {
+            // not a member? check assistants
+            var assistants = facebook.getAssistants(group);
+            if (!assistants || assistants.indexOf(sender) < 0) {
+                throw EvalError(sender.toString() + ' is not a member/assistant of group '
+                    + group.toString() + ', cannot invite member.');
             }
         }
-        // 1.2. get inviting members
-        var inviteList = this.getMembers(cmd);
-        if (!inviteList || inviteList.length === 0) {
-            throw Error('Invite command error: ' + cmd);
+
+        // 2. inviting members
+        var invites = this.getMembers(cmd);
+        if (invites.length === 0) {
+            throw EvalError('invite command error: ' + cmd.getMap());
         }
-        // 1.3. check for reset
-        if (is_reset.call(this, inviteList, sender, group)) {
+        // 2.1. check for reset
+        if (sender.equals(owner) && invites.indexOf(owner) >= 0) {
             // NOTICE: owner invites owner?
             //         it means this should be a 'reset' command
-            return reset.call(this, cmd, sender, msg);
+            return call_reset.call(this, cmd, rMsg);
         }
-        // 2. do invite (get invited-list)
-        var added = invite.call(this, inviteList, group);
-        if (added) {
-            cmd.setValue('added', added);
+        // 2.2. build invite list
+        var adds = [];
+        var item, pos;
+        for (var i = 0; i < invites.length; ++i) {
+            item = invites[i];
+            pos = members.indexOf(item);
+            if (pos >= 0) {
+                // member already exist
+                continue;
+            }
+            // got new member
+            adds.push(item.toString());
+            members.push(item);
         }
+        // 2.3. do inviting
+        if (adds.length > 0) {
+            if (facebook.saveMembers(members, group)) {
+                cmd.setValue('added', adds);
+            }
+        }
+
         // 3. response (no need to response this group command)
         return null;
     };
-
-    //-------- register --------
-    GroupCommandProcessor.register(GroupCommand.INVITE, InviteCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor;

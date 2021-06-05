@@ -30,58 +30,56 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'group.js'
 
 !function (ns) {
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
-    var GroupCommand = ns.protocol.GroupCommand;
+    var InviteCommand = ns.protocol.InviteCommand;
+    var ResetCommand = ns.protocol.group.ResetCommand;
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    /**
-     *  Query Group Command Processor
-     */
     var QueryCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
 
-    //
-    //  Main
-    //
-    QueryCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    // @Override
+    QueryCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var facebook = this.getFacebook();
+
+        // 0. check group
         var group = cmd.getGroup();
-        group = facebook.getIdentifier(group);
+        var owner = facebook.getOwner(group);
+        var members = facebook.getMembers(group);
+        if (!owner || !members || members.length === 0) {
+            var text = 'Sorry, members not found in group: ' + group.toString();
+            var res = new TextContent(text);
+            res.setGroup(group);
+            throw res;
+        }
+
         // 1. check permission
-        if (!facebook.existsMember(sender, group)) {
-            if (!facebook.existsAssistant(sender, group)) {
-                if (!facebook.isOwner(sender, group)) {
-                    throw Error(sender + ' is not a member/assistant of group: ' + group);
-                }
+        var sender = rMsg.getSender();
+        if (members.indexOf(sender) < 0) {
+            // not a member? check assistants
+            var assistants = facebook.getAssistants(group);
+            if (!assistants || assistants.indexOf(sender) < 0) {
+                throw EvalError(sender.toString() + ' is not a member/assistant of group '
+                    + group.toString() + ', cannot query.');
             }
         }
-        // 2. get members
-        var members = facebook.getMembers(group);
-        if (!members || members.length === 0) {
-            var res = new TextContent('Sorry, members not found in group: ' + group);
-            res.setGroup(group);
-            return res;
-        }
-        // 3. respond
+
+        // 2. respond
         var user = facebook.getCurrentUser();
-        if (facebook.isOwner(user.identifier, group)) {
-            return GroupCommand.reset(group, members);
+        if (owner.equals(user.identifier)) {
+            return new ResetCommand(group, members);
         } else {
-            return GroupCommand.invite(group, members);
+            return new InviteCommand(group, members);
         }
     };
-
-    //-------- register --------
-    GroupCommandProcessor.register(GroupCommand.QUERY, QueryCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;

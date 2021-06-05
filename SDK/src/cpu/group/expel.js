@@ -30,71 +30,74 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'group.js'
 
 !function (ns) {
     'use strict';
 
-    var GroupCommand = ns.protocol.GroupCommand;
-
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    /**
-     *  Expel Group Command Processor
-     */
     var ExpelCommandProcessor = function (messenger) {
         GroupCommandProcessor.call(this, messenger);
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
 
-    //
-    //  Main
-    //
-    ExpelCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    // @Override
+    ExpelCommandProcessor.prototype.execute = function (cmd, rMsg) {
         var facebook = this.getFacebook();
+
+        // 0. check group
         var group = cmd.getGroup();
-        group = facebook.getIdentifier(group);
+        var owner = facebook.getOwner(group);
+        var members = facebook.getMembers(group);
+        if (!owner || !members || members.length === 0) {
+            throw EvalError('group not ready: ' + group.toString());
+        }
+
         // 1. check permission
-        if (!facebook.isOwner(sender, group)) {
-            if (!facebook.existsAssistant(sender, group)) {
-                throw Error(sender + ' is not the owner/admin of group: ' + group);
+        var sender = rMsg.getSender();
+        if (!owner.equals(sender)) {
+            // not the owner? check assistants
+            var assistants = facebook.getAssistants(group);
+            if (!assistants || assistants.indexOf(sender) < 0) {
+                throw EvalError(sender.toString() + ' is not the owner/assistant of group '
+                    + group.toString() + ', cannot expel member.');
             }
         }
-        // 1.2. get expelling members from command content
-        var expelList = this.getMembers(cmd);
-        if (!expelList || expelList.length === 0) {
-            throw Error('Expel command error: ' + cmd);
+
+        // 2. expelling members
+        var expels = this.getMembers(cmd);
+        if (expels.length === 0) {
+            throw EvalError('expel command error: ' + cmd.getMap());
         }
-        // 2. do expel
-        var members = facebook.getMembers(group);
-        if (!members || members.length === 0) {
-            throw Error('Group members not found: ' + group);
+        // 2.1. check owner
+        if (expels.indexOf(owner)) {
+            throw EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
         }
-        var removedList = [];
-        var item;
-        for (var i = 0; i < expelList.length; ++i) {
-            item = expelList[i];
-            if (members.indexOf(item) < 0) {
-                // this user is not a member not
+        // 2.2. build expel list
+        var removes = [];
+        var item, pos;
+        for (var i = 0; i < expels.length; ++i) {
+            item = expels[i];
+            pos = members.indexOf(item);
+            if (pos < 0) {
+                // member not exists
                 continue;
             }
-            // removing member found
-            removedList.push(item);
-            ns.type.Arrays.remove(members, item);
+            // got removing member
+            removes.push(item.toString());
+            members = members.splice(pos, 1);
         }
-        if (removedList.length > 0) {
+        // 2.3. do expelling
+        if (removes.length > 0) {
             if (facebook.saveMembers(members, group)) {
-                // save removed-list in command content
-                cmd.setValue('removed', removedList);
+                cmd.setValue('removed', removes);
             }
         }
+
         // 3. response (no need to response this group command)
         return null;
     };
-
-    //-------- register --------
-    GroupCommandProcessor.register(GroupCommand.EXPEL, ExpelCommandProcessor);
 
     //-------- namespace --------
     ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor;

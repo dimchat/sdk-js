@@ -31,43 +31,22 @@
 //
 
 //! require <dimp.js>
-//! require 'content.js'
 
 !function (ns) {
     'use strict';
 
-    var ForwardContent = ns.protocol.ForwardContent;
-
-    var ContentProcessor = ns.cpu.ContentProcessor;
-
-    var ForwardContentProcessor = function (messenger) {
-        ContentProcessor.call(this, messenger);
-    };
-    ns.Class(ForwardContentProcessor, ContentProcessor, null);
-
-    // @Override
-    ForwardContentProcessor.prototype.process = function (content, rMsg) {
-        var secret = content.getMessage();
-        // call messenger to process it
-        secret = this.getMessenger().processReliableMessage(secret);
-        // check response
-        if (secret) {
-            // Over The Top
-            return new ForwardContent(secret);
-        }/* else {
-            var receiver = content.getMessage().envelope.receiver;
-            var text = 'Message forwarded: ' + receiver;
-            return new ReceiptCommand(text);
-        }*/
-
-        // NOTICE: decrypt failed, not for you?
-        //         it means you are asked to re-pack and forward this message
-        return null;
-    };
-
     //-------- namespace --------
-    ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
+    if (typeof ns.cpu !== 'object') {
+        ns.cpu = {};
+    }
+    if (typeof ns.cpu.group !== 'object') {
+        ns.cpu.group = {};
+    }
 
-    ns.cpu.register('ForwardContentProcessor');
+    ns.Namespace(ns.cpu);
+    ns.Namespace(ns.cpu.group);
+
+    ns.register('cpu');
+    ns.cpu.register('group');
 
 }(DIMP);

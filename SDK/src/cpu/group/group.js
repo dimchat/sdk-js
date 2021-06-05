@@ -30,12 +30,14 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'history.js'
 
 !function (ns) {
     'use strict';
 
+    var TextContent = ns.protocol.TextContent;
+
+    var CommandProcessor = ns.cpu.CommandProcessor;
     var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
 
     /**
@@ -46,84 +48,44 @@
     };
     ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
 
-    // convert String list to ID list
-    var convert_id_list = function (list) {
-        var facebook = this.getFacebook();
-        var array = [];
-        var identifier;
-        for (var i = 0; i < list.length; ++i) {
-            identifier = facebook.getIdentifier(list[i]);
-            if (!identifier) {
-                // throw Error('Member ID error: ' + list[i]);
-                continue;
-            }
-            array.push(identifier);
-        }
-        return array;
-    };
+    GroupCommandProcessor.getProcessor = CommandProcessor.getProcessor;
 
     GroupCommandProcessor.prototype.getMembers = function (cmd) {
+        // get from 'members'
         var members = cmd.getMembers();
-        if (!members) {
-            var member = cmd.getMember();
-            if (!member) {
-                return null;
-            }
-            members = [member];
+        if (members) {
+            return members;
         }
-        return convert_id_list.call(this, members);
+        // get from 'member'
+        var member = cmd.getMember();
+        if (member) {
+            return [member];
+        } else {
+            return [];
+        }
     };
 
-    // check whether the list contains owner
-    GroupCommandProcessor.prototype.containsOwner = function (members, group) {
-        var facebook = this.getFacebook();
-        var identifier;
-        for (var i = 0; i < members.length; ++i) {
-            identifier = facebook.getIdentifier(members[i]);
-            if (facebook.isOwner(identifier, group)) {
-                return true;
-            }
-        }
-        return false;
+    // @Override
+    GroupCommandProcessor.prototype.execute = function (cmd, rMsg) {
+        var text = 'Group command (name: ' + cmd.getCommand() + ') not support yet!';
+        var res = new TextContent(text)
+        res.setGroup(cmd.getGroup());
+        return res;
     };
 
-    // check whether the group info is empty(lost)
-    GroupCommandProcessor.prototype.isEmpty = function (group) {
-        var facebook = this.getFacebook();
-        var members = facebook.getMembers(group);
-        if (!members || members.length === 0) {
-            return true;
-        }
-        var owner = facebook.getOwner(group);
-        return !owner;
-    };
-
-    //
-    //  Main
-    //
-    GroupCommandProcessor.prototype.process = function (cmd, sender, msg) {
+    // @Override
+    GroupCommandProcessor.prototype.process = function (cmd, rMsg) {
         // process command content by name
-        var name = cmd.getCommand();
-        var cpu = this.getCPU(name);
-        // if (!cpu) {
-        //     var res = new TextContent('Group command ('+ name + ') not support yet!');
-        //     res.setGroup(cmd.getGroup());
-        //     return res;
-        // }
-        return cpu.process(cmd, sender, msg);
-    };
-
-    //-------- Runtime --------
-    GroupCommandProcessor.register = function (command, clazz) {
-        HistoryCommandProcessor.register.call(this, command, clazz);
+        var cpu = CommandProcessor.getProcessor(cmd);
+        if (cpu) {
+            cpu.setMessenger(this.getMessenger());
+        } else {
+            cpu = this;
+        }
+        return cpu.execute(cmd, rMsg);
     };
 
     //-------- namespace --------
-    if (typeof ns.cpu.group !== 'object') {
-        ns.cpu.group = {};
-    }
-    ns.Namespace(ns.cpu.group);
-
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
 
     ns.cpu.register('GroupCommandProcessor');

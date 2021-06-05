@@ -74,7 +74,7 @@
         }
 
         // make sure visa.key exists before encrypting message
-        CorePacker.prototype.encryptMessage.call(this, iMsg);
+        return CorePacker.prototype.encryptMessage.call(this, iMsg);
     };
 
     MessagePacker.prototype.verifyMessage = function (rMsg) {

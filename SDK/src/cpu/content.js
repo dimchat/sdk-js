@@ -113,12 +113,6 @@
         }
     };
 
-    //-------- namespace --------
-    if (typeof ns.cpu !== 'object') {
-        ns.cpu = {};
-    }
-    ns.Namespace(ns.cpu);
-
     ns.cpu.ContentProcessor = ContentProcessor;
 
     ns.cpu.register('ContentProcessor')
