@@ -5,6 +5,11 @@ if (typeof DIMP.fsm !== 'object') {
 }
 FiniteStateMachine.exports(DIMP.fsm);
 
+if (typeof DIMP.startrek !== 'object') {
+    DIMP.startrek = {};
+}
+StarTrek.exports(DIMP.startrek);
+
 if (typeof DIMP.stargate !== 'object') {
     DIMP.stargate = {};
 }

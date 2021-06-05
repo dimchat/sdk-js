@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Storage = function (storage, prefix) {
@@ -186,4 +186,4 @@
     ns.register('LocalStorage');
     ns.register('SessionStorage');
 
-}(StarGate);
+})(StarGate);

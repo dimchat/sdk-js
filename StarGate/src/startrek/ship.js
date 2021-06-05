@@ -1,14 +1,14 @@
 ;
 // license: https://mit-license.org
 //
-//  Finite State Machine
+//  Star Trek: Interstellar Transport
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2021 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2021 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,63 +30,77 @@
 // =============================================================================
 //
 
+/**
+ *  Star Ship
+ *  ~~~~~~~~~
+ *
+ *  Container carrying data package
+ */
+
+//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns) {
     "use strict";
 
-    /**
-     *  State machine delegate
-     */
-    var Delegate = function () {
+    var Ship = function () {
     };
-    DIMP.Interface(Delegate, null);
+    DIMP.Interface(Ship, null);
+
+    /**
+     *  Get the data package in this Ship
+     *
+     * @return {Uint8Array} the whole package
+     */
+    Ship.prototype.getPackage = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Get ID for this Ship
+     *
+     * @return {Uint8Array} SN
+     */
+    Ship.prototype.getSN = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Get data in this Ship
+     *
+     * @return {Uint8Array} payload
+     */
+    Ship.prototype.getPayload = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Ship Delegate
+     *  ~~~~~~~~~~~~~
+     */
+    var ShipDelegate = function () {
+    };
+    DIMP.Interface(ShipDelegate, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
-     *  Callback when entering a new state
+     *  Callback when package sent
      *
-     * @param {State} state
-     * @param {Machine} machine
+     * @param {Ship} ship      - package container
+     * @param {Error} error     - null on success
      */
-    Delegate.prototype.enterState = function (state, machine) {
-        console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when exit from current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.exitState = function (state, machine) {
+    ShipDelegate.prototype.onShipSent = function (ship, error) {
         console.assert(false, 'implement me!');
     };
 
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when pause current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.pauseState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when resume current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.resumeState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
+    Ship.Delegate = ShipDelegate;
 
     //-------- namespace --------
-    ns.StateDelegate = Delegate;
+    ns.Ship = Ship;
 
-    ns.register('StateDelegate');
+    ns.register('Ship');
 
-})(FiniteStateMachine);
+})(StarTrek);

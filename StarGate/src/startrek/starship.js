@@ -1,9 +1,14 @@
 ;
 // license: https://mit-license.org
+//
+//  Star Trek: Interstellar Transport
+//
+//                               Written in 2021 by Moky <albert.moky@gmail.com>
+//
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2021 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,39 +30,63 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+/**
+ *  Star Ship
+ *  ~~~~~~~~~
+ *
+ *  Container carrying data package
+ */
 
-if (typeof FiniteStateMachine !== 'object') {
-    FiniteStateMachine = {};
-}
-
-if (typeof LocalNotificationService !== 'object') {
-    LocalNotificationService = {};
-}
-
-if (typeof StarTrek !== 'object') {
-    StarTrek = {};
-}
-
-if (typeof StarGate !== 'object') {
-    StarGate = {};
-}
+//! require 'ship.js'
 
 (function (ns) {
     "use strict";
 
-    ns.Namespace(FiniteStateMachine);
-    ns.Namespace(LocalNotificationService);
-    ns.Namespace(StarTrek);
-    ns.Namespace(StarGate);
+    var Ship = ns.Ship;
+
+    var StarShip = function (priority, delegate) {
+        this.priority = priority;
+        this.delegate = delegate;
+        // for retry
+        this.last_time = 0;  // milliseconds
+        this.retries = -1;
+    };
+    DIMP.Class(StarShip, null, [Ship]);
+
+    // retry
+    StarShip.EXPIRES = 120 * 1000;  // 2 minutes
+    StarShip.RETRIES = 2;
+
+    // priorities
+    StarShip.URGENT = -1;
+    StarShip.NORMAL = 0;
+    StarShip.SLOWER = 1;
+
+    StarShip.prototype.getDelegate = function () {
+        return this.delegate;
+    };
+
+    StarShip.prototype.getTimestamp = function () {
+        return this.last_time;
+    };
+
+    StarShip.prototype.getRetries = function () {
+        return this.retries;
+    };
+
+    StarShip.prototype.isExpired = function () {
+        var now = new Date();
+        return now.getTime() > this.last_time + StarShip.EXPIRES * (StarShip.RETRIES + 2);
+    };
+
+    StarShip.prototype.update = function () {
+        this.last_time = (new Date()).getTime();
+        this.retries += 1;
+    };
 
     //-------- namespace --------
-    if (typeof StarGate.network !== 'object') {
-        StarGate.network = {};
-    }
+    ns.StarShip = StarShip;
 
-    ns.Namespace(StarGate.network);
+    ns.register('StarShip');
 
-    StarGate.register('network');
-
-})(DIMP);
+})(StarTrek);

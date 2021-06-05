@@ -1,7 +1,7 @@
 ;
 // license: https://mit-license.org
 //
-//  Local Notification
+//  Local Notification Service
 //
 //                               Written in 2020 by Moky <albert.moky@gmail.com>
 //
@@ -33,59 +33,7 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-!function (ns) {
-    "use strict";
-
-    /**
-     *  Notification observer
-     */
-    var Observer = function () {
-    };
-    DIMP.Interface(Observer, null);
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when received notification
-     *
-     * @param {Notification} notification
-     */
-    Observer.prototype.onReceiveNotification = function (notification) {
-        console.assert(false, 'implement me!');
-    };
-
-    //-------- namespace --------
-    ns.Observer = Observer;
-
-    ns.register('Observer');
-
-}(StarGate);
-
-!function (ns) {
-    "use strict";
-
-    /**
-     *  Notification object with name, sender and extra info
-     *
-     * @param {String} name
-     * @param {Object} sender
-     * @param {{}} userInfo
-     * @constructor
-     */
-    var Notification = function (name, sender, userInfo) {
-        this.name = name;
-        this.sender = sender;
-        this.userInfo = userInfo;
-    };
-    DIMP.Class(Notification, DIMP.type.Object, null);
-
-    //-------- namespace --------
-    ns.Notification = Notification;
-
-    ns.register('Notification');
-
-}(StarGate);
-
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Notification = ns.Notification;
@@ -182,4 +130,4 @@
 
     ns.register('NotificationCenter');
 
-}(StarGate);
+})(LocalNotificationService);

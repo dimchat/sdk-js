@@ -1,7 +1,7 @@
 ;
 // license: https://mit-license.org
 //
-//  Finite State Machine
+//  Local Notification Service
 //
 //                               Written in 2020 by Moky <albert.moky@gmail.com>
 //
@@ -30,63 +30,30 @@
 // =============================================================================
 //
 
+//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns) {
     "use strict";
 
     /**
-     *  State machine delegate
-     */
-    var Delegate = function () {
-    };
-    DIMP.Interface(Delegate, null);
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when entering a new state
+     *  Notification object with name, sender and extra info
      *
-     * @param {State} state
-     * @param {Machine} machine
+     * @param {String} name
+     * @param {Object} sender
+     * @param {{}} userInfo
+     * @constructor
      */
-    Delegate.prototype.enterState = function (state, machine) {
-        console.assert(false, 'implement me!');
+    var Notification = function (name, sender, userInfo) {
+        this.name = name;
+        this.sender = sender;
+        this.userInfo = userInfo;
     };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when exit from current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.exitState = function (state, machine) {
-        console.assert(false, 'implement me!');
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when pause current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.pauseState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when resume current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.resumeState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
+    DIMP.Class(Notification, DIMP.type.Object, null);
 
     //-------- namespace --------
-    ns.StateDelegate = Delegate;
+    ns.Notification = Notification;
 
-    ns.register('StateDelegate');
+    ns.register('Notification');
 
-})(FiniteStateMachine);
+})(LocalNotificationService);

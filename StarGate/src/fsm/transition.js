@@ -32,7 +32,7 @@
 
 //! require 'namespace.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     /**
@@ -60,4 +60,4 @@
 
     ns.register('Transition');
 
-}(FiniteStateMachine);
+})(FiniteStateMachine);

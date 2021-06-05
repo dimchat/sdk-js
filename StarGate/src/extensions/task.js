@@ -32,7 +32,7 @@
 
 //! require 'star.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     /**
@@ -66,4 +66,4 @@
 
     ns.extensions.register('Task');
 
-}(StarGate);
+})(StarGate);

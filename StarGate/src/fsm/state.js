@@ -32,7 +32,7 @@
 
 //! require 'namespace.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     /**
@@ -116,4 +116,4 @@
 
     ns.register('State');
 
-}(FiniteStateMachine);
+})(FiniteStateMachine);

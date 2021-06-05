@@ -33,7 +33,7 @@
 //! require 'star.js'
 //! require 'task.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Task = ns.extensions.Task;
@@ -156,4 +156,4 @@
 
     ns.extensions.register('Fence');
 
-}(StarGate);
+})(StarGate);

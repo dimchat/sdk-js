@@ -1,7 +1,7 @@
 ;
 // license: https://mit-license.org
 //
-//  Finite State Machine
+//  Local Notification Service
 //
 //                               Written in 2020 by Moky <albert.moky@gmail.com>
 //
@@ -30,63 +30,32 @@
 // =============================================================================
 //
 
+//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns) {
     "use strict";
 
     /**
-     *  State machine delegate
+     *  Notification observer
      */
-    var Delegate = function () {
+    var Observer = function () {
     };
-    DIMP.Interface(Delegate, null);
+    DIMP.Interface(Observer, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
-     *  Callback when entering a new state
+     *  Callback when received notification
      *
-     * @param {State} state
-     * @param {Machine} machine
+     * @param {Notification} notification
      */
-    Delegate.prototype.enterState = function (state, machine) {
+    Observer.prototype.onReceiveNotification = function (notification) {
         console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when exit from current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.exitState = function (state, machine) {
-        console.assert(false, 'implement me!');
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when pause current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.pauseState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when resume current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.resumeState = function (state, machine) {
-        //console.assert(false, 'implement me!');
     };
 
     //-------- namespace --------
-    ns.StateDelegate = Delegate;
+    ns.Observer = Observer;
 
-    ns.register('StateDelegate');
+    ns.register('Observer');
 
-})(FiniteStateMachine);
+})(LocalNotificationService);

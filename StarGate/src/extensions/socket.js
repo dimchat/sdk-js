@@ -32,7 +32,7 @@
 
 //! require 'fence.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Fence = ns.extensions.Fence;
@@ -124,4 +124,4 @@
 
     ns.extensions.register('SocketClient');
 
-}(StarGate);
+})(StarGate);

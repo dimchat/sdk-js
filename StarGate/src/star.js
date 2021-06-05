@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     /**
@@ -94,9 +94,9 @@
     ns.register('StarDelegate');
     ns.register('StarStatus');
 
-}(StarGate);
+})(StarGate);
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Star = function () {
@@ -150,4 +150,4 @@
 
     ns.register('Star');
 
-}(StarGate);
+})(StarGate);

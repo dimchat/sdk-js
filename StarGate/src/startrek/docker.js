@@ -1,14 +1,14 @@
 ;
 // license: https://mit-license.org
 //
-//  Finite State Machine
+//  Star Trek: Interstellar Transport
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2021 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2021 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,63 +30,42 @@
 // =============================================================================
 //
 
-//! require 'namespace.js'
+/**
+ *  Star Worker
+ *  ~~~~~~~~~~~
+ *
+ *  Processor for Star Ships
+ */
+
+//! require 'skywalker.js'
 
 (function (ns) {
     "use strict";
 
-    /**
-     *  State machine delegate
-     */
-    var Delegate = function () {
+    var Handler = ns.Handler;
+    var Processor = ns.Processor;
+
+    var Docker = function () {
     };
-    DIMP.Interface(Delegate, null);
+    DIMP.Interface(Docker, [Handler, Processor]);
 
     // noinspection JSUnusedLocalSymbols
     /**
-     *  Callback when entering a new state
+     *  Pack the payload to an outgo Ship
      *
-     * @param {State} state
-     * @param {Machine} machine
+     * @param {Uint8Array} payload  - request data
+     * @param {int} priority        - smaller is faster (-1 is the most fast)
+     * @param {Ship.Delegate} delegate   - callback
+     * @return {StarShip} a ship containing payload
      */
-    Delegate.prototype.enterState = function (state, machine) {
+    Docker.prototype.pack = function (payload, priority, delegate) {
         console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when exit from current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.exitState = function (state, machine) {
-        console.assert(false, 'implement me!');
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when pause current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.pauseState = function (state, machine) {
-        //console.assert(false, 'implement me!');
-    };
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Callback when resume current state
-     *
-     * @param {State} state
-     * @param {Machine} machine
-     */
-    Delegate.prototype.resumeState = function (state, machine) {
-        //console.assert(false, 'implement me!');
+        return null;
     };
 
     //-------- namespace --------
-    ns.StateDelegate = Delegate;
+    ns.Docker = Docker;
 
-    ns.register('StateDelegate');
+    ns.register('Docker');
 
-})(FiniteStateMachine);
+})(StarTrek);

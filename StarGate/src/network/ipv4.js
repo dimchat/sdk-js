@@ -32,7 +32,7 @@
 
 //! require 'host.js'
 
-!function (ns) {
+(function (ns) {
     "use strict";
 
     var Host = ns.network.Host;
@@ -99,4 +99,4 @@
 
     ns.network.register('IPv4');
 
-}(StarGate);
+})(StarGate);
