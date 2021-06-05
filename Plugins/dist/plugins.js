@@ -245,7 +245,7 @@
             return data
         }
         if (pem.indexOf("PRIVATE KEY") > 0) {
-            throw TypeError("this is a private key content")
+            throw new TypeError("this is a private key content")
         } else {
             return Base64.decode(pem)
         }
@@ -256,7 +256,7 @@
             return data
         }
         if (pem.indexOf("PUBLIC KEY") > 0) {
-            throw TypeError("this is not a RSA private key content")
+            throw new TypeError("this is not a RSA private key content")
         } else {
             return Base64.decode(pem)
         }
@@ -295,7 +295,7 @@
         if (data) {
             return PEM.decodePublicKey(data)
         } else {
-            throw Error("public key data not found")
+            throw new Error("public key data not found")
         }
     };
     RSAPublicKey.prototype.getSize = function() {
@@ -344,10 +344,10 @@
                 if (res.length === this.getSize()) {
                     return res
                 }
-                throw Error("Error encrypt result: " + plaintext)
+                throw new Error("Error encrypt result: " + plaintext)
             }
         }
-        throw Error("RSA encrypt error: " + plaintext)
+        throw new Error("RSA encrypt error: " + plaintext)
     };
     PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
     PublicKey.register("SHA256withRSA", RSAPublicKey);
@@ -427,7 +427,7 @@
         if (base64) {
             return Base64.decode(base64)
         } else {
-            throw Error("RSA sign error: " + data)
+            throw new Error("RSA sign error: " + data)
         }
     };
     RSAPrivateKey.prototype.decrypt = function(data) {
@@ -437,7 +437,7 @@
         if (string) {
             return ns.format.UTF8.encode(string)
         } else {
-            throw Error("RSA decrypt error: " + data)
+            throw new Error("RSA decrypt error: " + data)
         }
     };
     RSAPrivateKey.prototype.matches = function(pKey) {
@@ -525,7 +525,7 @@
         if (cipher.hasOwnProperty("ciphertext")) {
             return words2bytes(cipher.ciphertext)
         } else {
-            throw TypeError("failed to encrypt message with key: " + this)
+            throw new TypeError("failed to encrypt message with key: " + this)
         }
     };
     AESKey.prototype.decrypt = function(ciphertext) {
@@ -659,7 +659,7 @@
         }
         var data = Base58.decode(string);
         if (data.length !== 25) {
-            throw RangeError("address length error: " + string)
+            throw new RangeError("address length error: " + string)
         }
         var prefix = data.subarray(0, 21);
         var suffix = data.subarray(21, 25);

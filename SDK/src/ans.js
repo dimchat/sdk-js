@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var KEYWORDS = [
@@ -158,4 +158,4 @@
 
     ns.register('AddressNameService');
 
-}(DIMP);
+})(DIMP);

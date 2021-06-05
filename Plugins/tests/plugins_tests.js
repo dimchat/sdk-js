@@ -89,7 +89,7 @@ plugins_tests = [];
         for (var i = 0; i < 10000; ++i) {
             ciphertext = meta.key.encrypt(json);
             if (ciphertext.length !== 128) {
-                throw Error('encrypt error');
+                throw new Error('encrypt error');
             }
         }
     };

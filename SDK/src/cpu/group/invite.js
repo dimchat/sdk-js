@@ -32,7 +32,7 @@
 
 //! require 'group.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var GroupCommand = ns.protocol.GroupCommand;
@@ -69,7 +69,7 @@
             // not a member? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw EvalError(sender.toString() + ' is not a member/assistant of group '
+                throw new EvalError(sender.toString() + ' is not a member/assistant of group '
                     + group.toString() + ', cannot invite member.');
             }
         }
@@ -77,7 +77,7 @@
         // 2. inviting members
         var invites = this.getMembers(cmd);
         if (invites.length === 0) {
-            throw EvalError('invite command error: ' + cmd.getMap());
+            throw new EvalError('invite command error: ' + cmd.getMap());
         }
         // 2.1. check for reset
         if (sender.equals(owner) && invites.indexOf(owner) >= 0) {
@@ -115,4 +115,4 @@
 
     ns.cpu.group.register('InviteCommandProcessor');
 
-}(DIMP);
+})(DIMP);

@@ -184,7 +184,7 @@
 
 })(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var KeyCache = ns.core.KeyCache;
@@ -235,4 +235,4 @@
 
     ns.register('KeyStore');
 
-}(DIMP);
+})(DIMP);

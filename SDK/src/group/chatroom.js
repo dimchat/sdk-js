@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Group = ns.Group;
@@ -74,4 +74,4 @@
 
     ns.register('Chatroom');
 
-}(DIMP);
+})(DIMP);

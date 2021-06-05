@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var User = ns.User;
@@ -50,4 +50,4 @@
 
     ns.register('Robot');
 
-}(DIMP);
+})(DIMP);

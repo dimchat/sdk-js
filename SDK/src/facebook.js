@@ -37,7 +37,7 @@
 //! require 'network/station.js'
 //! require 'network/provider.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var NetworkType = ns.protocol.NetworkType;
@@ -154,12 +154,12 @@
         // check member's public key with group's meta.key
         var gMeta = this.getMeta(group);
         if (!gMeta) {
-            // throw Error('failed to get meta for group: ' + group);
+            // throw new Error('failed to get meta for group: ' + group);
             return false;
         }
         var mMeta = this.getMeta(member);
         if (!mMeta) {
-            // throw Error('failed to get meta for member: ' + member);
+            // throw new Error('failed to get meta for member: ' + member);
             return false;
         }
         return gMeta.matches(mMeta.key);
@@ -169,7 +169,7 @@
         if (NetworkType.POLYLOGUE.equals(group.getType())) {
             return this.isFounder(member, group);
         }
-        throw Error('only Polylogue so far');
+        throw new Error('only Polylogue so far');
     };
 
     Facebook.prototype.createUser = function (identifier) {
@@ -188,7 +188,7 @@
         if (NetworkType.STATION.equals(type)) {
             return new Station(identifier);
         }
-        throw TypeError('Unsupported user type: ' + type);
+        throw new TypeError('Unsupported user type: ' + type);
     };
 
     Facebook.prototype.createGroup = function (identifier) {
@@ -207,7 +207,7 @@
         if (NetworkType.PROVIDER.equals(type)) {
             return new ServiceProvider(identifier);
         }
-        throw TypeError('Unsupported group type: ' + type);
+        throw new TypeError('Unsupported group type: ' + type);
     };
 
     //-------- namespace --------
@@ -215,4 +215,4 @@
 
     ns.register('Facebook');
 
-}(DIMP);
+})(DIMP);

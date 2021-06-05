@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var CorePacker = ns.core.Packer;
@@ -138,4 +138,4 @@
 
     ns.register('MessagePacker');
 
-}(DIMP);
+})(DIMP);

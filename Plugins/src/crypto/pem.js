@@ -97,7 +97,7 @@
             return data;
         }
         if (pem.indexOf('PRIVATE KEY') > 0) {
-            throw TypeError('this is a private key content');
+            throw new TypeError('this is a private key content');
         } else {
             // key content without wrapper
             return Base64.decode(pem);
@@ -111,7 +111,7 @@
             return data;
         }
         if (pem.indexOf('PUBLIC KEY') > 0) {
-            throw TypeError('this is not a RSA private key content');
+            throw new TypeError('this is not a RSA private key content');
         } else {
             // key content without wrapper
             return Base64.decode(pem);

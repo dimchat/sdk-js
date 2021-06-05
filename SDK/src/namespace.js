@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     //-------- namespace --------
@@ -49,4 +49,4 @@
     ns.register('cpu');
     ns.cpu.register('group');
 
-}(DIMP);
+})(DIMP);

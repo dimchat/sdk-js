@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Group = ns.Group;
@@ -51,4 +51,4 @@
 
     ns.register('ServiceProvider');
 
-}(DIMP);
+})(DIMP);

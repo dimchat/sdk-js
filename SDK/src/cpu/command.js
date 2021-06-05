@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'content.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
@@ -126,4 +126,4 @@
 
     ns.cpu.register('CommandProcessor');
 
-}(DIMP);
+})(DIMP);

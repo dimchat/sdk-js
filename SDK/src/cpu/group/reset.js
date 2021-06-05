@@ -32,7 +32,7 @@
 
 //! require 'group.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var GroupCommand = ns.protocol.GroupCommand;
@@ -104,7 +104,7 @@
         }
         // 2.1. check owner
         if (newMembers.indexOf(owner) < 0) {
-            throw EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
+            throw new EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
         }
         // 2.2. build expel list
         var removes = [];
@@ -146,4 +146,4 @@
 
     ns.cpu.group.register('ResetCommandProcessor');
 
-}(DIMP);
+})(DIMP);

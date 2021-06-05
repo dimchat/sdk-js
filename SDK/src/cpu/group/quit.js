@@ -32,7 +32,7 @@
 
 //! require 'group.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
@@ -81,4 +81,4 @@
 
     ns.cpu.group.register('QuitCommandProcessor');
 
-}(DIMP);
+})(DIMP);

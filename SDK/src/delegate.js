@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     /**
@@ -53,9 +53,9 @@
 
     ns.register('Callback');
 
-}(DIMP);
+})(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     /**
@@ -80,9 +80,9 @@
 
     ns.register('CompletionHandler');
 
-}(DIMP);
+})(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     /**
@@ -138,9 +138,9 @@
 
     ns.register('MessengerDelegate');
 
-}(DIMP);
+})(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     /**
@@ -189,4 +189,4 @@
 
     ns.register('MessengerDataSource');
 
-}(DIMP);
+})(DIMP);

@@ -180,7 +180,7 @@
         if (key) {
             profile.sign(key);
         } else {
-            throw Error('failed to get private key to sign profile for user: ' + identifier);
+            throw new Error('failed to get private key to sign profile for user: ' + identifier);
         }
         return profile;
     };
@@ -192,7 +192,7 @@
     Immortals.prototype.getIdentifier = function (string) {
         if (!string) {
             return null;
-        } else if (string instanceof ID) {
+        } else if (ns.Interface.conforms(string, ID)) {
             return string;
         }
         return this.idMap[string];

@@ -43,7 +43,7 @@
 
 //! require 'command.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var HandshakeState = ns.type.Enum(null, {
@@ -156,4 +156,4 @@
     ns.protocol.register('HandshakeCommand');
     ns.protocol.register('HandshakeState');
 
-}(DIMP);
+})(DIMP);

@@ -32,7 +32,7 @@
 
 //! require 'group.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
@@ -58,7 +58,7 @@
             var text = 'Sorry, members not found in group: ' + group.toString();
             var res = new TextContent(text);
             res.setGroup(group);
-            throw res;
+            return res;
         }
 
         // 1. check permission
@@ -67,7 +67,7 @@
             // not a member? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw EvalError(sender.toString() + ' is not a member/assistant of group '
+                throw new EvalError(sender.toString() + ' is not a member/assistant of group '
                     + group.toString() + ', cannot query.');
             }
         }
@@ -86,4 +86,4 @@
 
     ns.cpu.group.register('QueryCommandProcessor');
 
-}(DIMP);
+})(DIMP);

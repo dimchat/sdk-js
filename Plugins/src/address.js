@@ -120,7 +120,7 @@
         // decode
         var data = Base58.decode(string);
         if (data.length !== 25) {
-            throw RangeError('address length error: ' + string);
+            throw new RangeError('address length error: ' + string);
         }
         // check code
         var prefix = data.subarray(0, 21);

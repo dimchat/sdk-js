@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'content.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var ForwardContent = ns.protocol.ForwardContent;
@@ -70,4 +70,4 @@
 
     ns.cpu.register('ForwardContentProcessor');
 
-}(DIMP);
+})(DIMP);

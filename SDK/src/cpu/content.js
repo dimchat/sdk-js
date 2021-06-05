@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
@@ -90,7 +90,7 @@
      * @returns {ContentProcessor}
      */
     ContentProcessor.getProcessor = function (info) {
-        if (info instanceof Content) {
+        if (ns.Interface.conforms(info, Content)) {
             return contentProcessors[info.getType()];
         } else if (info instanceof ContentType) {
             return contentProcessors[info.valueOf()];
@@ -117,4 +117,4 @@
 
     ns.cpu.register('ContentProcessor')
 
-}(DIMP);
+})(DIMP);

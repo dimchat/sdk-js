@@ -63,7 +63,7 @@
         if (data) {
             return PEM.decodePublicKey(data);
         } else {
-            throw Error('public key data not found');
+            throw new Error('public key data not found');
         }
     };
 
@@ -142,10 +142,10 @@
                 if (res.length === this.getSize()) {
                     return res;
                 }
-                throw Error('Error encrypt result: ' + plaintext);
+                throw new Error('Error encrypt result: ' + plaintext);
             }
         }
-        throw Error('RSA encrypt error: ' + plaintext);
+        throw new Error('RSA encrypt error: ' + plaintext);
     };
 
     //-------- register --------
@@ -262,7 +262,7 @@
             // convert Base64 to Uint8Array
             return Base64.decode(base64);
         } else {
-            throw Error('RSA sign error: ' + data);
+            throw new Error('RSA sign error: ' + data);
         }
     };
 
@@ -281,7 +281,7 @@
             // convert String to Uint8Array
             return ns.format.UTF8.encode(string);
         } else {
-            throw Error('RSA decrypt error: ' + data);
+            throw new Error('RSA decrypt error: ' + data);
         }
     };
 

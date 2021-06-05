@@ -55,10 +55,10 @@
 
 //! require 'command.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
+    var map = ns.type.Map;
     var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
     var Station = ns.Station;
@@ -71,7 +71,7 @@
      *      2. new LoginCommand(identifier);
      */
     var LoginCommand = function (info) {
-        if (info instanceof ID) {
+        if (ns.Interface.conforms(info, ID)) {
             // new LoginCommand(identifier);
             Command.call(this, Command.LOGIN);
             this.setValue('ID', info.toString());
@@ -150,7 +150,7 @@
                 'port': station.getPort(),
                 'ID': station.identifier.toString()
             }
-        } else if (station instanceof Dictionary) {
+        } else if (ns.Interface.conforms(station, map)) {
             info = station.getMap();
         } else {
             info = station;
@@ -177,11 +177,11 @@
             info = {
                 'ID': provider.identifier.toString()
             }
-        } else if (provider instanceof ID) {
+        } else if (ns.Interface.conforms(provider, ID)) {
             info = {
                 'ID': provider.toString()
             }
-        } else if (provider instanceof Dictionary) {
+        } else if (ns.Interface.conforms(provider, map)) {
             info = provider.getMap();
         } else {
             info = provider;
@@ -194,4 +194,4 @@
 
     ns.protocol.register('LoginCommand');
 
-}(DIMP);
+})(DIMP);

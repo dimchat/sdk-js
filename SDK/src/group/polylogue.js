@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Group = ns.Group;
@@ -59,4 +59,4 @@
 
     ns.register('Polylogue');
 
-}(DIMP);
+})(DIMP);

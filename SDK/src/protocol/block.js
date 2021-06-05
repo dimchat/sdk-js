@@ -42,7 +42,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var ID = ns.protocol.ID;
@@ -109,4 +109,4 @@
 
     ns.protocol.register('BlockCommand');
 
-}(DIMP);
+})(DIMP);

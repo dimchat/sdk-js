@@ -32,7 +32,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     /**
@@ -93,9 +93,9 @@
 
     ns.register('Transmitter');
 
-}(DIMP);
+})(DIMP);
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var obj = ns.type.Object;
@@ -126,7 +126,7 @@
         if (!sender) {
             var user = this.getFacebook().getCurrentUser();
             if (!user) {
-                throw ReferenceError('current user not set');
+                throw new ReferenceError('current user not set');
             }
             sender = user.identifier;
         }
@@ -187,4 +187,4 @@
 
     ns.register('MessageTransmitter');
 
-}(DIMP);
+})(DIMP);

@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'command.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
@@ -103,4 +103,4 @@
 
     ns.cpu.register('DocumentCommandProcessor');
 
-}(DIMP);
+})(DIMP);

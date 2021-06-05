@@ -32,7 +32,7 @@
 
 //! require 'history.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var TextContent = ns.protocol.TextContent;
@@ -90,4 +90,4 @@
 
     ns.cpu.register('GroupCommandProcessor');
 
-}(DIMP);
+})(DIMP);

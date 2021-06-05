@@ -32,7 +32,7 @@
 
 //! require 'group.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
@@ -51,7 +51,7 @@
         var owner = facebook.getOwner(group);
         var members = facebook.getMembers(group);
         if (!owner || !members || members.length === 0) {
-            throw EvalError('group not ready: ' + group.toString());
+            throw new EvalError('group not ready: ' + group.toString());
         }
 
         // 1. check permission
@@ -60,7 +60,7 @@
             // not the owner? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw EvalError(sender.toString() + ' is not the owner/assistant of group '
+                throw new EvalError(sender.toString() + ' is not the owner/assistant of group '
                     + group.toString() + ', cannot expel member.');
             }
         }
@@ -68,11 +68,11 @@
         // 2. expelling members
         var expels = this.getMembers(cmd);
         if (expels.length === 0) {
-            throw EvalError('expel command error: ' + cmd.getMap());
+            throw new EvalError('expel command error: ' + cmd.getMap());
         }
         // 2.1. check owner
         if (expels.indexOf(owner)) {
-            throw EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
+            throw new EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
         }
         // 2.2. build expel list
         var removes = [];
@@ -104,4 +104,4 @@
 
     ns.cpu.group.register('ExpelCommandProcessor');
 
-}(DIMP);
+})(DIMP);

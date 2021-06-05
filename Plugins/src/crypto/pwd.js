@@ -63,7 +63,7 @@
             merged.fill(filling, data, 0, data.length);
             data = merged.getBytes();
         } else if (filling < 0) {
-            // throw RangeError('password too long: ' + password);
+            // throw new RangeError('password too long: ' + password);
             if (Password.KEY_SIZE === digest.length) {
                 data = digest;
             } else {

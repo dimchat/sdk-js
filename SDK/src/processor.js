@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'cpu/content.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Processor = ns.core.Processor;
@@ -75,4 +75,4 @@
 
     ns.register('MessageProcessor');
 
-}(DIMP);
+})(DIMP);

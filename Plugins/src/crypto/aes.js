@@ -147,7 +147,7 @@
         if (cipher.hasOwnProperty('ciphertext')) {
             return words2bytes(cipher.ciphertext);
         } else {
-            throw TypeError('failed to encrypt message with key: ' + this);
+            throw new TypeError('failed to encrypt message with key: ' + this);
         }
     };
 

@@ -47,7 +47,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var Envelope = ns.protocol.Envelope;
@@ -149,4 +149,4 @@
 
     ns.protocol.register('ReceiptCommand');
 
-}(DIMP);
+})(DIMP);

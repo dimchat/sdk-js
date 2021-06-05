@@ -35,7 +35,7 @@
 //! require 'delegate.js'
 //! require 'facebook.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var ContentType = ns.protocol.ContentType;
@@ -92,7 +92,7 @@
     Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
         var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
         if (!content) {
-            throw Error('failed to deserialize message content: ' + sMsg);
+            throw new Error('failed to deserialize message content: ' + sMsg);
         }
         // check attachment for File/Image/Audio/Video message content
         if (content instanceof FileContent) {
@@ -174,7 +174,7 @@
         var facebook = this.getFacebook();
         var users = facebook.getLocalUsers();
         if (!users || users.length === 0) {
-            throw Error('local users should not be empty');
+            throw new Error('local users should not be empty');
         } else if (receiver.isBroadcast()) {
             // broadcast message can decrypt by anyone,
             // so just return current user
@@ -208,4 +208,4 @@
 
     ns.register('Messenger');
 
-}(DIMP);
+})(DIMP);

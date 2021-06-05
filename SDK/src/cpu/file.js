@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'content.js'
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var FileContent = ns.protocol.FileContent;
@@ -58,13 +58,13 @@
         var data = content.getData();
         if (!data || data.length === 0) {
             // FIXME: already uploaded?
-            //throw ReferenceError('failed to get file data: ' + content.getMap());
+            //throw new ReferenceError('failed to get file data: ' + content.getMap());
             return false;
         }
         // encrypt and upload file data onto CDN and save the URL in message content
         var encrypted = pwd.encrypt(data);
         if (!encrypted || encrypted.length === 0) {
-            throw Error('failed to encrypt file data with key: ' + pwd.getMap());
+            throw new Error('failed to encrypt file data with key: ' + pwd.getMap());
         }
         var url = this.getMessenger().uploadData(encrypted, iMsg);
         if (url) {
@@ -102,7 +102,7 @@
             // decrypt file data
             var data = pwd.decrypt(encrypted);
             if (!data || data.length === 0) {
-                throw Error('failed to decrypt file data with key: ' + pwd.getMap());
+                throw new Error('failed to decrypt file data with key: ' + pwd.getMap());
             }
             content.setData(data);
             content.setURL(null);
@@ -121,4 +121,4 @@
 
     ns.cpu.register('FileContentProcessor');
 
-}(DIMP);
+})(DIMP);

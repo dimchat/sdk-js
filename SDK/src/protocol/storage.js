@@ -48,7 +48,7 @@
 
 //! require <dimp.js>
 
-!function (ns) {
+(function (ns) {
     'use strict';
 
     var SymmetricKey = ns.crypto.SymmetricKey;
@@ -104,7 +104,7 @@
         return ID.parse(this.getValue('ID'));
     };
     StorageCommand.prototype.setIdentifier = function (identifier) {
-        if (identifier instanceof ID) {
+        if (ns.Interface.conforms(identifier, ID)) {
             this.setValue('ID', identifier.toString());
         } else {
             this.setValue('ID', null);
@@ -166,16 +166,16 @@
         if (!this.plaintext) {
             // 1. get password for decrypting data
             var pwd = null;
-            if (key instanceof PrivateKey) {
+            if (ns.Interface.conforms(key, PrivateKey)) {
                 // decrypt password with private key
                 pwd = this.decryptKey(key);
                 if (!pwd) {
-                    throw Error('failed to decrypt key: ' + key);
+                    throw new Error('failed to decrypt key: ' + key);
                 }
-            } else if (key instanceof SymmetricKey) {
+            } else if (ns.Interface.conforms(key, SymmetricKey)) {
                 pwd = key;
             } else {
-                throw TypeError('Decryption key error: ' + key);
+                throw new TypeError('Decryption key error: ' + key);
             }
             // 2. decrypt data with symmetric key
             var data = this.getData();
@@ -205,4 +205,4 @@
 
     ns.protocol.register('StorageCommand');
 
-}(DIMP);
+})(DIMP);
