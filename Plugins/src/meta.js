@@ -72,7 +72,7 @@
             BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
         }
         // memory cache
-        this.addresses = {};  // uint -> Address
+        this.__addresses = {};  // uint -> Address
     };
     ns.Class(DefaultMeta, BaseMeta, null);
 
@@ -81,11 +81,11 @@
             network = network.valueOf();
         }
         // check cache
-        var address = this.addresses[network];
+        var address = this.__addresses[network];
         if (!address && this.isValid()) {
             // generate and cache it
             address = BTCAddress.generate(this.getFingerprint(), network);
-            this.addresses[network] = address;
+            this.__addresses[network] = address;
         }
         return address;
     };
@@ -94,5 +94,64 @@
     ns.DefaultMeta = DefaultMeta;
 
     ns.register('DefaultMeta');
+
+})(DIMP);
+
+/**
+ *  Meta to build BTC address for ID
+ *
+ *  version:
+ *      0x02 - BTC
+ *      0x03 - ExBTC
+ *
+ *  algorithm:
+ *      CT      = key.data;
+ *      hash    = ripemd160(sha256(CT));
+ *      code    = sha256(sha256(network + hash)).prefix(4);
+ *      address = base58_encode(network + hash + code);
+ */
+
+(function (ns) {
+    'use strict';
+
+    var NetworkType = ns.protocol.NetworkType;
+
+    var BTCAddress = ns.BTCAddress;
+    var BaseMeta = ns.BaseMeta;
+
+    /**
+     *  Create meta for BTC address
+     *
+     *  Usages:
+     *      1. new BTCMeta(map);
+     *      2. new BTCMeta(type, key, seed, fingerprint);
+     */
+    var BTCMeta = function () {
+        if (arguments.length === 1) {
+            // new BTCMeta(map);
+            BaseMeta.call(this, arguments[0]);
+        } else if (arguments.length === 4) {
+            // new BTCMeta(type, key, seed, fingerprint);
+            BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
+        }
+        // memory cache
+        this.__address = null;  // cached address
+    };
+    ns.Class(BTCMeta, BaseMeta, null);
+
+    BTCMeta.prototype.generateAddress = function (network) {
+        // check cache
+        if (!this.__address && this.isValid()) {
+            // generate and cache it
+            var fingerprint = this.getKey().getData();
+            this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+        }
+        return this.__address;
+    };
+
+    //-------- register --------
+    ns.BTCMeta = BTCMeta;
+
+    ns.register('BTCMeta');
 
 })(DIMP);

@@ -45,8 +45,8 @@
     var StarShip = ns.StarShip;
 
     var Dock = function () {
-        this.priorities = [];  // int[]
-        this.fleets = {}       // int -> StarShip[]
+        this.__priorities = [];  // int[]
+        this.__fleets = {}       // int -> StarShip[]
     };
     DIMP.Class(Dock, null);
 
@@ -59,20 +59,20 @@
     Dock.prototype.put = function (task) {
         // 1. choose an array with priority
         var prior = task.priority;
-        var fleet = this.fleets[prior];
+        var fleet = this.__fleets[prior];
         if (!fleet) {
             // 1.1. create new array for this priority
             fleet = [];
-            this.fleets[prior] = fleet;
+            this.__fleets[prior] = fleet;
             // 1.2. insert the priority in a sorted list
             var index = 0;
-            for (; index < this.priorities.length; ++index) {
-                if (prior < this.priorities[index]) {
+            for (; index < this.__priorities.length; ++index) {
+                if (prior < this.__priorities[index]) {
                     // insert priority before the bigger one
                     break;
                 }
             }
-            this.priorities[index] = prior;
+            this.__priorities[index] = prior;
         }
         // 2. check duplicated task
         for (var i = 0; i < fleet.length; ++i) {
@@ -92,8 +92,8 @@
      */
     Dock.prototype.pop = function () {
         var fleet, ship;
-        for (var i = 0; i < this.priorities.length; ++i) {
-            fleet = this.fleets[this.priorities[i]];
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
             if (!fleet) {
                 continue;
             }
@@ -102,7 +102,7 @@
                 if (ship.getTimestamp() === 0) {
                     // update time and try
                     ship.update();
-                    fleet = fleet.splice(j, 1);
+                    fleet.splice(j, 1);
                     return ship;
                 }
             }
@@ -130,8 +130,8 @@
      */
     Dock.prototype.get = function (sn) {
         var fleet, ship;
-        for (var i = 0; i < this.priorities.length; ++i) {
-            fleet = this.fleets[this.priorities[i]];
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
             if (!fleet) {
                 continue;
             }
@@ -139,7 +139,7 @@
                 ship = fleet[j];
                 if (match_sn(ship.getSN(), sn)) {
                     // just remove it
-                    fleet = fleet.splice(j, 1);
+                    fleet.splice(j, 1);
                     return ship;
                 }
             }
@@ -157,8 +157,8 @@
     Dock.prototype.any = function () {
         var expired = (new Date()).getTime() - StarShip.EXPIRES;
         var fleet, ship;
-        for (var i = 0; i < this.priorities.length; ++i) {
-            fleet = this.fleets[this.priorities[i]];
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
             if (!fleet) {
                 continue;
             }
@@ -176,7 +176,7 @@
                 // retried too many times
                 if (ship.isExpired()) {
                     // task expired, remove it and don't retry
-                    fleet = fleet.splice(j, 1);
+                    fleet.splice(j, 1);
                     return ship;
                 }
             }

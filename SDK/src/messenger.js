@@ -45,15 +45,36 @@
 
     var Messenger = function () {
         Transceiver.call(this);
-        this.delegate = null;
-        this.datasource = null;
-        this.transmitter = null;
+        this.__delegate = null;
+        this.__datasource = null;
+        this.__transmitter = null;
     };
     ns.Class(Messenger, Transceiver, null);
 
     Messenger.prototype.getFacebook = function () {
         return this.getEntityDelegate();
     }
+
+    Messenger.prototype.setDelegate = function (delegate) {
+        this.__delegate = delegate;
+    };
+    Messenger.prototype.getDelegate = function () {
+        return this.__delegate;
+    };
+
+    Messenger.prototype.setDataSource = function (datasource) {
+        this.__datasource = datasource;
+    };
+    Messenger.prototype.getDataSource = function () {
+        return this.__datasource;
+    };
+
+    Messenger.prototype.setTransmitter = function (transmitter) {
+        this.__transmitter = transmitter;
+    };
+    Messenger.prototype.getTransmitter = function () {
+        return this.__transmitter;
+    };
 
     var get_fpu = function (messenger) {
         var cpu = ns.cpu.ContentProcessor.getProcessor(ContentType.FILE);
@@ -78,7 +99,7 @@
         var key = this.getFacebook().getPublicKeyForEncryption(receiver);
         if (key == null) {
             // save this message in a queue waiting receiver's meta/document response
-            this.suspendMessage(iMsg);
+            this.suspendInstantMessage(iMsg);
             //throw new NullPointerException("failed to get encrypt key for receiver: " + receiver);
             return null;
         }
@@ -106,12 +127,6 @@
     //
     //  Interfaces for transmitting Message
     //
-    Messenger.prototype.setTransmitter = function (transmitter) {
-        this.transmitter = transmitter;
-    };
-    Messenger.prototype.getTransmitter = function () {
-        return this.transmitter;
-    };
 
     Messenger.prototype.sendContent = function (sender, receiver, content, callback, priority) {
         return this.getTransmitter().sendContent(sender, receiver, content, callback, priority);
@@ -127,12 +142,6 @@
     //
     //  Interfaces for Station
     //
-    Messenger.prototype.setDelegate = function (delegate) {
-        this.delegate = delegate;
-    };
-    Messenger.prototype.getDelegate = function () {
-        return this.delegate;
-    };
 
     Messenger.prototype.uploadData = function (data, iMsg) {
         return this.getDelegate().uploadData(data, iMsg);
@@ -143,18 +152,12 @@
     };
 
     Messenger.prototype.sendPackage = function (data, handler, priority) {
-        return this.delegate.sendPackage(data, handler, priority);
+        return this.getDelegate().sendPackage(data, handler, priority);
     };
 
     //
     //  Interfaces for Message Storage
     //
-    Messenger.prototype.setDataSource = function (datasource) {
-        this.datasource = datasource;
-    };
-    Messenger.prototype.getDataSource = function () {
-        return this.datasource;
-    };
 
     Messenger.prototype.saveMessage = function (iMsg) {
         return this.getDataSource().saveMessage(iMsg);
@@ -167,41 +170,6 @@
     Messenger.prototype.suspendInstantMessage = function (iMsg) {
         return this.getDataSource().suspendInstantMessage(iMsg);
     };
-
-/*
-
-    Messenger.prototype.select = function (receiver) {
-        var facebook = this.getFacebook();
-        var users = facebook.getLocalUsers();
-        if (!users || users.length === 0) {
-            throw new Error('local users should not be empty');
-        } else if (receiver.isBroadcast()) {
-            // broadcast message can decrypt by anyone,
-            // so just return current user
-            return users[0];
-        }
-        if (receiver.isGroup()) {
-            // group message (recipient not designated)
-            for (var i = 0; i < users.length; ++i) {
-                if (facebook.existsMember(users[i].identifier, receiver)) {
-                    // set this item to be current user?
-                    return users[i];
-                }
-            }
-        } else {
-            // 1. personal message
-            // 2. split group message
-            for (var j = 0; j < users.length; ++j) {
-                if (receiver.equals(users[j].identifier)) {
-                    // set this item to be current user?
-                    return users[j];
-                }
-            }
-        }
-        return null;
-    };
-
- */
 
     //-------- namespace --------
     ns.Messenger = Messenger;

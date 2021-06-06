@@ -30,8 +30,8 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-//! require 'namespace.js'
+//! require 'notification.js'
+//! require 'observer.js'
 
 (function (ns) {
     "use strict";
@@ -43,7 +43,7 @@
      *  Notification center
      */
     var Center = function () {
-        this.observerMap = {};
+        this.__observers = {};
     };
     DIMP.Class(Center, DIMP.type.Object, null);
 
@@ -54,7 +54,7 @@
      * @param {String} name
      */
     Center.prototype.addObserver = function (observer, name) {
-        var list = this.observerMap[name];
+        var list = this.__observers[name];
         if (list) {
             if (list.indexOf(observer) >= 0) {
                 // already exists
@@ -62,7 +62,7 @@
             }
         } else {
             list = [];
-            this.observerMap[name] = list;
+            this.__observers[name] = list;
         }
         list.push(observer);
     };
@@ -76,13 +76,13 @@
     Center.prototype.removeObserver = function (observer, name) {
         if (name) {
             // Remove observer for notification name
-            var list = this.observerMap[name];
+            var list = this.__observers[name];
             if (list/* instanceof Array*/) {
                 DIMP.type.Arrays.remove(list, observer);
             }
         } else {
             // Remove observer from notification center, no mather what names
-            var names = Object.keys(this.observerMap);
+            var names = Object.keys(this.__observers);
             for (var i = 0; i < names.length; ++i) {
                 this.removeObserver(observer, names[i]);
             }

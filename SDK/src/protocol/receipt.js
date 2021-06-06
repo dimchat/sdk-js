@@ -74,11 +74,11 @@
             // new ReceiptCommand(text);
             Command.call(this, Command.RECEIPT);
             this.setMessage(arguments[0]);
-            this.envelope = null;
+            this.__envelope = null;
         } else {
             // new ReceiptCommand(map);
             Command.call(this, arguments[0]);
-            this.envelope = null;
+            this.__envelope = null;
         }
     };
     ns.Class(ReceiptCommand, Command, null);
@@ -98,7 +98,7 @@
     };
 
     ReceiptCommand.prototype.getEnvelope = function () {
-        if (!this.envelope) {
+        if (!this.__envelope) {
             var env = this.getValue('envelope');
             if (!env) {
                 var sender = this.getValue('sender');
@@ -107,9 +107,9 @@
                     env = this.getMap();
                 }
             }
-            this.envelope = Envelope.parse(env);
+            this.__envelope = Envelope.parse(env);
         }
-        return this.envelope;
+        return this.__envelope;
     };
     ReceiptCommand.prototype.setEnvelope = function (env) {
         this.setValue('envelope', null);
@@ -125,7 +125,7 @@
                 this.setValue('group', group);
             }
         }
-        this.envelope = env;
+        this.__envelope = env;
     };
 
     ReceiptCommand.prototype.getSignature = function () {

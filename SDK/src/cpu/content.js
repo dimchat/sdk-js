@@ -44,19 +44,19 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var ContentProcessor = function () {
-        this.messenger = null;
+        this.__messenger = null;
     };
     ns.Class(ContentProcessor, ns.type.Object, null);
 
     ContentProcessor.prototype.getMessenger = function () {
-        return this.messenger;
+        return this.__messenger;
     };
     ContentProcessor.prototype.setMessenger = function (messenger) {
-        this.messenger = messenger;
+        this.__messenger = messenger;
     };
 
     ContentProcessor.prototype.getFacebook = function () {
-        return this.messenger.getFacebook();
+        return this.getMessenger().getFacebook();
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -86,7 +86,7 @@
     /**
      *  Get content processor with content type
      *
-     * @param {Content|ContentType} info
+     * @param {Content|ContentType|uint} info
      * @returns {ContentProcessor}
      */
     ContentProcessor.getProcessor = function (info) {

@@ -8,53 +8,6 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
-    var ID = ns.protocol.ID;
-
-    var Immortals = ns.Immortals;
-
-    var immortals;
-
-    var test_immortals = function () {
-
-        immortals = new Immortals();
-
-        var moki = Immortals.MOKI;
-        var hulk = Immortals.HULK;
-
-        var moky = ID.parse('moky@4DnqXWdTV8wuZgfqSCX9GjE2kNq7HJrUgQ');
-
-        log('moky ID: ' + moky + ' (' + moky.getType() + ')');
-        log('moki ID: ' + moki + ' (' + moki.getType() + ')');
-        log('hulk ID: ' + hulk + ' (' + hulk.getType() + ')');
-
-        var moki_meta = immortals.getMeta(moki);
-        var hulk_meta = immortals.getMeta(hulk);
-
-        var moki_sk = immortals.getPrivateKeyForSignature(moki);
-        var hulk_sk = immortals.getPrivateKeyForSignature(hulk);
-
-        var moki_pk = moki_meta.key;
-        var hulk_pk = hulk_meta.key;
-
-        assert(moki_pk.matches(moki_sk) === true, 'keys not match');
-        assert(hulk_pk.matches(hulk_sk) === true, 'keys not match');
-
-        var str = 'moky';
-        var data;
-        var signature;
-
-        data = ns.format.UTF8.encode(str);
-        signature = moki_sk.sign(data);
-        assert(moki_pk.verify(data, signature) === true, 'verify error');
-
-    };
-    plugins_tests.push(test_immortals);
-
-}(DIMP);
-
-!function (ns) {
-    'use strict';
-
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Meta = ns.protocol.Meta;
@@ -87,7 +40,7 @@ plugins_tests = [];
 
         var ciphertext;
         for (var i = 0; i < 10000; ++i) {
-            ciphertext = meta.key.encrypt(json);
+            ciphertext = meta.getKey().encrypt(json);
             if (ciphertext.length !== 128) {
                 throw new Error('encrypt error');
             }

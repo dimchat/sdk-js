@@ -3,240 +3,29 @@
  *  (Interfaces for network connection)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      May. 5, 2020
- * @copyright (c) 2020 Albert Moky
+ * @date      June. 6, 2021
+ * @copyright (c) 2021 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
- */
+ */;
+if (typeof LocalNotificationService !== "object") {
+    LocalNotificationService = {}
+}
 if (typeof FiniteStateMachine !== "object") {
     FiniteStateMachine = {}
 }
-if (typeof StarGate !== "object") {
-    StarGate = {}
-}! function(sg, fsm) {
-    if (typeof StarGate.extensions !== "object") {
-        sg.extensions = {}
-    }
-    if (typeof StarGate.network !== "object") {
-        sg.network = {}
-    }
-    DIMP.Namespace(fsm);
-    DIMP.Namespace(sg);
-    DIMP.Namespace(sg.extensions);
-    DIMP.Namespace(sg.network);
-    sg.register("extensions");
-    sg.register("network")
-}(StarGate, FiniteStateMachine);
-! function(ns) {
-    var Delegate = function() {};
-    DIMP.Interface(Delegate, null);
-    Delegate.prototype.enterState = function(state, machine) {
-        console.assert(false, "implement me!")
-    };
-    Delegate.prototype.exitState = function(state, machine) {
-        console.assert(false, "implement me!")
-    };
-    Delegate.prototype.pauseState = function(state, machine) {};
-    Delegate.prototype.resumeState = function(state, machine) {};
-    ns.StateDelegate = Delegate;
-    ns.register("StateDelegate")
-}(FiniteStateMachine);
-! function(ns) {
-    var Transition = function(targetStateName) {
-        this.target = targetStateName
-    };
-    DIMP.Class(Transition, DIMP.type.Object, null);
-    Transition.prototype.evaluate = function(machine) {
-        console.assert(false, "implement me!");
-        return false
-    };
-    ns.Transition = Transition;
-    ns.register("Transition")
-}(FiniteStateMachine);
-! function(ns) {
-    var State = function() {
-        this.transitions = []
-    };
-    DIMP.Class(State, DIMP.type.Object, null);
-    State.prototype.addTransition = function(transition) {
-        if (this.transitions.indexOf(transition) >= 0) {
-            throw Error("transition exists: " + transition)
-        }
-        this.transitions.push(transition)
-    };
-    State.prototype.tick = function(machine) {
-        var transition;
-        for (var i = 0; i < this.transitions.length; ++i) {
-            transition = this.transitions[i];
-            if (transition.evaluate(machine)) {
-                machine.changeState(transition.target);
-                break
-            }
-        }
-    };
-    State.prototype.onEnter = function(machine) {
-        console.assert(false, "implement me!")
-    };
-    State.prototype.onExit = function(machine) {
-        console.assert(false, "implement me!")
-    };
-    State.prototype.onPause = function(machine) {};
-    State.prototype.onResume = function(machine) {};
-    ns.State = State;
-    ns.register("State")
-}(FiniteStateMachine);
-! function(ns) {
-    var Status = DIMP.type.Enum(null, {
-        Stopped: 0,
-        Running: 1,
-        Paused: 2
-    });
-    var Machine = function(defaultStateName) {
-        this.defaultStateName = defaultStateName ? defaultStateName : "default";
-        this.currentState = null;
-        this.stateMap = {};
-        this.status = Status.Stopped;
-        this.delegate = null
-    };
-    DIMP.Class(Machine, DIMP.type.Object, null);
-    Machine.prototype.addState = function(state, name) {
-        this.stateMap[name] = state
-    };
-    Machine.prototype.changeState = function(name) {
-        var state = this.currentState;
-        if (state) {
-            this.delegate.exitState(state, this);
-            state.onExit(this)
-        }
-        state = this.stateMap[name];
-        this.currentState = state;
-        if (state) {
-            this.delegate.enterState(state, this);
-            state.onEnter(this)
-        }
-    };
-    Machine.prototype.isRunning = function() {
-        return this.status.equals(Status.Running)
-    };
-    Machine.prototype.tick = function() {
-        if (this.isRunning()) {
-            this.currentState.tick(this)
-        }
-    };
-    Machine.prototype.start = function() {
-        if (!this.status.equals(Status.Stopped) || this.currentState) {
-            throw Error("FSM start error: " + this.status)
-        }
-        this.changeState(this.defaultStateName);
-        this.status = Status.Running
-    };
-    Machine.prototype.stop = function() {
-        if (this.status.equals(Status.Stopped) || !this.currentState) {
-            throw Error("FSM stop error: " + this.status)
-        }
-        this.status = Status.Stopped;
-        this.changeState(null)
-    };
-    Machine.prototype.pause = function() {
-        if (!this.status.equals(Status.Running) || !this.currentState) {
-            throw Error("FSM pause error: " + this.status)
-        }
-        this.delegate.pauseState(this.currentState, this);
-        this.status = Status.Paused;
-        this.currentState.onPause(this)
-    };
-    Machine.prototype.resume = function() {
-        if (!this.status.equals(Status.Paused) || !this.currentState) {
-            throw Error("FSM resume error: " + this.status)
-        }
-        this.delegate.resumeState(this.currentState, this);
-        this.status = Status.Running;
-        this.currentState.onResume(this)
-    };
-    ns.Machine = Machine;
-    ns.register("Machine")
-}(FiniteStateMachine);
-! function(ns) {
-    var Observer = function() {};
-    DIMP.Interface(Observer, null);
-    Observer.prototype.onReceiveNotification = function(notification) {
-        console.assert(false, "implement me!")
-    };
-    ns.Observer = Observer;
-    ns.register("Observer")
-}(StarGate);
-! function(ns) {
-    var Notification = function(name, sender, userInfo) {
-        this.name = name;
-        this.sender = sender;
-        this.userInfo = userInfo
-    };
-    DIMP.Class(Notification, DIMP.type.Object, null);
-    ns.Notification = Notification;
-    ns.register("Notification")
-}(StarGate);
-! function(ns) {
-    var Notification = ns.Notification;
-    var Observer = ns.Observer;
-    var Center = function() {
-        this.observerMap = {}
-    };
-    DIMP.Class(Center, DIMP.type.Object, null);
-    Center.prototype.addObserver = function(observer, name) {
-        var list = this.observerMap[name];
-        if (list) {
-            if (list.indexOf(observer) >= 0) {
-                return
-            }
-        } else {
-            list = [];
-            this.observerMap[name] = list
-        }
-        list.push(observer)
-    };
-    Center.prototype.removeObserver = function(observer, name) {
-        if (name) {
-            var list = this.observerMap[name];
-            if (list) {
-                DIMP.type.Arrays.remove(list, observer)
-            }
-        } else {
-            var names = Object.keys(this.observerMap);
-            for (var i = 0; i < names.length; ++i) {
-                this.removeObserver(observer, names[i])
-            }
-        }
-    };
-    Center.prototype.postNotification = function(notification, sender, userInfo) {
-        if (typeof notification === "string") {
-            notification = new Notification(notification, sender, userInfo)
-        }
-        var observers = this.observerMap[notification.name];
-        if (!observers) {
-            return
-        }
-        var obs;
-        for (var i = 0; i < observers.length; ++i) {
-            obs = observers[i];
-            if (DIMP.Interface.conforms(obs, Observer)) {
-                obs.onReceiveNotification(notification)
-            } else {
-                if (typeof obs === "function") {
-                    obs.call(notification)
-                }
-            }
-        }
-    };
-    var s_notification_center = null;
-    Center.getInstance = function() {
-        if (!s_notification_center) {
-            s_notification_center = new Center()
-        }
-        return s_notification_center
-    };
-    ns.NotificationCenter = Center;
-    ns.register("NotificationCenter")
-}(StarGate);
-! function(ns) {
+if (typeof FileSystem !== "object") {
+    FileSystem = {}
+}
+if (typeof StarTrek !== "object") {
+    StarTrek = {}
+}
+(function(ns) {
+    ns.Namespace(LocalNotificationService);
+    ns.Namespace(FiniteStateMachine);
+    ns.Namespace(FileSystem);
+    ns.Namespace(StarTrek)
+})(DIMP);
+(function(ns) {
     var Storage = function(storage, prefix) {
         this.storage = storage;
         if (prefix) {
@@ -316,204 +105,1330 @@ if (typeof StarGate !== "object") {
     ns.SessionStorage = new Storage(window.sessionStorage, "dim.mem");
     ns.register("LocalStorage");
     ns.register("SessionStorage")
-}(StarGate);
-! function(ns) {
+})(FileSystem);
+(function(ns) {
+    var Notification = function(name, sender, userInfo) {
+        this.name = name;
+        this.sender = sender;
+        this.userInfo = userInfo
+    };
+    DIMP.Class(Notification, DIMP.type.Object, null);
+    ns.Notification = Notification;
+    ns.register("Notification")
+})(LocalNotificationService);
+(function(ns) {
+    var Observer = function() {};
+    DIMP.Interface(Observer, null);
+    Observer.prototype.onReceiveNotification = function(notification) {
+        console.assert(false, "implement me!")
+    };
+    ns.Observer = Observer;
+    ns.register("Observer")
+})(LocalNotificationService);
+(function(ns) {
+    var Notification = ns.Notification;
+    var Observer = ns.Observer;
+    var Center = function() {
+        this.__observers = {}
+    };
+    DIMP.Class(Center, DIMP.type.Object, null);
+    Center.prototype.addObserver = function(observer, name) {
+        var list = this.__observers[name];
+        if (list) {
+            if (list.indexOf(observer) >= 0) {
+                return
+            }
+        } else {
+            list = [];
+            this.__observers[name] = list
+        }
+        list.push(observer)
+    };
+    Center.prototype.removeObserver = function(observer, name) {
+        if (name) {
+            var list = this.__observers[name];
+            if (list) {
+                DIMP.type.Arrays.remove(list, observer)
+            }
+        } else {
+            var names = Object.keys(this.__observers);
+            for (var i = 0; i < names.length; ++i) {
+                this.removeObserver(observer, names[i])
+            }
+        }
+    };
+    Center.prototype.postNotification = function(notification, sender, userInfo) {
+        if (typeof notification === "string") {
+            notification = new Notification(notification, sender, userInfo)
+        }
+        var observers = this.observerMap[notification.name];
+        if (!observers) {
+            return
+        }
+        var obs;
+        for (var i = 0; i < observers.length; ++i) {
+            obs = observers[i];
+            if (DIMP.Interface.conforms(obs, Observer)) {
+                obs.onReceiveNotification(notification)
+            } else {
+                if (typeof obs === "function") {
+                    obs.call(notification)
+                }
+            }
+        }
+    };
+    var s_notification_center = null;
+    Center.getInstance = function() {
+        if (!s_notification_center) {
+            s_notification_center = new Center()
+        }
+        return s_notification_center
+    };
+    ns.NotificationCenter = Center;
+    ns.register("NotificationCenter")
+})(LocalNotificationService);
+(function(ns) {
     var Delegate = function() {};
     DIMP.Interface(Delegate, null);
-    Delegate.prototype.onReceived = function(response, star) {
+    Delegate.prototype.enterState = function(state, machine) {
         console.assert(false, "implement me!")
     };
-    Delegate.prototype.onStatusChanged = function(status, star) {
+    Delegate.prototype.exitState = function(state, machine) {
         console.assert(false, "implement me!")
     };
-    Delegate.prototype.onSent = function(request, error, star) {
+    Delegate.prototype.pauseState = function(state, machine) {};
+    Delegate.prototype.resumeState = function(state, machine) {};
+    ns.StateDelegate = Delegate;
+    ns.register("StateDelegate")
+})(FiniteStateMachine);
+(function(ns) {
+    var Transition = function(targetStateName) {
+        this.target = targetStateName
+    };
+    DIMP.Class(Transition, DIMP.type.Object, null);
+    Transition.prototype.evaluate = function(machine) {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.Transition = Transition;
+    ns.register("Transition")
+})(FiniteStateMachine);
+(function(ns) {
+    var State = function() {
+        this.__transitions = []
+    };
+    DIMP.Class(State, DIMP.type.Object, null);
+    State.prototype.addTransition = function(transition) {
+        if (this.__transitions.indexOf(transition) >= 0) {
+            throw new Error("transition exists: " + transition)
+        }
+        this.__transitions.push(transition)
+    };
+    State.prototype.tick = function(machine) {
+        var transition;
+        for (var i = 0; i < this.__transitions.length; ++i) {
+            transition = this.__transitions[i];
+            if (transition.evaluate(machine)) {
+                machine.changeState(transition.target);
+                break
+            }
+        }
+    };
+    State.prototype.onEnter = function(machine) {
         console.assert(false, "implement me!")
     };
+    State.prototype.onExit = function(machine) {
+        console.assert(false, "implement me!")
+    };
+    State.prototype.onPause = function(machine) {};
+    State.prototype.onResume = function(machine) {};
+    ns.State = State;
+    ns.register("State")
+})(FiniteStateMachine);
+(function(ns) {
     var Status = DIMP.type.Enum(null, {
+        Stopped: 0,
+        Running: 1,
+        Paused: 2
+    });
+    var Machine = function(defaultStateName) {
+        this.__default = defaultStateName ? defaultStateName : "default";
+        this.__current = null;
+        this.__status = Status.Stopped;
+        this.__delegate = null
+    };
+    DIMP.Class(Machine, DIMP.type.Object, null);
+    Machine.prototype.setDelegate = function(delegate) {
+        this.__delegate = delegate
+    };
+    Machine.prototype.getDelegate = function() {
+        return this.__delegate
+    };
+    Machine.prototype.addState = function(state, name) {
+        console.assert(false, "implement me!")
+    };
+    Machine.prototype.getState = function(name) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Machine.prototype.getCurrentState = function() {
+        return this.__current
+    };
+    Machine.prototype.changeState = function(name) {
+        var delegate = this.getDelegate();
+        var oldState = this.getCurrentState();
+        var newState = this.getState(name);
+        if (delegate) {
+            if (oldState) {
+                delegate.exitState(oldState, this)
+            }
+            if (newState) {
+                delegate.enterState(newState, this)
+            }
+        }
+        this.__current = newState;
+        if (oldState) {
+            oldState.onExit(this)
+        }
+        if (newState) {
+            newState.onEnter(this)
+        }
+    };
+    Machine.prototype.start = function() {
+        if (this.__current || !Status.Stopped.equals(this.__status)) {
+            throw new Error("FSM start error: " + this.__status)
+        }
+        this.changeState(this.__default);
+        this.__status = Status.Running
+    };
+    Machine.prototype.stop = function() {
+        if (!this.__current || Status.Stopped.equals(this.__status)) {
+            throw new Error("FSM stop error: " + this.__status)
+        }
+        this.__status = Status.Stopped;
+        this.changeState(null)
+    };
+    Machine.prototype.pause = function() {
+        if (!this.__current || !Status.Running.equals(this.__status)) {
+            throw new Error("FSM pause error: " + this.__status)
+        }
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.pauseState(this.__current, this)
+        }
+        this.__status = Status.Paused;
+        this.__current.onPause(this)
+    };
+    Machine.prototype.resume = function() {
+        if (!this.__current || !Status.Paused.equals(this.__status)) {
+            throw new Error("FSM resume error: " + this.__status)
+        }
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.resumeState(this.__current, this)
+        }
+        this.__status = Status.Running;
+        this.__current.onResume(this)
+    };
+    Machine.prototype.tick = function() {
+        if (this.__current && Status.Running.equals(this.__status)) {
+            this.__current.tick(this)
+        }
+    };
+    ns.Machine = Machine;
+    ns.register("Machine")
+})(FiniteStateMachine);
+(function(ns) {
+    var Machine = ns.Machine;
+    var AutoMachine = function(defaultStateName) {
+        Machine.call(this, defaultStateName);
+        this.__states = {}
+    };
+    DIMP.Class(AutoMachine, Machine, null);
+    AutoMachine.prototype.addState = function(state, name) {
+        this.__states[name] = state
+    };
+    AutoMachine.prototype.getState = function(name) {
+        return this.__states[name]
+    };
+    AutoMachine.prototype.start = function() {
+        Machine.prototype.start.call(this);
+        run(this)
+    };
+    var run = function(machine) {
+        if (machine.getCurrentState()) {
+            machine.tick();
+            setTimeout(function() {
+                run(machine)
+            }, machine.idle())
+        }
+    };
+    AutoMachine.prototype.idle = function() {
+        return 200
+    };
+    ns.AutoMachine = AutoMachine;
+    ns.register("AutoMachine")
+})(FiniteStateMachine);
+(function(ns) {
+    var Handler = function() {};
+    DIMP.Interface(Handler, null);
+    Handler.prototype.setup = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Handler.prototype.handle = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Handler.prototype.finish = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.Handler = Handler;
+    ns.register("Handler")
+})(StarTrek);
+(function(ns) {
+    var Processor = function() {};
+    DIMP.Interface(Processor, null);
+    Processor.prototype.process = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.Processor = Processor;
+    ns.register("Processor")
+})(StarTrek);
+(function(ns) {
+    var Handler = ns.Handler;
+    var Processor = ns.Processor;
+    var STAGE_SETTING = 0;
+    var STAGE_RUNNING = 1;
+    var STAGE_CLOSING = 2;
+    var STAGE_STOPPED = 3;
+    var Runner = function() {
+        this.__running = false;
+        this.__stage = STAGE_SETTING
+    };
+    DIMP.Class(Runner, null, [Handler, Processor]);
+    Runner.prototype.isRunning = function() {
+        return this.__running
+    };
+    Runner.prototype.start = function() {
+        this.__running = true;
+        run(this)
+    };
+    Runner.prototype.stop = function() {
+        this.__running = false
+    };
+    var run = function(runner) {
+        if (runner.isRunning() && runner.run()) {
+            setTimeout(function() {
+                run(runner)
+            }, runner.idle())
+        }
+    };
+    Runner.prototype.idle = function() {
+        return 8
+    };
+    Runner.prototype.run = function() {
+        if (this.__stage === STAGE_SETTING) {
+            if (this.setup()) {
+                return true
+            } else {
+                this.__stage = STAGE_RUNNING
+            }
+        }
+        if (this.__stage === STAGE_RUNNING) {
+            try {
+                if (this.handle()) {
+                    return true
+                } else {
+                    this.__stage = STAGE_CLOSING
+                }
+            } catch (e) {
+                this.__stage = STAGE_CLOSING
+            }
+        }
+        if (this.__stage === STAGE_CLOSING) {
+            if (this.finish()) {
+                return true
+            } else {
+                this.__stage = STAGE_STOPPED
+            }
+        }
+        this.__running = false;
+        return false
+    };
+    Runner.prototype.setup = function() {};
+    Runner.prototype.handle = function() {
+        while (this.isRunning() && this.process()) {}
+        return this.isRunning()
+    };
+    Runner.prototype.finish = function() {};
+    ns.Runner = Runner;
+    ns.register("Runner")
+})(StarTrek);
+(function(ns) {
+    var Ship = function() {};
+    DIMP.Interface(Ship, null);
+    Ship.prototype.getPackage = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Ship.prototype.getSN = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Ship.prototype.getPayload = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    var ShipDelegate = function() {};
+    DIMP.Interface(ShipDelegate, null);
+    ShipDelegate.prototype.onShipSent = function(ship, error) {
+        console.assert(false, "implement me!")
+    };
+    Ship.Delegate = ShipDelegate;
+    ns.Ship = Ship;
+    ns.register("Ship")
+})(StarTrek);
+(function(ns) {
+    var Ship = ns.Ship;
+    var StarShip = function(priority, delegate) {
+        this.priority = priority;
+        this.__delegate = delegate;
+        this.__timestamp = 0;
+        this.__retries = -1
+    };
+    DIMP.Class(StarShip, null, [Ship]);
+    StarShip.EXPIRES = 120 * 1000;
+    StarShip.RETRIES = 2;
+    StarShip.URGENT = -1;
+    StarShip.NORMAL = 0;
+    StarShip.SLOWER = 1;
+    StarShip.prototype.getDelegate = function() {
+        return this.__delegate
+    };
+    StarShip.prototype.getTimestamp = function() {
+        return this.__timestamp
+    };
+    StarShip.prototype.getRetries = function() {
+        return this.__retries
+    };
+    StarShip.prototype.isExpired = function() {
+        var now = new Date();
+        return now.getTime() > this.__timestamp + StarShip.EXPIRES * (StarShip.RETRIES + 2)
+    };
+    StarShip.prototype.update = function() {
+        this.__timestamp = (new Date()).getTime();
+        this.__retries += 1
+    };
+    ns.StarShip = StarShip;
+    ns.register("StarShip")
+})(StarTrek);
+(function(ns) {
+    var StarShip = ns.StarShip;
+    var Dock = function() {
+        this.__priorities = [];
+        this.__fleets = {}
+    };
+    DIMP.Class(Dock, null);
+    Dock.prototype.put = function(task) {
+        var prior = task.priority;
+        var fleet = this.__fleets[prior];
+        if (!fleet) {
+            fleet = [];
+            this.__fleets[prior] = fleet;
+            var index = 0;
+            for (; index < this.__priorities.length; ++index) {
+                if (prior < this.__priorities[index]) {
+                    break
+                }
+            }
+            this.__priorities[index] = prior
+        }
+        for (var i = 0; i < fleet.length; ++i) {
+            if (fleet[i] === task) {
+                return false
+            }
+        }
+        fleet.push(task);
+        return true
+    };
+    Dock.prototype.pop = function() {
+        var fleet, ship;
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
+            if (!fleet) {
+                continue
+            }
+            for (var j = 0; j < fleet.length; ++j) {
+                ship = fleet[j];
+                if (ship.getTimestamp() === 0) {
+                    ship.update();
+                    fleet.splice(j, 1);
+                    return ship
+                }
+            }
+        }
+        return null
+    };
+    var match_sn = function(sn1, sn2) {
+        if (sn1.length !== sn2.length) {
+            return false
+        }
+        for (var i = 0; i < sn1.length; ++i) {
+            if (sn1[i] !== sn2[i]) {
+                return false
+            }
+        }
+        return true
+    };
+    Dock.prototype.get = function(sn) {
+        var fleet, ship;
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
+            if (!fleet) {
+                continue
+            }
+            for (var j = 0; j < fleet.length; ++j) {
+                ship = fleet[j];
+                if (match_sn(ship.getSN(), sn)) {
+                    fleet.splice(j, 1);
+                    return ship
+                }
+            }
+        }
+        return null
+    };
+    Dock.prototype.any = function() {
+        var expired = (new Date()).getTime() - StarShip.EXPIRES;
+        var fleet, ship;
+        for (var i = 0; i < this.__priorities.length; ++i) {
+            fleet = this.__fleets[this.__priorities[i]];
+            if (!fleet) {
+                continue
+            }
+            for (var j = 0; j < fleet.length; ++j) {
+                ship = fleet[j];
+                if (ship.getTimestamp() > expired) {
+                    continue
+                }
+                if (ship.getRetries() < StarShip.RETRIES) {
+                    ship.update();
+                    return ship
+                }
+                if (ship.isExpired()) {
+                    fleet.splice(j, 1);
+                    return ship
+                }
+            }
+        }
+        return null
+    };
+    ns.Dock = Dock;
+    ns.register("Dock")
+})(StarTrek);
+(function(ns) {
+    var Handler = ns.Handler;
+    var Processor = ns.Processor;
+    var Docker = function() {};
+    DIMP.Interface(Docker, [Handler, Processor]);
+    Docker.prototype.pack = function(payload, priority, delegate) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    ns.Docker = Docker;
+    ns.register("Docker")
+})(StarTrek);
+(function(ns) {
+    var Docker = ns.Docker;
+    var Runner = ns.Runner;
+    var StarDocker = function(gate) {
+        Runner.call(this);
+        this.__gate = gate;
+        this.__heartbeatExpired = (new Date()).getTime() + 2000
+    };
+    DIMP.Class(StarDocker, Runner, [Docker]);
+    StarDocker.prototype.getGate = function() {
+        return this.__gate
+    };
+    StarDocker.prototype.process = function() {
+        var gate = this.getGate();
+        var income = this.getIncomeShip();
+        if (income) {
+            this.removeLinkedShip(income);
+            var res = this.processIncomeShip(income);
+            if (res) {
+                gate.sendShip(res)
+            }
+        }
+        var delegate;
+        var outgo = this.getOutgoShip();
+        if (outgo) {
+            if (outgo.isExpired()) {
+                delegate = outgo.getDelegate();
+                if (delegate) {
+                    delegate.onShipSent(outgo, new Error("Request timeout"))
+                }
+            } else {
+                if (!gate.send(outgo.getPackage())) {
+                    delegate = outgo.getDelegate();
+                    if (delegate) {
+                        delegate.onShipSent(outgo, new Error("Connection error"))
+                    }
+                }
+            }
+        }
+        if (income || outgo) {
+            return true
+        } else {
+            var now = (new Date()).getTime();
+            if (now > this.__heartbeatExpired) {
+                if (gate.isExpired()) {
+                    var beat = this.getHeartbeat();
+                    if (beat) {
+                        gate.parkShip(beat)
+                    }
+                }
+                this.__heartbeatExpired = now + 2000
+            }
+            return false
+        }
+    };
+    StarDocker.prototype.getIncomeShip = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    StarDocker.prototype.processIncomeShip = function(income) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    StarDocker.prototype.removeLinkedShip = function(income) {
+        var linked = this.getOutgoShip(income);
+        if (linked) {
+            var delegate = linked.getDelegate();
+            if (delegate) {
+                delegate.onShipSent(linked, null)
+            }
+        }
+    };
+    StarDocker.prototype.getOutgoShip = function(income) {
+        var gate = this.getGate();
+        if (income) {
+            return gate.pullShip(income.getSN())
+        } else {
+            var outgo = gate.pullShip("*");
+            if (!outgo) {
+                outgo = gate.anyShip()
+            }
+            return outgo
+        }
+    };
+    StarDocker.prototype.getHeartbeat = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    ns.StarDocker = StarDocker;
+    ns.register("StarDocker")
+})(StarTrek);
+(function(ns) {
+    var Gate = function() {};
+    DIMP.Interface(Gate, null);
+    Gate.prototype.getDelegate = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Gate.prototype.isExpired = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Gate.prototype.sendPayload = function(payload, priority, delegate) {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Gate.prototype.sendShip = function(outgo) {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Gate.prototype.send = function(pack) {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Gate.prototype.receive = function(length, remove) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Gate.prototype.parkShip = function(outgo) {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Gate.prototype.pullShip = function(sn) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Gate.prototype.anyShip = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Gate.prototype.getStatus = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    var GateStatus = DIMP.type.Enum(null, {
         Error: -1,
         Init: 0,
         Connecting: 1,
         Connected: 2
     });
-    ns.StarDelegate = Delegate;
-    ns.StarStatus = Status;
-    ns.register("StarDelegate");
-    ns.register("StarStatus")
-}(StarGate);
-! function(ns) {
-    var Star = function() {};
-    DIMP.Interface(Star, null);
-    Star.prototype.getStatus = function() {
+    var GateDelegate = function() {};
+    DIMP.Interface(GateDelegate, null);
+    GateDelegate.prototype.onGateStatusChanged = function(gate, oldStatus, newStatus) {
+        console.assert(false, "implement me!")
+    };
+    GateDelegate.prototype.onGateReceived = function(gate, ship) {
         console.assert(false, "implement me!");
         return null
     };
-    Star.prototype.launch = function(options) {
-        console.assert(false, "implement me!")
+    Gate.Status = GateStatus;
+    Gate.Delegate = GateDelegate;
+    ns.Gate = Gate;
+    ns.register("Gate")
+})(StarTrek);
+(function(ns) {
+    var Runner = ns.Runner;
+    var Gate = ns.Gate;
+    var Dock = ns.Dock;
+    var StarShip = ns.StarShip;
+    var StarGate = function() {
+        Runner.call(this);
+        this.dock = this.createDock();
+        this.__docker = null;
+        this.__delegate = null
     };
-    Star.prototype.terminate = function() {
-        console.assert(false, "implement me!")
+    DIMP.Class(StarGate, Runner, [Gate]);
+    StarGate.prototype.createDock = function() {
+        return new Dock()
     };
-    Star.prototype.pause = function(options) {};
-    Star.prototype.resume = function(options) {};
-    Star.prototype.send = function(payload, delegate) {
-        console.assert(false, "implement me!")
+    StarGate.prototype.createDocker = function() {
+        console.assert(false, "implement me!");
+        return null
     };
-    ns.Star = Star;
-    ns.register("Star")
-}(StarGate);
-! function(ns) {
-    var Task = function(data, delegate) {
-        this.data = data;
-        this.delegate = delegate;
-        this.star = null
-    };
-    DIMP.Class(Task, DIMP.type.Object, null);
-    Task.prototype.onResponse = function(data) {
-        this.delegate.onReceived(data)
-    };
-    Task.prototype.onSuccess = function() {
-        this.delegate.onSent(this.data, null, this.star)
-    };
-    Task.prototype.onError = function(error) {
-        this.delegate.onSent(this.data, error, this.star)
-    };
-    ns.extensions.Task = Task;
-    ns.extensions.register("Task")
-}(StarGate);
-! function(ns) {
-    var Task = ns.extensions.Task;
-    var StarStatus = ns.StarStatus;
-    var Star = ns.Star;
-    var Fence = function(delegate) {
-        this.delegate = delegate;
-        this.status = StarStatus.Init;
-        this.waitingList = []
-    };
-    DIMP.Class(Fence, DIMP.type.Object, [Star]);
-    Fence.prototype.onReceived = function(data) {
-        this.delegate.onReceived(data, this)
-    };
-    Fence.prototype.getStatus = function() {
-        return this.status
-    };
-    Fence.prototype.setStatus = function(status) {
-        if (status.equals(this.status)) {
-            return
+    StarGate.prototype.getDocker = function() {
+        if (!this.__docker) {
+            this.__docker = this.createDocker()
         }
-        this.delegate.onStatusChanged(status, this);
-        this.status = status
+        return this.__docker
     };
-    Fence.prototype.getTask = function() {
-        if (this.waitingList.length === 0) {
-            return null
+    StarGate.prototype.setDocker = function(worker) {
+        this.__docker = worker
+    };
+    StarGate.prototype.getDelegate = function() {
+        return this.__delegate
+    };
+    StarGate.prototype.setDelegate = function(delegate) {
+        this.__delegate = delegate
+    };
+    StarGate.prototype.sendPayload = function(payload, priority, delegate) {
+        var worker = this.getDocker();
+        if (worker) {
+            var outgo = worker.pack(payload, priority, delegate);
+            return this.sendShip(outgo)
+        } else {
+            return false
         }
-        return this.waitingList.shift()
     };
-    Fence.prototype.connect = function(host, port) {
-        console.assert(false, "implement me!")
-    };
-    Fence.prototype.disconnect = function() {
-        console.assert(false, "implement me!")
-    };
-    Fence.prototype.isConnected = function() {
-        return this.status.equals(StarStatus.Connected)
-    };
-    Fence.prototype.onConnected = function() {
-        this.setStatus(StarStatus.Connected)
-    };
-    Fence.prototype.onClosed = function() {
-        this.setStatus(StarStatus.Init)
-    };
-    Fence.prototype.onError = function(error) {
-        this.setStatus(StarStatus.Error)
-    };
-    Fence.prototype.onReceived = function(data) {
-        this.delegate.onReceived(data, this)
-    };
-    Fence.prototype.launch = function(options) {
-        this.disconnect();
-        this.setStatus(StarStatus.Connecting);
-        var host = options["host"];
-        var port = options["port"];
-        this.connect(host, port)
-    };
-    Fence.prototype.terminate = function() {
-        this.disconnect();
-        this.setStatus(StarStatus.Init)
-    };
-    Fence.prototype.send = function(data, delegate) {
-        var task = new Task(data, delegate);
-        task.star = this;
-        this.waitingList.push(task)
-    };
-    ns.extensions.Fence = Fence;
-    ns.extensions.register("Fence")
-}(StarGate);
-! function(ns) {
-    var Fence = ns.extensions.Fence;
-    var SocketClient = function(delegate) {
-        Fence.call(this, delegate);
-        this.ws = null
-    };
-    DIMP.Class(SocketClient, Fence, null);
-    SocketClient.prototype.connect = function(host, port) {
-        var protocol = "ws";
-        if ("https" === window.location.protocol.split(":")[0]) {
-            protocol = "wss"
+    StarGate.prototype.sendShip = function(outgo) {
+        if (!this.getStatus().equals(Gate.Status.Connected)) {
+            return false
+        } else {
+            if (outgo.priority > StarShip.URGENT) {
+                return this.parkShip(outgo)
+            } else {
+                return this.send(outgo.getPackage())
+            }
         }
-        var url = protocol + "://" + host + ":" + port;
+    };
+    StarGate.prototype.parkShip = function(outgo) {
+        return this.dock.put(outgo)
+    };
+    StarGate.prototype.pullShip = function(sn) {
+        if (sn === "*") {
+            return this.dock.pop()
+        } else {
+            return this.dock.get(sn)
+        }
+    };
+    StarGate.prototype.anyShip = function() {
+        return this.dock.any()
+    };
+    StarGate.prototype.setup = function() {
+        var docker = this.getDocker();
+        if (docker) {
+            return docker.setup()
+        } else {
+            return true
+        }
+    };
+    StarGate.prototype.finish = function() {
+        var docker = this.__docker;
+        if (docker) {
+            return docker.finish()
+        } else {
+            return false
+        }
+    };
+    StarGate.prototype.process = function() {
+        var docker = this.__docker;
+        if (docker) {
+            return docker.process()
+        } else {
+            return false
+        }
+    };
+    ns.StarGate = StarGate;
+    ns.register("StarGate")
+})(StarTrek);
+(function(ns) {
+    var CachePool = function() {};
+    DIMP.Interface(CachePool, null);
+    CachePool.prototype.push = function(data) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    CachePool.prototype.shift = function(maxLength) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    CachePool.prototype.all = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    CachePool.prototype.length = function() {
+        console.assert(false, "implement me!");
+        return 0
+    };
+    ns.CachePool = CachePool;
+    ns.register("CachePool")
+})(StarTrek);
+(function(ns) {
+    var CachePool = ns.CachePool;
+    var MemoryCache = function() {
+        this.__packages = [];
+        this.__occupied = 0
+    };
+    DIMP.Class(MemoryCache, null, [CachePool]);
+    MemoryCache.prototype.push = function(data) {
+        this.__packages.push(data);
+        this.__occupied += data.length
+    };
+    MemoryCache.prototype.shift = function(maxLength) {
+        var data = this.__packages.shift();
+        if (data.length > maxLength) {
+            this.__packages.unshift(data.subarray(maxLength));
+            data = data.subarray(0, maxLength)
+        }
+        this.__occupied -= data.length;
+        return data
+    };
+    MemoryCache.prototype.all = function() {
+        var size = 0;
+        var i, item;
+        for (i = 0; i < this.__packages.length; ++i) {
+            size += this.__packages[i].length
+        }
+        var data = new Uint8Array(size);
+        var offset = 0;
+        for (i = 0; i < this.__packages.length; ++i) {
+            item = this.__packages[i];
+            data.set(item, offset);
+            offset += item.length
+        }
+        return data
+    };
+    MemoryCache.prototype.length = function() {
+        return this.__occupied
+    };
+    ns.MemoryCache = MemoryCache;
+    ns.register("MemoryCache")
+})(StarTrek);
+(function(ns) {
+    var connect = function(url, proxy) {
         var ws = new WebSocket(url);
-        ws.client = this;
         ws.onopen = function(ev) {
-            this.client.onConnected()
+            proxy.onConnected()
         };
         ws.onclose = function(ev) {
-            this.client.onClosed()
+            proxy.onClosed()
         };
         ws.onerror = function(ev) {
-            var error = new Error("ws error: " + ev);
-            this.client.onError(error)
+            var error = new Error("WebSocket error: " + ev);
+            proxy.onError(error)
         };
         ws.onmessage = function(ev) {
-            this.client.onReceived(ev.data)
+            proxy.onReceived(ev.data)
         };
-        this.ws = ws
+        return ws
     };
-    SocketClient.prototype.disconnect = function() {
-        if (!this.ws) {
+    var build_url = function(host, port) {
+        var scheme = "ws";
+        if ("https" === window.location.protocol.split(":")[0]) {
+            scheme = "wss"
+        }
+        return scheme + "://" + host + ":" + port
+    };
+    var parse_url = function(url) {
+        var pos1 = url.indexOf("://");
+        if (pos1 < 0) {
+            throw new URIError("URl error: " + url)
+        }
+        var scheme = url.substr(0, pos1);
+        var host, port;
+        pos1 += 3;
+        var pos2 = url.indexOf("/", pos1 + 4);
+        if (pos2 > pos1) {
+            url = url.substr(0, pos2)
+        }
+        pos2 = url.indexOf(":", pos1 + 4);
+        if (pos2 > pos1) {
+            host = url.substr(pos1, pos2 - pos1);
+            port = parseInt(url.substr(pos2 + 1))
+        } else {
+            host = url.substr(pos1);
+            if (scheme === "ws" || scheme === "http") {
+                port = 80
+            } else {
+                if (scheme === "wss" || scheme === "https") {
+                    port = 443
+                } else {
+                    throw URIError("URL scheme error: " + scheme)
+                }
+            }
+        }
+        return {
+            "scheme": scheme,
+            "host": host,
+            "port": port
+        }
+    };
+    var Socket = function(url) {
+        this.__packages = [];
+        this.__connected = false;
+        if (url) {
+            var info = parse_url(url);
+            this.__host = info["host"];
+            this.__port = info["port"];
+            this.__ws = connect(url, this)
+        } else {
+            this.__host = null;
+            this.__port = null;
+            this.__ws = null
+        }
+    };
+    DIMP.Class(Socket, null);
+    Socket.prototype.getHost = function() {
+        return this.__host
+    };
+    Socket.prototype.getPort = function() {
+        return this.__port
+    };
+    Socket.prototype.connect = function(host, port) {
+        this.close();
+        this.__ws = connect(build_url(host, port), this)
+    };
+    Socket.prototype.close = function() {
+        if (this.__ws) {
+            this.__ws.close();
+            this.__ws = null
+        }
+        this.__connected = false
+    };
+    Socket.prototype.isConnected = function() {
+        return this.__connected
+    };
+    Socket.prototype.onConnected = function() {
+        this.__connected = true
+    };
+    Socket.prototype.onClosed = function() {
+        this.__connected = false
+    };
+    Socket.prototype.onError = function(error) {};
+    Socket.prototype.onReceived = function(data) {
+        this.__packages.push(data)
+    };
+    Socket.prototype.send = function(data) {
+        this.__ws.send(data)
+    };
+    Socket.prototype.receive = function() {
+        if (this.__packages.length > 0) {
+            return this.__packages.shift()
+        } else {
+            return null
+        }
+    };
+    ns.Socket = Socket;
+    ns.register("Socket")
+})(StarTrek);
+(function(ns) {
+    var Connection = function() {};
+    DIMP.Interface(Connection, null);
+    Connection.MAX_CACHE_LENGTH = 65536;
+    Connection.EXPIRES = 16 * 1000;
+    Connection.prototype.send = function(data) {
+        console.assert(false, "implement me!");
+        return 0
+    };
+    Connection.prototype.available = function() {
+        console.assert(false, "implement me!");
+        return 0
+    };
+    Connection.prototype.received = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Connection.prototype.receive = function(maxLength) {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Connection.prototype.getHost = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    Connection.prototype.getPort = function() {
+        console.assert(false, "implement me!");
+        return 0
+    };
+    Connection.prototype.stop = function() {
+        console.assert(false, "implement me!")
+    };
+    Connection.prototype.isRunning = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Connection.prototype.getStatus = function() {
+        console.assert(false, "implement me!");
+        return null
+    };
+    var ConnectionStatus = DIMP.type.Enum(null, {
+        Default: (0),
+        Connecting: (1),
+        Connected: (17),
+        Maintaining: (33),
+        Expired: (34),
+        Error: (136)
+    });
+    var ConnectionDelegate = function() {};
+    DIMP.Interface(ConnectionDelegate, null);
+    ConnectionDelegate.prototype.onConnectionStatusChanged = function(connection, oldStatus, newStatus) {
+        console.assert(false, "implement me!")
+    };
+    ConnectionDelegate.prototype.onConnectionReceivedData = function(connection, data) {
+        console.assert(false, "implement me!")
+    };
+    Connection.Status = ConnectionStatus;
+    Connection.Delegate = ConnectionDelegate;
+    ns.Connection = Connection;
+    ns.register("Connection")
+})(StarTrek);
+(function(ns) {
+    var MemoryCache = ns.MemoryCache;
+    var Connection = ns.Connection;
+    var Runner = ns.Runner;
+    var BaseConnection = function(socket) {
+        Runner.call(this);
+        this._socket = socket;
+        this.__cache = this.createCachePool();
+        this.__delegate = null;
+        this.__status = Connection.Status.Default;
+        this.__lastSentTime = 0;
+        this.__lastReceivedTime = 0
+    };
+    DIMP.Class(BaseConnection, Runner, [Connection]);
+    BaseConnection.prototype.createCachePool = function() {
+        return new MemoryCache()
+    };
+    BaseConnection.prototype.getDelegate = function() {
+        return this.__delegate
+    };
+    BaseConnection.prototype.setDelegate = function(delegate) {
+        this.__delegate = delegate
+    };
+    BaseConnection.prototype.getSocket = function() {
+        if (this.isRunning()) {
+            return this._socket
+        } else {
+            return null
+        }
+    };
+    BaseConnection.prototype.getHost = function() {
+        var sock = this._socket;
+        if (sock) {
+            return sock.getHost()
+        } else {
+            return null
+        }
+    };
+    BaseConnection.prototype.getPort = function() {
+        var sock = this._socket;
+        if (sock) {
+            return sock.getPort()
+        } else {
+            return 0
+        }
+    };
+    BaseConnection.prototype.isRunning = function() {
+        var sock = this._socket;
+        return sock && sock.isConnected()
+    };
+    var write = function(data) {
+        var sock = this.getSocket();
+        if (!sock) {
+            throw Error("socket lost, cannot write data: " + data.length + " byte(s)")
+        }
+        sock.send(data);
+        this.__lastSentTime = (new Date()).getTime();
+        return data.length
+    };
+    var read = function() {
+        var sock = this.getSocket();
+        if (!sock) {
+            throw Error("socket lost, cannot read data")
+        }
+        var data = sock.receive();
+        if (data) {
+            this.__lastReceivedTime = (new Date()).getTime()
+        }
+        return data
+    };
+    var close = function() {
+        var sock = this._socket;
+        if (sock && sock.isConnected()) {
+            sock.close()
+        }
+        this._socket = null
+    };
+    BaseConnection.prototype._receive = function() {
+        try {
+            return read.call(this)
+        } catch (e) {
+            close.call(this);
+            this.setStatus(Connection.Status.Error);
+            return null
+        }
+    };
+    BaseConnection.prototype.send = function(data) {
+        try {
+            return write.call(this, data)
+        } catch (e) {
+            close.call(this);
+            this.setStatus(Connection.Status.Error);
+            return null
+        }
+    };
+    BaseConnection.prototype.available = function() {
+        return this.__cache.length()
+    };
+    BaseConnection.prototype.received = function() {
+        return this.__cache.all()
+    };
+    BaseConnection.prototype.receive = function(maxLength) {
+        return this.__cache.shift(maxLength)
+    };
+    BaseConnection.prototype.getState = function() {
+        var now = new Date();
+        fsm_tick.call(this, now.getTime());
+        return this.__status
+    };
+    BaseConnection.prototype.setStatus = function(newStatus) {
+        var oldStatus = this.__status;
+        if (oldStatus.equals(newStatus)) {
             return
         }
-        this.ws.close();
-        this.ws = null
-    };
-    SocketClient.prototype.onConnected = function() {
-        Fence.prototype.onConnected.call(this);
-        var task;
-        while (true) {
-            task = this.getTask();
-            if (!task) {
-                break
-            }
-            this.ws.send(task.data);
-            if (task.delegate) {
-                task.delegate.onSent(task.data, null, this)
-            }
+        this.__status = newStatus;
+        if (newStatus.equals(Connection.Status.Connected) && !oldStatus.equals(Connection.Status.Maintaining)) {
+            var now = (new Date()).getTime();
+            this.__lastSentTime = now - Connection.EXPIRES - 1;
+            this.__lastReceivedTime = now - Connection.EXPIRES - 1
+        }
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.onConnectionStatusChanged(this, oldStatus, newStatus)
         }
     };
-    SocketClient.prototype.send = function(data, delegate) {
-        if (this.isConnected()) {
-            this.ws.send(data);
-            if (delegate) {
-                delegate.onSent(data, null, this)
-            }
+    BaseConnection.prototype.stop = function() {
+        close.call(this)
+    };
+    BaseConnection.prototype.setup = function() {
+        this.setStatus(Connection.Status.Connecting)
+    };
+    BaseConnection.prototype.finish = function() {
+        close.call(this);
+        this.setStatus(Connection.Status.Default)
+    };
+    BaseConnection.prototype.process = function() {
+        var count = this.__cache.length();
+        if (count >= Connection.MAX_CACHE_LENGTH) {
+            return false
+        }
+        var data = this._receive();
+        if (!data || data.length === 0) {
+            return false
+        }
+        this.__cache.push(data);
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.onConnectionReceivedData(this, data)
+        }
+        return true
+    };
+    BaseConnection.prototype.idle = function() {
+        return 128
+    };
+    var fsm_tick = function(now) {
+        var tick = evaluations[this.__status];
+        if (typeof tick === "function") {
+            tick.call(this, now)
         } else {
-            Fence.prototype.send.call(this, data, delegate)
+            throw new EvalError("connection status error: " + this.__status)
         }
     };
-    ns.extensions.SocketClient = SocketClient;
-    ns.extensions.register("SocketClient")
-}(StarGate);
-! function(ns) {
+    var evaluations = {};
+    evaluations[Connection.Status.Default] = function(now) {
+        if (this.isRunning()) {
+            this.setStatus(Connection.Status.Connecting)
+        }
+    };
+    evaluations[Connection.Status.Connecting] = function(now) {
+        if (!this.isRunning()) {
+            this.setStatus(Connection.Status.Default)
+        } else {
+            if (this.getSocket() != null) {
+                this.setStatus(Connection.Status.Connected)
+            }
+        }
+    };
+    evaluations[Connection.Status.Connected] = function(now) {
+        if (this.getSocket() == null) {
+            this.setStatus(Connection.Status.Error)
+        } else {
+            if (now > this.__lastReceivedTime + Connection.EXPIRES) {
+                this.setStatus(Connection.Status.Expired)
+            }
+        }
+    };
+    evaluations[Connection.Status.Expired] = function(now) {
+        if (this.getSocket() == null) {
+            this.setStatus(Connection.Status.Error)
+        } else {
+            if (now < this.__lastSentTime + Connection.EXPIRES) {
+                this.setStatus(Connection.Status.Maintaining)
+            }
+        }
+    };
+    evaluations[Connection.Status.Maintaining] = function(now) {
+        if (this.getSocket() == null) {
+            this.setStatus(Connection.Status.Error)
+        } else {
+            if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
+                this.setStatus(Connection.Status.Error)
+            } else {
+                if (now < this.__lastReceivedTime + Connection.EXPIRES) {
+                    this.setStatus(Connection.Status.Connected)
+                } else {
+                    if (now > this.__lastSentTime + Connection.EXPIRES) {
+                        this.setStatus(Connection.Status.Expired)
+                    }
+                }
+            }
+        }
+    };
+    evaluations[Connection.Status.Error] = function(now) {
+        if (!this.isRunning()) {
+            this.setStatus(Connection.Status.Default)
+        } else {
+            if (this.getSocket() != null) {
+                this.setStatus(Connection.Status.Connected)
+            }
+        }
+    };
+    ns.BaseConnection = BaseConnection;
+    ns.register("BaseConnection")
+})(StarTrek);
+(function(ns) {
+    var Runner = ns.Runner;
+    var Socket = ns.Socket;
+    var Connection = ns.Connection;
+    var BaseConnection = ns.BaseConnection;
+    var ActiveConnection = function(host, port) {
+        BaseConnection.call(this, null);
+        this.__host = host;
+        this.__port = port;
+        this.__connecting = 0
+    };
+    DIMP.Class(ActiveConnection, BaseConnection);
+    var connect = function() {
+        this.setStatus(Connection.Status.Connecting);
+        try {
+            var sock = new Socket(null);
+            sock.connect(this.getHost(), this.getPort());
+            this._socket = sock;
+            this.setStatus(Connection.Status.Connected);
+            return true
+        } catch (e) {
+            this.setStatus(Connection.Status.Error);
+            return false
+        }
+    };
+    var reconnect = function() {
+        var redo;
+        this.__connecting += 1;
+        try {
+            if (this.__connecting === 1 && !this._socket) {
+                redo = connect.call(this)
+            } else {
+                redo = false
+            }
+        } finally {
+            this.__connecting -= 1
+        }
+        return redo
+    };
+    ActiveConnection.prototype.getSocket = function() {
+        if (this.isRunning()) {
+            if (!this._socket) {
+                reconnect.call(this)
+            }
+            return this._socket
+        } else {
+            return null
+        }
+    };
+    ActiveConnection.prototype.getHost = function() {
+        return this.__host
+    };
+    ActiveConnection.prototype.getPort = function() {
+        return this.__port
+    };
+    ActiveConnection.prototype.isRunning = function() {
+        return Runner.prototype.isRunning.call(this)
+    };
+    ActiveConnection.prototype._receive = function() {
+        var data = BaseConnection.prototype._receive.call(this);
+        if (!data && reconnect.call(this)) {
+            data = BaseConnection.prototype._receive.call(this)
+        }
+        return data
+    };
+    ActiveConnection.prototype.send = function(data) {
+        var res = BaseConnection.prototype.send.call(this, data);
+        if (res < 0 && reconnect.call(this)) {
+            res = BaseConnection.prototype.send.call(this, data)
+        }
+        return res
+    };
+    ns.ActiveConnection = ActiveConnection;
+    ns.register("ActiveConnection")
+})(StarTrek);
+(function(ns) {
     var Host = function(ip, port, data) {
         this.ip = ip;
         this.port = port;
@@ -550,11 +1465,11 @@ if (typeof StarGate !== "object") {
         }
         return array
     };
-    ns.network.Host = Host;
-    ns.network.register("Host")
-}(StarGate);
-! function(ns) {
-    var Host = ns.network.Host;
+    ns.Host = Host;
+    ns.register("Host")
+})(StarTrek);
+(function(ns) {
+    var Host = ns.Host;
     var IPv4 = function(ip, port, data) {
         if (data) {
             if (!ip) {
@@ -571,7 +1486,7 @@ if (typeof StarGate !== "object") {
                     data[index] = parseInt(array[index], 10)
                 }
             } else {
-                throw URIError("IP data empty: " + data + ", " + ip + ", " + port)
+                throw new URIError("IP data empty: " + data + ", " + ip + ", " + port)
             }
         }
         Host.call(this, ip, port, data)
@@ -597,11 +1512,11 @@ if (typeof StarGate !== "object") {
         }
         return new IPv4(ip, port)
     };
-    ns.network.IPv4 = IPv4;
-    ns.network.register("IPv4")
-}(StarGate);
-! function(ns) {
-    var Host = ns.network.Host;
+    ns.IPv4 = IPv4;
+    ns.register("IPv4")
+})(StarTrek);
+(function(ns) {
+    var Host = ns.Host;
     var parse_v4 = function(data, array) {
         var item, index = data.byteLength;
         for (var i = array.length - 1; i >= 0; --i) {
@@ -678,11 +1593,11 @@ if (typeof StarGate !== "object") {
                         data = parse_v6(data, prefix, 6);
                         data = parse_v4(data, array)
                     } else {
-                        throw URIError("IPv6 format error: " + ip)
+                        throw new URIError("IPv6 format error: " + ip)
                     }
                 }
             } else {
-                throw URIError("IP data empty: " + data + ", " + ip + ", " + port)
+                throw new URIError("IP data empty: " + data + ", " + ip + ", " + port)
             }
         }
         Host.call(this, ip, port, data)
@@ -712,6 +1627,6 @@ if (typeof StarGate !== "object") {
         }
         return new IPv6(ip, port)
     };
-    ns.network.IPv6 = IPv6;
-    ns.network.register("IPv6")
-}(StarGate);
+    ns.IPv6 = IPv6;
+    ns.register("IPv6")
+})(StarTrek);

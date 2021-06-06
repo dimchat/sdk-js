@@ -84,7 +84,7 @@
     /**
      *  Send ship carrying payload
      *
-     * @param {StarGate} outgo - outgo ship
+     * @param {StarShip} outgo - outgo ship
      * @return {boolean} false on error
      */
     Gate.prototype.sendShip = function (outgo) {

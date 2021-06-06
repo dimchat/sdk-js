@@ -5,36 +5,40 @@
 //
 sg_tests = [];
 
+var g_variables = {};
+
 !function (ns) {
     'use strict';
 
-    var StarDelegate = ns.StarDelegate;
-    var SocketClient = ns.extensions.SocketClient;
+    var Connection = ns.Connection;
+    var ActiveConnection = ns.ActiveConnection;
+
+    var ConnectionDelegate = function () {
+    };
+    DIMP.Class(ConnectionDelegate, null, [Connection.Delegate]);
+    ConnectionDelegate.prototype.onConnectionStatusChanged = function (connection, oldStatus, newStatus) {
+        console.log('connection status changed: ' + oldStatus + ' -> ' + newStatus);
+    };
+    ConnectionDelegate.prototype.onConnectionReceivedData = function (connection, data) {
+        console.log('connection received data: ' + data.length + ' byte(s)');
+    };
 
     var test_connection = function () {
 
-        var options = {
-            // host: '127.0.0.1',
-            host: '134.175.87.98',
-            port: 9394
-        };
+        var host = '127.0.0.1';
+        // var host = '106.52.25.169';
+        var port = 9394;
 
-        var tasks = [];
-        var item = tasks.pop();
+        var text = 'Hello world!\n';
+        var data = DIMP.format.UTF8.encode(text);
 
-        var delegate = new StarDelegate();
-        delegate.onReceived = function (data, star) {
-            console.log('received data: ' + data);
-        };
-        delegate.onStatusChanged = function (status, star) {
-            console.log('status: ' + status);
-        };
-
-        var client = new SocketClient(delegate);
-        client.launch(options);
-
-        client.send('Hello world!\n');
+        var connection = new ActiveConnection(host, port);
+        connection.start();
+        setTimeout(function () {
+            connection.send(data);
+        }, 2000);
+        g_variables['connection'] = connection;
     };
     sg_tests.push(test_connection);
 
-}(StarGate);
+}(StarTrek);

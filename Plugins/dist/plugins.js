@@ -623,20 +623,20 @@
     var Address = ns.protocol.Address;
     var BTCAddress = function(string, network) {
         str.call(this, string);
-        this.network = network
+        this.__network = network
     };
     ns.Class(BTCAddress, str, [Address]);
     BTCAddress.prototype.getNetwork = function() {
-        return this.network
+        return this.__network
     };
     BTCAddress.prototype.isBroadcast = function() {
         return false
     };
     BTCAddress.prototype.isUser = function() {
-        return NetworkType.isUser(this.network)
+        return NetworkType.isUser(this.__network)
     };
     BTCAddress.prototype.isGroup = function() {
-        return NetworkType.isGroup(this.network)
+        return NetworkType.isGroup(this.__network)
     };
     BTCAddress.generate = function(fingerprint, network) {
         if (network instanceof NetworkType) {
@@ -689,22 +689,47 @@
                 BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
             }
         }
-        this.addresses = {}
+        this.__addresses = {}
     };
     ns.Class(DefaultMeta, BaseMeta, null);
     DefaultMeta.prototype.generateAddress = function(network) {
         if (network instanceof NetworkType) {
             network = network.valueOf()
         }
-        var address = this.addresses[network];
+        var address = this.__addresses[network];
         if (!address && this.isValid()) {
             address = BTCAddress.generate(this.getFingerprint(), network);
-            this.addresses[network] = address
+            this.__addresses[network] = address
         }
         return address
     };
     ns.DefaultMeta = DefaultMeta;
     ns.register("DefaultMeta")
+})(DIMP);
+(function(ns) {
+    var NetworkType = ns.protocol.NetworkType;
+    var BTCAddress = ns.BTCAddress;
+    var BaseMeta = ns.BaseMeta;
+    var BTCMeta = function() {
+        if (arguments.length === 1) {
+            BaseMeta.call(this, arguments[0])
+        } else {
+            if (arguments.length === 4) {
+                BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
+            }
+        }
+        this.__address = null
+    };
+    ns.Class(BTCMeta, BaseMeta, null);
+    BTCMeta.prototype.generateAddress = function(network) {
+        if (!this.__address && this.isValid()) {
+            var fingerprint = this.getKey().getData();
+            this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN)
+        }
+        return this.__address
+    };
+    ns.BTCMeta = BTCMeta;
+    ns.register("BTCMeta")
 })(DIMP);
 (function(ns) {
     var Address = ns.protocol.Address;
@@ -723,15 +748,25 @@
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.DefaultMeta;
+    var BTCMeta = ns.BTCMeta;
     var GeneralMetaFactory = function(type) {
-        this.type = type
+        this.__type = type
     };
     ns.Class(GeneralMetaFactory, null, [Meta.Factory]);
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
-        if (MetaType.MKM.equals(this.type)) {
-            return new DefaultMeta(this.type, key, seed, fingerprint)
+        if (MetaType.MKM.equals(this.__type)) {
+            return new DefaultMeta(this.__type, key, seed, fingerprint)
+        } else {
+            if (MetaType.BTC.equals(this.__type)) {
+                return new BTCMeta(this.__type, key, seed, fingerprint)
+            } else {
+                if (MetaType.ExBTC.equals(this.__type)) {
+                    return new BTCMeta(this.__type, key, seed, fingerprint)
+                } else {
+                    return null
+                }
+            }
         }
-        return null
     };
     GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
         var fingerprint = null;
@@ -744,8 +779,17 @@
         var type = Meta.getType(meta);
         if (MetaType.MKM.equals(type)) {
             return new DefaultMeta(meta)
+        } else {
+            if (MetaType.BTC.equals(type)) {
+                return new BTCMeta(meta)
+            } else {
+                if (MetaType.ExBTC.equals(type)) {
+                    return new BTCMeta(meta)
+                } else {
+                    return null
+                }
+            }
         }
-        return null
     };
     Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM))
 })(DIMP);
@@ -770,11 +814,11 @@
         }
     };
     var GeneralDocumentFactory = function(type) {
-        this.type = type
+        this.__type = type
     };
     ns.Class(GeneralDocumentFactory, null, [Document.Factory]);
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
-        var type = doc_type(this.type, identifier);
+        var type = doc_type(this.__type, identifier);
         if (type === Document.VISA) {
             if (data && signature) {
                 return new BaseVisa(identifier, data, signature)

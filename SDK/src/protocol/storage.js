@@ -73,10 +73,10 @@
             Command.call(this, info);
         }
         // private properties
-        this.data = null;      // encrypted data
-        this.plaintext = null; // decrypted data
-        this.key = null;       // encrypted symmetric key data
-        this.password = null;  // symmetric key for data
+        this.__data = null;      // encrypted data
+        this.__plaintext = null; // decrypted data
+        this.__key = null;       // encrypted symmetric key data
+        this.__password = null;  // symmetric key for data
     };
     ns.Class(StorageCommand, Command, null);
 
@@ -116,13 +116,13 @@
     //      encrypted by a random password before upload
     //
     StorageCommand.prototype.getData = function () {
-        if (!this.data) {
+        if (!this.__data) {
             var base64 = this.getValue('data');
             if (base64) {
-                this.data = ns.format.Base64.decode(base64);
+                this.__data = ns.format.Base64.decode(base64);
             }
         }
-        return this.data;
+        return this.__data;
     };
     StorageCommand.prototype.setData = function (data) {
         var base64 = null;
@@ -130,8 +130,8 @@
             base64 = ns.format.Base64.encode(data);
         }
         this.setValue('data', base64);
-        this.data = data;
-        this.plaintext = null;
+        this.__data = data;
+        this.__plaintext = null;
     };
 
     //
@@ -141,13 +141,13 @@
     //      this should be empty when the storage data is "private_key".
     //
     StorageCommand.prototype.getKey = function () {
-        if (!this.key) {
+        if (!this.__key) {
             var base64 = this.getValue('key');
             if (base64) {
-                this.key = ns.format.Base64.decode(base64);
+                this.__key = ns.format.Base64.decode(base64);
             }
         }
-        return this.key;
+        return this.__key;
     };
     StorageCommand.prototype.setKey = function (data) {
         var base64 = null;
@@ -155,15 +155,15 @@
             base64 = ns.format.Base64.encode(data);
         }
         this.setValue('key', base64);
-        this.key = data;
-        this.password = null;
+        this.__key = data;
+        this.__password = null;
     };
 
     //
     //  Decryption
     //
     StorageCommand.prototype.decrypt = function (key) {
-        if (!this.plaintext) {
+        if (!this.__plaintext) {
             // 1. get password for decrypting data
             var pwd = null;
             if (ns.Interface.conforms(key, PrivateKey)) {
@@ -179,18 +179,18 @@
             }
             // 2. decrypt data with symmetric key
             var data = this.getData();
-            this.plaintext = pwd.decrypt(data);
+            this.__plaintext = pwd.decrypt(data);
         }
-        return this.plaintext;
+        return this.__plaintext;
     };
     StorageCommand.prototype.decryptKey = function (privateKey) {
-        if (!this.password) {
+        if (!this.__password) {
             var key = this.getKey();
             key = privateKey.decrypt(key);
             var dict = ns.format.JSON.decode(key);
-            this.password = SymmetricKey.parse(dict);
+            this.__password = SymmetricKey.parse(dict);
         }
-        return this.password;
+        return this.__password;
     };
 
     //-------- storage command names --------

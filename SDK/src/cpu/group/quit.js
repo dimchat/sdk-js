@@ -68,7 +68,7 @@
         var pos = members.indexOf(sender);
         if (pos > 0) {
             // NOTICE: the first member must be the owner
-            members = members.splice(pos, 1);
+            members.splice(pos, 1);
             facebook.saveMembers(members, group);
         }
 

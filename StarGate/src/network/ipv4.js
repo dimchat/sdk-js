@@ -35,7 +35,7 @@
 (function (ns) {
     "use strict";
 
-    var Host = ns.network.Host;
+    var Host = ns.Host;
 
     //
     //  IPv4
@@ -59,7 +59,7 @@
                 data[index] = parseInt(array[index], 10);
             }
         } else {
-            throw URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
+            throw new URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
         }
         Host.call(this, ip, port, data);
     };
@@ -95,8 +95,8 @@
     };
 
     //-------- namespace --------
-    ns.network.IPv4 = IPv4;
+    ns.IPv4 = IPv4;
 
-    ns.network.register('IPv4');
+    ns.register('IPv4');
 
-})(StarGate);
+})(StarTrek);

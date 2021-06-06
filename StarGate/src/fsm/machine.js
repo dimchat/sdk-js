@@ -51,15 +51,21 @@
      * @constructor
      */
     var Machine = function (defaultStateName) {
-        this.defaultStateName = defaultStateName ?  defaultStateName : 'default';
-        this.currentState = null;
-        this.stateMap = {}; // String -> State
-        this.status = Status.Stopped;
-
-        this.delegate = null;
+        this.__default = defaultStateName ?  defaultStateName : 'default';
+        this.__current = null;
+        this.__status = Status.Stopped;
+        this.__delegate = null;
     };
     DIMP.Class(Machine, DIMP.type.Object, null);
 
+    Machine.prototype.setDelegate = function (delegate) {
+        this.__delegate = delegate;
+    };
+    Machine.prototype.getDelegate = function () {
+        return this.__delegate;
+    };
+
+    // noinspection JSUnusedLocalSymbols
     /**
      *  Add state with name
      *
@@ -67,7 +73,16 @@
      * @param {String} name
      */
     Machine.prototype.addState = function (state, name) {
-        this.stateMap[name] = state;
+        console.assert(false, 'implement me!');
+    };
+    // noinspection JSUnusedLocalSymbols
+    Machine.prototype.getState = function (name) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    Machine.prototype.getCurrentState = function () {
+        return this.__current;
     };
 
     /**
@@ -76,32 +91,29 @@
      * @param {String} name
      */
     Machine.prototype.changeState = function (name) {
-        var state = this.currentState;
-        // exit current state
-        if (state) {
-            this.delegate.exitState(state, this);
-            state.onExit(this);
-        }
-        // get new state by name
-        state = this.stateMap[name];
-        this.currentState = state;
-        // enter new state
-        if (state) {
-            this.delegate.enterState(state, this);
-            state.onEnter(this);
-        }
-    };
+        var delegate = this.getDelegate();
+        var oldState = this.getCurrentState();
+        var newState = this.getState(name);
 
-    Machine.prototype.isRunning = function () {
-        return this.status.equals(Status.Running);
-    };
+        // events before state changed
+        if (delegate) {
+            if (oldState) {
+                delegate.exitState(oldState, this);
+            }
+            if (newState) {
+                delegate.enterState(newState, this);
+            }
+        }
 
-    /**
-     *  Drive the machine running forward
-     */
-    Machine.prototype.tick = function () {
-        if (this.isRunning()) {
-            this.currentState.tick(this);
+        // change state
+        this.__current = newState;
+
+        // events after state changed
+        if (oldState) {
+            oldState.onExit(this);
+        }
+        if (newState) {
+            newState.onEnter(this);
         }
     };
 
@@ -109,38 +121,53 @@
      *  start machine from default state
      */
     Machine.prototype.start = function () {
-        if (!this.status.equals(Status.Stopped) || this.currentState) {
-            throw Error('FSM start error: ' + this.status);
+        if (this.__current || !Status.Stopped.equals(this.__status)) {
+            throw new Error('FSM start error: ' + this.__status);
         }
-        this.changeState(this.defaultStateName);
-        this.status = Status.Running;
+        this.changeState(this.__default);
+        this.__status = Status.Running;
     };
     /**
      *  stop machine and set current state to null
      */
     Machine.prototype.stop = function () {
-        if (this.status.equals(Status.Stopped) || !this.currentState) {
-            throw Error('FSM stop error: ' + this.status);
+        if (!this.__current || Status.Stopped.equals(this.__status)) {
+            throw new Error('FSM stop error: ' + this.__status);
         }
-        this.status = Status.Stopped;
+        this.__status = Status.Stopped;
         this.changeState(null);
     };
 
     Machine.prototype.pause = function () {
-        if (!this.status.equals(Status.Running) || !this.currentState) {
-            throw Error('FSM pause error: ' + this.status);
+        if (!this.__current || !Status.Running.equals(this.__status)) {
+            throw new Error('FSM pause error: ' + this.__status);
         }
-        this.delegate.pauseState(this.currentState, this);
-        this.status = Status.Paused;
-        this.currentState.onPause(this);
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.pauseState(this.__current, this);
+        }
+        this.__status = Status.Paused;
+        this.__current.onPause(this);
     };
     Machine.prototype.resume = function () {
-        if (!this.status.equals(Status.Paused) || !this.currentState) {
-            throw Error('FSM resume error: ' + this.status);
+        if (!this.__current || !Status.Paused.equals(this.__status)) {
+            throw new Error('FSM resume error: ' + this.__status);
         }
-        this.delegate.resumeState(this.currentState, this);
-        this.status = Status.Running;
-        this.currentState.onResume(this);
+        var delegate = this.getDelegate();
+        if (delegate) {
+            delegate.resumeState(this.__current, this);
+        }
+        this.__status = Status.Running;
+        this.__current.onResume(this);
+    };
+
+    /**
+     *  Drive the machine running forward
+     */
+    Machine.prototype.tick = function () {
+        if (this.__current && Status.Running.equals(this.__status)) {
+            this.__current.tick(this);
+        }
     };
 
     //-------- namespace --------

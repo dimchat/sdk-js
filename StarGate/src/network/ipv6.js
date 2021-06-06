@@ -35,7 +35,7 @@
 (function (ns) {
     "use strict";
 
-    var Host = ns.network.Host;
+    var Host = ns.Host;
 
     //
     //  IPv6
@@ -133,10 +133,10 @@
                 data = parse_v6(data, prefix, 6);
                 data = parse_v4(data, array);
             } else {
-                throw URIError('IPv6 format error: ' + ip);
+                throw new URIError('IPv6 format error: ' + ip);
             }
         } else {
-            throw URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
+            throw new URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
         }
         Host.call(this, ip, port, data);
     };
@@ -178,8 +178,8 @@
     };
 
     //-------- namespace --------
-    ns.network.IPv6 = IPv6;
+    ns.IPv6 = IPv6;
 
-    ns.network.register('IPv6');
+    ns.register('IPv6');
 
-})(StarGate);
+})(StarTrek);

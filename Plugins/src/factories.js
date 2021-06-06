@@ -67,22 +67,31 @@
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.DefaultMeta;
+    var BTCMeta = ns.BTCMeta;
 
     /**
      *  Meta factory
      *  ~~~~~~~~~~~~
      */
     var GeneralMetaFactory = function (type) {
-        this.type = type;
+        this.__type = type;
     };
     ns.Class(GeneralMetaFactory, null, [Meta.Factory]);
 
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
-        if (MetaType.MKM.equals(this.type)) {
-            // mKM
-            return new DefaultMeta(this.type, key, seed, fingerprint);
+        if (MetaType.MKM.equals(this.__type)) {
+            // MKM
+            return new DefaultMeta(this.__type, key, seed, fingerprint);
+        } else if (MetaType.BTC.equals(this.__type)) {
+            // BTC
+            return new BTCMeta(this.__type, key, seed, fingerprint);
+        } else if (MetaType.ExBTC.equals(this.__type)) {
+            // ExBTC
+            return new BTCMeta(this.__type, key, seed, fingerprint);
+        } else {
+            // unknown type
+            return null;
         }
-        return null;
     };
 
     GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
@@ -98,8 +107,16 @@
         if (MetaType.MKM.equals(type)) {
             // MKM
             return new DefaultMeta(meta);
+        } else if (MetaType.BTC.equals(type)) {
+            // BTC
+            return new BTCMeta(meta);
+        } else if (MetaType.ExBTC.equals(type)) {
+            // BTC
+            return new BTCMeta(meta);
+        } else {
+            // unknown type
+            return null
         }
-        return null
     };
 
     /**
@@ -137,12 +154,12 @@
      *  ~~~~~~~~~~~~~~~~
      */
     var GeneralDocumentFactory = function (type) {
-        this.type = type;
+        this.__type = type;
     };
     ns.Class(GeneralDocumentFactory, null, [Document.Factory]);
 
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
-        var type = doc_type(this.type, identifier);
+        var type = doc_type(this.__type, identifier);
         if (type === Document.VISA) {
             if (data && signature) {
                 return new BaseVisa(identifier, data, signature)

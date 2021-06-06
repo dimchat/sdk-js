@@ -68,7 +68,7 @@
             if (is_waiting(receiver, fb) || (group && is_waiting(group, fb))) {
                 // NOTICE: the application will query visa automatically,
                 //         save this message in a queue waiting sender's visa response
-                this.getMessenger().suspendMessage(iMsg);
+                this.getMessenger().suspendInstantMessage(iMsg);
                 return null;
             }
         }
@@ -92,7 +92,7 @@
         if (!meta) {
             // NOTICE: the application will query meta automatically,
             //         save this message in a queue waiting sender's meta response
-            this.getMessenger().suspendMessage(rMsg);
+            this.getMessenger().suspendReliableMessage(rMsg);
             return null;
         }
         // [Visa Protocol]

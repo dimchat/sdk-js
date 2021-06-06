@@ -39,7 +39,7 @@
      *  State
      */
     var State = function () {
-        this.transitions = [];
+        this.__transitions = [];
     };
     DIMP.Class(State, DIMP.type.Object, null);
 
@@ -49,10 +49,10 @@
      * @param {Transition} transition
      */
     State.prototype.addTransition = function (transition) {
-        if (this.transitions.indexOf(transition) >= 0) {
-            throw Error('transition exists: ' + transition);
+        if (this.__transitions.indexOf(transition) >= 0) {
+            throw new Error('transition exists: ' + transition);
         }
-        this.transitions.push(transition);
+        this.__transitions.push(transition);
     };
 
     /**
@@ -63,8 +63,8 @@
      */
     State.prototype.tick = function (machine) {
         var transition;
-        for (var i = 0; i < this.transitions.length; ++i) {
-            transition = this.transitions[i];
+        for (var i = 0; i < this.__transitions.length; ++i) {
+            transition = this.__transitions[i];
             if (transition.evaluate(machine)) {
                 // OK
                 machine.changeState(transition.target);

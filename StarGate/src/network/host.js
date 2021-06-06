@@ -112,8 +112,8 @@
     };
 
     //-------- namespace --------
-    ns.network.Host = Host;
+    ns.Host = Host;
 
-    ns.network.register('Host');
+    ns.register('Host');
 
-})(StarGate);
+})(StarTrek);

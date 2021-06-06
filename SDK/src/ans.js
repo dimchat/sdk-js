@@ -88,15 +88,15 @@
             reserved[keywords[i]] = true;
         }
         // init
-        this.reserved = reserved;
-        this.caches = caches;
+        this.__reserved = reserved;
+        this.__caches = caches;
     };
     ns.Class(AddressNameService, ns.type.Object, null);
 
     AddressNameService.KEYWORDS = KEYWORDS;
 
     AddressNameService.prototype.isReserved = function (name) {
-        return this.reserved[name] === true;
+        return this.__reserved[name] === true;
     };
 
     AddressNameService.prototype.cache = function (name, identifier) {
@@ -105,9 +105,9 @@
             return false;
         }
         if (identifier) {
-            this.caches[name] = identifier;
+            this.__caches[name] = identifier;
         } else {
-            delete this.caches[name];
+            delete this.__caches[name];
         }
         return true;
     };
@@ -119,7 +119,7 @@
      * @returns {ID}
      */
     AddressNameService.prototype.getIdentifier = function (name) {
-        return this.caches[name];
+        return this.__caches[name];
     };
 
     /**
@@ -130,11 +130,11 @@
      */
     AddressNameService.prototype.getNames = function (identifier) {
         var array = [];
-        var keys = Object.keys(this.caches);
+        var keys = Object.keys(this.__caches);
         var name;
         for (var i = 0; i < keys.length; ++i) {
             name = keys[i];
-            if (this.caches[name] === identifier) {
+            if (this.__caches[name] === identifier) {
                 array.push(name);
             }
         }

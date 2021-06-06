@@ -27,37 +27,28 @@
 
 //! require <dimp.js>
 
+if (typeof LocalNotificationService !== 'object') {
+    LocalNotificationService = {};
+}
+
 if (typeof FiniteStateMachine !== 'object') {
     FiniteStateMachine = {};
 }
 
-if (typeof LocalNotificationService !== 'object') {
-    LocalNotificationService = {};
+if (typeof FileSystem !== 'object') {
+    FileSystem = {};
 }
 
 if (typeof StarTrek !== 'object') {
     StarTrek = {};
 }
 
-if (typeof StarGate !== 'object') {
-    StarGate = {};
-}
-
 (function (ns) {
     "use strict";
 
-    ns.Namespace(FiniteStateMachine);
     ns.Namespace(LocalNotificationService);
+    ns.Namespace(FiniteStateMachine);
+    ns.Namespace(FileSystem);
     ns.Namespace(StarTrek);
-    ns.Namespace(StarGate);
-
-    //-------- namespace --------
-    if (typeof StarGate.network !== 'object') {
-        StarGate.network = {};
-    }
-
-    ns.Namespace(StarGate.network);
-
-    StarGate.register('network');
 
 })(DIMP);

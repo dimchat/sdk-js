@@ -34,10 +34,10 @@
             if (typeof arguments[0] === "string") {
                 Command.call(this, Command.RECEIPT);
                 this.setMessage(arguments[0]);
-                this.envelope = null
+                this.__envelope = null
             } else {
                 Command.call(this, arguments[0]);
-                this.envelope = null
+                this.__envelope = null
             }
         }
     };
@@ -53,7 +53,7 @@
         this.setValue("message", message)
     };
     ReceiptCommand.prototype.getEnvelope = function() {
-        if (!this.envelope) {
+        if (!this.__envelope) {
             var env = this.getValue("envelope");
             if (!env) {
                 var sender = this.getValue("sender");
@@ -62,9 +62,9 @@
                     env = this.getMap()
                 }
             }
-            this.envelope = Envelope.parse(env)
+            this.__envelope = Envelope.parse(env)
         }
-        return this.envelope
+        return this.__envelope
     };
     ReceiptCommand.prototype.setEnvelope = function(env) {
         this.setValue("envelope", null);
@@ -80,7 +80,7 @@
                 this.setValue("group", group)
             }
         }
-        this.envelope = env
+        this.__envelope = env
     };
     ReceiptCommand.prototype.getSignature = function() {
         var signature = this.getValue("signature");
@@ -259,14 +259,14 @@
     var MuteCommand = function(info) {
         if (arguments.length === 0) {
             Command.call(this, MuteCommand.MUTE);
-            this.list = null
+            this.__list = null
         } else {
             if (arguments[0] instanceof Array) {
                 Command.call(this, MuteCommand.MUTE);
                 this.setBlockCList(arguments[0])
             } else {
                 Command.call(this, arguments[0]);
-                this.list = null
+                this.__list = null
             }
         }
     };
@@ -288,14 +288,14 @@
         }
     };
     MuteCommand.prototype.getMuteCList = function() {
-        if (!this.list) {
-            this.list = MuteCommand.getMuteList(this.getMap())
+        if (!this.__list) {
+            this.__list = MuteCommand.getMuteList(this.getMap())
         }
-        return this.list
+        return this.__list
     };
     MuteCommand.prototype.setMuteCList = function(list) {
         MuteCommand.setMuteList(list, this.getMap());
-        this.list = list
+        this.__list = list
     };
     ns.protocol.MuteCommand = MuteCommand;
     ns.protocol.register("MuteCommand")
@@ -306,14 +306,14 @@
     var BlockCommand = function() {
         if (arguments.length === 0) {
             Command.call(this, BlockCommand.BLOCK);
-            this.list = null
+            this.__list = null
         } else {
             if (arguments[0] instanceof Array) {
                 Command.call(this, BlockCommand.BLOCK);
                 this.setBlockCList(arguments[0])
             } else {
                 Command.call(this, arguments[0]);
-                this.list = null
+                this.__list = null
             }
         }
     };
@@ -335,14 +335,14 @@
         }
     };
     BlockCommand.prototype.getBlockCList = function() {
-        if (!this.list) {
-            this.list = BlockCommand.getBlockList(this.getMap())
+        if (!this.__list) {
+            this.__list = BlockCommand.getBlockList(this.getMap())
         }
-        return this.list
+        return this.__list
     };
     BlockCommand.prototype.setBlockCList = function(list) {
         BlockCommand.setBlockList(list, this.getMap());
-        this.list = list
+        this.__list = list
     };
     ns.protocol.BlockCommand = BlockCommand;
     ns.protocol.register("BlockCommand")
@@ -359,10 +359,10 @@
         } else {
             Command.call(this, info)
         }
-        this.data = null;
-        this.plaintext = null;
-        this.key = null;
-        this.password = null
+        this.__data = null;
+        this.__plaintext = null;
+        this.__key = null;
+        this.__password = null
     };
     ns.Class(StorageCommand, Command, null);
     StorageCommand.prototype.getTitle = function() {
@@ -387,13 +387,13 @@
         }
     };
     StorageCommand.prototype.getData = function() {
-        if (!this.data) {
+        if (!this.__data) {
             var base64 = this.getValue("data");
             if (base64) {
-                this.data = ns.format.Base64.decode(base64)
+                this.__data = ns.format.Base64.decode(base64)
             }
         }
-        return this.data
+        return this.__data
     };
     StorageCommand.prototype.setData = function(data) {
         var base64 = null;
@@ -401,17 +401,17 @@
             base64 = ns.format.Base64.encode(data)
         }
         this.setValue("data", base64);
-        this.data = data;
-        this.plaintext = null
+        this.__data = data;
+        this.__plaintext = null
     };
     StorageCommand.prototype.getKey = function() {
-        if (!this.key) {
+        if (!this.__key) {
             var base64 = this.getValue("key");
             if (base64) {
-                this.key = ns.format.Base64.decode(base64)
+                this.__key = ns.format.Base64.decode(base64)
             }
         }
-        return this.key
+        return this.__key
     };
     StorageCommand.prototype.setKey = function(data) {
         var base64 = null;
@@ -419,11 +419,11 @@
             base64 = ns.format.Base64.encode(data)
         }
         this.setValue("key", base64);
-        this.key = data;
-        this.password = null
+        this.__key = data;
+        this.__password = null
     };
     StorageCommand.prototype.decrypt = function(key) {
-        if (!this.plaintext) {
+        if (!this.__plaintext) {
             var pwd = null;
             if (ns.Interface.conforms(key, PrivateKey)) {
                 pwd = this.decryptKey(key);
@@ -438,18 +438,18 @@
                 }
             }
             var data = this.getData();
-            this.plaintext = pwd.decrypt(data)
+            this.__plaintext = pwd.decrypt(data)
         }
-        return this.plaintext
+        return this.__plaintext
     };
     StorageCommand.prototype.decryptKey = function(privateKey) {
-        if (!this.password) {
+        if (!this.__password) {
             var key = this.getKey();
             key = privateKey.decrypt(key);
             var dict = ns.format.JSON.decode(key);
-            this.password = SymmetricKey.parse(dict)
+            this.__password = SymmetricKey.parse(dict)
         }
-        return this.password
+        return this.__password
     };
     StorageCommand.STORAGE = "storage";
     StorageCommand.CONTACTS = "contacts";
@@ -462,17 +462,17 @@
     var Content = ns.protocol.Content;
     var TextContent = ns.protocol.TextContent;
     var ContentProcessor = function() {
-        this.messenger = null
+        this.__messenger = null
     };
     ns.Class(ContentProcessor, ns.type.Object, null);
     ContentProcessor.prototype.getMessenger = function() {
-        return this.messenger
+        return this.__messenger
     };
     ContentProcessor.prototype.setMessenger = function(messenger) {
-        this.messenger = messenger
+        this.__messenger = messenger
     };
     ContentProcessor.prototype.getFacebook = function() {
-        return this.messenger.getFacebook()
+        return this.getMessenger().getFacebook()
     };
     ContentProcessor.prototype.process = function(content, rMsg) {
         var text = "Content (type: " + content.getType() + ") not support yet!";
@@ -862,7 +862,7 @@
                 continue
             }
             removes.push(item.toString());
-            members = members.splice(pos, 1)
+            members.splice(pos, 1)
         }
         if (removes.length > 0) {
             if (facebook.saveMembers(members, group)) {
@@ -898,7 +898,7 @@
         }
         var pos = members.indexOf(sender);
         if (pos > 0) {
-            members = members.splice(pos, 1);
+            members.splice(pos, 1);
             facebook.saveMembers(members, group)
         }
         return null
@@ -1000,7 +1000,8 @@
             }
         }
         var adds = [];
-        for (i = 0; i < newMembers.length; ++i) {
+        for (i = 0;
+             i < newMembers.length; ++i) {
             item = newMembers[i];
             if (members.indexOf(item) < 0) {
                 adds.push(item.toString())
@@ -1128,35 +1129,35 @@
         for (var i = 0; i < keywords.length; ++i) {
             reserved[keywords[i]] = true
         }
-        this.reserved = reserved;
-        this.caches = caches
+        this.__reserved = reserved;
+        this.__caches = caches
     };
     ns.Class(AddressNameService, ns.type.Object, null);
     AddressNameService.KEYWORDS = KEYWORDS;
     AddressNameService.prototype.isReserved = function(name) {
-        return this.reserved[name] === true
+        return this.__reserved[name] === true
     };
     AddressNameService.prototype.cache = function(name, identifier) {
         if (this.isReserved(name)) {
             return false
         }
         if (identifier) {
-            this.caches[name] = identifier
+            this.__caches[name] = identifier
         } else {
-            delete this.caches[name]
+            delete this.__caches[name]
         }
         return true
     };
     AddressNameService.prototype.getIdentifier = function(name) {
-        return this.caches[name]
+        return this.__caches[name]
     };
     AddressNameService.prototype.getNames = function(identifier) {
         var array = [];
-        var keys = Object.keys(this.caches);
+        var keys = Object.keys(this.__caches);
         var name;
         for (var i = 0; i < keys.length; ++i) {
             name = keys[i];
-            if (this.caches[name] === identifier) {
+            if (this.__caches[name] === identifier) {
                 array.push(name)
             }
         }
@@ -1356,7 +1357,7 @@
         if (!(receiver.isBroadcast() || (group && group.isBroadcast()))) {
             var fb = this.getFacebook();
             if (is_waiting(receiver, fb) || (group && is_waiting(group, fb))) {
-                this.getMessenger().suspendMessage(iMsg);
+                this.getMessenger().suspendInstantMessage(iMsg);
                 return null
             }
         }
@@ -1374,7 +1375,7 @@
             }
         }
         if (!meta) {
-            this.getMessenger().suspendMessage(rMsg);
+            this.getMessenger().suspendReliableMessage(rMsg);
             return null
         }
         var visa = rMsg.getVisa();
@@ -1462,11 +1463,11 @@
     var Transmitter = ns.Transmitter;
     var MessageTransmitter = function(messenger) {
         obj.call(this);
-        this.messenger = messenger
+        this.__messenger = messenger
     };
     ns.Class(MessageTransmitter, obj, [Transmitter]);
     MessageTransmitter.prototype.getMessenger = function() {
-        return this.messenger
+        return this.__messenger
     };
     MessageTransmitter.prototype.getFacebook = function() {
         return this.getMessenger().getFacebook()
@@ -1526,13 +1527,31 @@
     var Transceiver = ns.core.Transceiver;
     var Messenger = function() {
         Transceiver.call(this);
-        this.delegate = null;
-        this.datasource = null;
-        this.transmitter = null
+        this.__delegate = null;
+        this.__datasource = null;
+        this.__transmitter = null
     };
     ns.Class(Messenger, Transceiver, null);
     Messenger.prototype.getFacebook = function() {
         return this.getEntityDelegate()
+    };
+    Messenger.prototype.setDelegate = function(delegate) {
+        this.__delegate = delegate
+    };
+    Messenger.prototype.getDelegate = function() {
+        return this.__delegate
+    };
+    Messenger.prototype.setDataSource = function(datasource) {
+        this.__datasource = datasource
+    };
+    Messenger.prototype.getDataSource = function() {
+        return this.__datasource
+    };
+    Messenger.prototype.setTransmitter = function(transmitter) {
+        this.__transmitter = transmitter
+    };
+    Messenger.prototype.getTransmitter = function() {
+        return this.__transmitter
     };
     var get_fpu = function(messenger) {
         var cpu = ns.cpu.ContentProcessor.getProcessor(ContentType.FILE);
@@ -1549,7 +1568,7 @@
     Messenger.prototype.encryptKey = function(data, receiver, iMsg) {
         var key = this.getFacebook().getPublicKeyForEncryption(receiver);
         if (key == null) {
-            this.suspendMessage(iMsg);
+            this.suspendInstantMessage(iMsg);
             return null
         }
         return Transceiver.prototype.encryptKey.call(this, data, receiver, iMsg)
@@ -1565,12 +1584,6 @@
         }
         return content
     };
-    Messenger.prototype.setTransmitter = function(transmitter) {
-        this.transmitter = transmitter
-    };
-    Messenger.prototype.getTransmitter = function() {
-        return this.transmitter
-    };
     Messenger.prototype.sendContent = function(sender, receiver, content, callback, priority) {
         return this.getTransmitter().sendContent(sender, receiver, content, callback, priority)
     };
@@ -1580,12 +1593,6 @@
     Messenger.prototype.sendReliableMessage = function(rMsg, callback, priority) {
         return this.getTransmitter().sendReliableMessage(rMsg, callback, priority)
     };
-    Messenger.prototype.setDelegate = function(delegate) {
-        this.delegate = delegate
-    };
-    Messenger.prototype.getDelegate = function() {
-        return this.delegate
-    };
     Messenger.prototype.uploadData = function(data, iMsg) {
         return this.getDelegate().uploadData(data, iMsg)
     };
@@ -1593,13 +1600,7 @@
         return this.getDelegate().downloadData(url, iMsg)
     };
     Messenger.prototype.sendPackage = function(data, handler, priority) {
-        return this.delegate.sendPackage(data, handler, priority)
-    };
-    Messenger.prototype.setDataSource = function(datasource) {
-        this.datasource = datasource
-    };
-    Messenger.prototype.getDataSource = function() {
-        return this.datasource
+        return this.getDelegate().sendPackage(data, handler, priority)
     };
     Messenger.prototype.saveMessage = function(iMsg) {
         return this.getDataSource().saveMessage(iMsg)

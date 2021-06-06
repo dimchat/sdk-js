@@ -55,8 +55,8 @@ sdk_tests = [];
     var barrack = new ClientFacebook();
 
     var transceiver = new Messenger();
-    transceiver.cipherKeyDelegate = key_cache;
-    transceiver.entityDelegate = barrack;
+    transceiver.setCipherKeyDelegate(key_cache);
+    transceiver.setEntityDelegate(barrack);
     transceiver.setPacker(new MessagePacker(transceiver));
     transceiver.setProcessor(new MessageProcessor(transceiver));
     transceiver.setTransmitter(new MessageTransmitter(transceiver));
@@ -104,7 +104,7 @@ sdk_tests = [];
         var nMsg = transceiver.decryptMessage(sMsg);
         log('decrypt message: ', nMsg);
         nMsg.setValue('type', null);
-        assert(nMsg.content.equals(iMsg.content) === true, 'decrypt failed');
+        assert(nMsg.getContent().equals(iMsg.getContent()) === true, 'decrypt failed');
     };
     sdk_tests.push(test_messenger);
 

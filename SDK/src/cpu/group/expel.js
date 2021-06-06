@@ -86,7 +86,7 @@
             }
             // got removing member
             removes.push(item.toString());
-            members = members.splice(pos, 1);
+            members.splice(pos, 1);
         }
         // 2.3. do expelling
         if (removes.length > 0) {

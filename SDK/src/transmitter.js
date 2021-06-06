@@ -108,12 +108,12 @@
 
     var MessageTransmitter = function (messenger) {
         obj.call(this);
-        this.messenger = messenger;
+        this.__messenger = messenger;
     };
     ns.Class(MessageTransmitter, obj, [Transmitter]);
 
     MessageTransmitter.prototype.getMessenger = function () {
-        return this.messenger;
+        return this.__messenger;
     };
 
     MessageTransmitter.prototype.getFacebook = function () {

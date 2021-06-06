@@ -1,14 +1,14 @@
 ;
 // license: https://mit-license.org
 //
-//  Star Gate: Interfaces for network connection
+//  Finite State Machine
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2021 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2021 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,40 +30,53 @@
 // =============================================================================
 //
 
-//! require 'star.js'
+//! require 'namespace.js'
 
 (function (ns) {
     "use strict";
 
+    var Machine = ns.Machine;
+
     /**
-     *  Create sending task
+     *  Create a State Machine with default state name
      *
-     * @param {Uint8Array} data - payload
-     * @param {StarDelegate|*} delegate
+     * @param {String} defaultStateName
      * @constructor
      */
-    var Task = function (data, delegate) {
-        this.data = data;
-        this.delegate = delegate;
-        this.star = null;
+    var AutoMachine = function (defaultStateName) {
+        Machine.call(this, defaultStateName);
+        this.__states = {}; // String -> State
     };
-    DIMP.Class(Task, DIMP.type.Object, null);
+    DIMP.Class(AutoMachine, Machine, null);
 
-    Task.prototype.onResponse = function (data) {
-        this.delegate.onReceived(data);
+    AutoMachine.prototype.addState = function (state, name) {
+        this.__states[name] = state;
     };
-
-    Task.prototype.onSuccess = function () {
-        this.delegate.onSent(this.data, null, this.star);
+    AutoMachine.prototype.getState = function (name) {
+        return this.__states[name];
     };
 
-    Task.prototype.onError = function (error) {
-        this.delegate.onSent(this.data, error, this.star);
+    AutoMachine.prototype.start = function () {
+        Machine.prototype.start.call(this);
+        run(this);
+    };
+
+    var run = function (machine) {
+        if (machine.getCurrentState()) {
+            machine.tick();
+            setTimeout(function () {
+                run(machine);
+            }, machine.idle());
+        }
+    };
+
+    AutoMachine.prototype.idle = function () {
+        return 200;
     };
 
     //-------- namespace --------
-    ns.extensions.Task = Task;
+    ns.AutoMachine = AutoMachine;
 
-    ns.extensions.register('Task');
+    ns.register('AutoMachine');
 
-})(StarGate);
+})(FiniteStateMachine);

@@ -186,4 +186,4 @@
     ns.register('LocalStorage');
     ns.register('SessionStorage');
 
-})(StarGate);
+})(FileSystem);

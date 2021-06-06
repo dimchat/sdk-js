@@ -60,7 +60,7 @@
         if (arguments.length === 0) {
             // new BlockCommand();
             Command.call(this, BlockCommand.BLOCK)
-            this.list = null;
+            this.__list = null;
         } else if (arguments[0] instanceof Array) {
             // new BlockCommand(list);
             Command.call(this, BlockCommand.BLOCK)
@@ -68,7 +68,7 @@
         } else {
             // new BlockCommand(map);
             Command.call(this, arguments[0]);
-            this.list = null;
+            this.__list = null;
         }
     };
     ns.Class(BlockCommand, Command, null);
@@ -94,14 +94,14 @@
     //-------- setter/getter --------
 
     BlockCommand.prototype.getBlockCList = function () {
-        if (!this.list) {
-            this.list = BlockCommand.getBlockList(this.getMap());
+        if (!this.__list) {
+            this.__list = BlockCommand.getBlockList(this.getMap());
         }
-        return this.list;
+        return this.__list;
     };
     BlockCommand.prototype.setBlockCList = function (list) {
         BlockCommand.setBlockList(list, this.getMap());
-        this.list = list;
+        this.__list = list;
     };
 
     //-------- namespace --------

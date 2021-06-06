@@ -62,22 +62,22 @@
      */
     var BTCAddress = function (string, network) {
         str.call(this, string);
-        this.network = network;
+        this.__network = network;
     };
     ns.Class(BTCAddress, str, [Address]);
 
     BTCAddress.prototype.getNetwork = function () {
-        return this.network;
+        return this.__network;
     };
 
     BTCAddress.prototype.isBroadcast = function () {
         return false;
     };
     BTCAddress.prototype.isUser = function () {
-        return NetworkType.isUser(this.network);
+        return NetworkType.isUser(this.__network);
     };
     BTCAddress.prototype.isGroup = function () {
-        return NetworkType.isGroup(this.network);
+        return NetworkType.isGroup(this.__network);
     };
 
     /**

@@ -52,8 +52,8 @@
     var StarGate = function () {
         Runner.call(this);
         this.dock = this.createDock();
-        this.docker = null;
-        this.delegate = null;
+        this.__docker = null;
+        this.__delegate = null;
     };
     DIMP.Class(StarGate, Runner, [Gate]);
 
@@ -67,20 +67,20 @@
         return null;
     };
     StarGate.prototype.getDocker = function () {
-        if (!this.docker) {
-            this.docker = this.createDocker();
+        if (!this.__docker) {
+            this.__docker = this.createDocker();
         }
-        return this.docker;
+        return this.__docker;
     };
     StarGate.prototype.setDocker = function (worker) {
-        this.docker = worker;
+        this.__docker = worker;
     };
 
     StarGate.prototype.getDelegate = function () {
-        return this.delegate;
+        return this.__delegate;
     };
     StarGate.prototype.setDelegate = function (delegate) {
-        this.delegate = delegate;
+        this.__delegate = delegate;
     };
 
     StarGate.prototype.sendPayload = function (payload, priority, delegate) {
@@ -131,35 +131,36 @@
     //
 
     StarGate.prototype.setup = function () {
-        Runner.prototype.setup.call(this);
-        // check connection
-        if (!this.isRunning()) {
-            // wait a second for connecting
-            this.idle();
-        }
         // check docker
-        while (!this.getDocker() && this.isRunning()) {
+        var docker = this.getDocker();
+        if (docker) {
+            // setup docker
+            return docker.setup();
+        } else {
             // waiting for docker
-            this.idle();
-        }
-        // setup docker
-        if (this.docker) {
-            this.docker.setup();
+            return true;
         }
     };
 
     StarGate.prototype.finish = function () {
-        // clean docker
-        if (this.docker) {
-            this.docker.finish();
+        // check docker
+        var docker = this.__docker;
+        if (docker) {
+            // finish docker
+            return docker.finish();
+        } else {
+            // done
+            return false;
         }
-        Runner.prototype.finish.call(this);
     };
 
     StarGate.prototype.process = function () {
-        if (this.docker) {
-            return this.docker.process();
+        var docker = this.__docker;
+        if (docker) {
+            // process by docker
+            return docker.process();
         } else {
+            // done
             return false;
         }
     };

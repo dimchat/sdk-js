@@ -49,14 +49,14 @@
 
     var StarDocker = function (gate) {
         Runner.call(this);
-        this.gate = gate;
+        this.__gate = gate;
         // time for checking heartbeat
-        this.heartbeatExpired = (new Date()).getTime() + 2000;
+        this.__heartbeatExpired = (new Date()).getTime() + 2000;
     };
     DIMP.Class(StarDocker, Runner, [Docker]);
 
     StarDocker.prototype.getGate = function () {
-        return this.gate;
+        return this.__gate;
     };
 
     StarDocker.prototype.process = function () {
@@ -98,7 +98,7 @@
         } else {
             // check time for next heartbeat
             var now = (new Date()).getTime();
-            if (now > this.heartbeatExpired) {
+            if (now > this.__heartbeatExpired) {
                 if (gate.isExpired()) {
                     var beat = this.getHeartbeat();
                     if (beat) {
@@ -107,7 +107,7 @@
                     }
                 }
                 // try heartbeat next 2 seconds
-                this.heartbeatExpired = now + 2000;
+                this.__heartbeatExpired = now + 2000;
             }
             return false;
         }

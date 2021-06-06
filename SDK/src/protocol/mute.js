@@ -60,7 +60,7 @@
         if (arguments.length === 0) {
             // new MuteCommand();
             Command.call(this, MuteCommand.MUTE)
-            this.list = null;
+            this.__list = null;
         } else if (arguments[0] instanceof Array) {
             // new MuteCommand(list);
             Command.call(this, MuteCommand.MUTE)
@@ -68,7 +68,7 @@
         } else {
             // new MuteCommand(map);
             Command.call(this, arguments[0]);
-            this.list = null;
+            this.__list = null;
         }
     };
     ns.Class(MuteCommand, Command, null);
@@ -94,14 +94,14 @@
     //-------- setter/getter --------
 
     MuteCommand.prototype.getMuteCList = function () {
-        if (!this.list) {
-            this.list = MuteCommand.getMuteList(this.getMap());
+        if (!this.__list) {
+            this.__list = MuteCommand.getMuteList(this.getMap());
         }
-        return this.list;
+        return this.__list;
     };
     MuteCommand.prototype.setMuteCList = function (list) {
         MuteCommand.setMuteList(list, this.getMap());
-        this.list = list;
+        this.__list = list;
     };
 
     //-------- namespace --------

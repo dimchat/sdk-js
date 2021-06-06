@@ -1,7 +1,7 @@
 ;
 // license: https://mit-license.org
 //
-//  Star Trek: Interstellar Transport
+//  Web Socket
 //
 //                               Written in 2021 by Moky <albert.moky@gmail.com>
 //
@@ -31,62 +31,66 @@
 //
 
 /**
- *  Star Ship
- *  ~~~~~~~~~
- *
- *  Container carrying data package
+ *  Memory cache for received data
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-//! require 'ship.js'
+//! require 'namespace.js'
 
 (function (ns) {
     "use strict";
 
-    var Ship = ns.Ship;
-
-    var StarShip = function (priority, delegate) {
-        this.priority = priority;
-        this.__delegate = delegate;
-        // for retry
-        this.__timestamp = 0;  // milliseconds
-        this.__retries = -1;
+    var CachePool = function () {
     };
-    DIMP.Class(StarShip, null, [Ship]);
+    DIMP.Interface(CachePool, null);
 
-    // retry
-    StarShip.EXPIRES = 120 * 1000;  // 2 minutes
-    StarShip.RETRIES = 2;
-
-    // priorities
-    StarShip.URGENT = -1;
-    StarShip.NORMAL = 0;
-    StarShip.SLOWER = 1;
-
-    StarShip.prototype.getDelegate = function () {
-        return this.__delegate;
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Add received data to cache
+     *
+     * @param {Uint8Array} data - received data
+     */
+    CachePool.prototype.push = function (data) {
+        console.assert(false, 'implement me!');
+        return null;
     };
 
-    StarShip.prototype.getTimestamp = function () {
-        return this.__timestamp;
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get received data from pool with max length (remove)
+     *  (must call 'get()/length()' to check data length first)
+     *
+     * @param {uint} maxLength - max data length to remove
+     * @return {Uint8Array} remove data from the pool and return it
+     */
+    CachePool.prototype.shift = function (maxLength) {
+        console.assert(false, 'implement me!');
+        return null;
     };
 
-    StarShip.prototype.getRetries = function () {
-        return this.__retries;
+    /**
+     *  Get all received data (not remove)
+     *
+     * @return {Uint8Array} received data, null on cache pool empty
+     */
+    CachePool.prototype.all = function () {
+        console.assert(false, 'implement me!');
+        return null;
     };
 
-    StarShip.prototype.isExpired = function () {
-        var now = new Date();
-        return now.getTime() > this.__timestamp + StarShip.EXPIRES * (StarShip.RETRIES + 2);
-    };
-
-    StarShip.prototype.update = function () {
-        this.__timestamp = (new Date()).getTime();
-        this.__retries += 1;
+    /**
+     *  Get length of cached bytes
+     *
+     * @return {uint} bytes count
+     */
+    CachePool.prototype.length = function () {
+        console.assert(false, 'implement me!');
+        return 0;
     };
 
     //-------- namespace --------
-    ns.StarShip = StarShip;
+    ns.CachePool = CachePool;
 
-    ns.register('StarShip');
+    ns.register('CachePool');
 
 })(StarTrek);
