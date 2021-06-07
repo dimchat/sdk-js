@@ -33,8 +33,11 @@
 //! require 'notification.js'
 //! require 'observer.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
+    var Arrays = sys.type.Arrays;
 
     var Notification = ns.Notification;
     var Observer = ns.Observer;
@@ -43,9 +46,10 @@
      *  Notification center
      */
     var Center = function () {
+        obj.call(this);
         this.__observers = {};
     };
-    DIMP.Class(Center, DIMP.type.Object, null);
+    sys.Class(Center, obj, null);
 
     /**
      *  Add observer with notification name
@@ -78,7 +82,7 @@
             // Remove observer for notification name
             var list = this.__observers[name];
             if (list/* instanceof Array*/) {
-                DIMP.type.Arrays.remove(list, observer);
+                Arrays.remove(list, observer);
             }
         } else {
             // Remove observer from notification center, no mather what names
@@ -108,7 +112,7 @@
         var obs;
         for (var i = 0; i < observers.length; ++i) {
             obs = observers[i];
-            if (DIMP.Interface.conforms(obs, Observer)) {
+            if (ns.Interface.conforms(obs, Observer)) {
                 obs.onReceiveNotification(notification);
             } else if (typeof obs === 'function') {
                 obs.call(notification);
@@ -130,4 +134,4 @@
 
     ns.register('NotificationCenter');
 
-})(LocalNotificationService);
+})(LocalNotificationService, MONKEY);

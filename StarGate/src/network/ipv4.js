@@ -32,7 +32,7 @@
 
 //! require 'host.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var Host = ns.Host;
@@ -63,7 +63,7 @@
         }
         Host.call(this, ip, port, data);
     };
-    DIMP.Class(IPv4, Host, null);
+    sys.Class(IPv4, Host, null);
 
     IPv4.prototype.valueOf = function () {
         if (this.port === 0) {
@@ -99,4 +99,4 @@
 
     ns.register('IPv4');
 
-})(StarTrek);
+})(StarGate, MONKEY);

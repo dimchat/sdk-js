@@ -39,19 +39,21 @@
 
 //! require 'ship.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
+    var obj = sys.type.Object;
     var Ship = ns.Ship;
 
     var StarShip = function (priority, delegate) {
+        obj.call(this);
         this.priority = priority;
         this.__delegate = delegate;
         // for retry
         this.__timestamp = 0;  // milliseconds
         this.__retries = -1;
     };
-    DIMP.Class(StarShip, null, [Ship]);
+    sys.Class(StarShip, obj, [Ship]);
 
     // retry
     StarShip.EXPIRES = 120 * 1000;  // 2 minutes
@@ -89,4 +91,4 @@
 
     ns.register('StarShip');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

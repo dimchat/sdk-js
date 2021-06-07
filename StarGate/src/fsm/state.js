@@ -32,16 +32,19 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     /**
      *  State
      */
     var State = function () {
+        obj.call(this);
         this.__transitions = [];
     };
-    DIMP.Class(State, DIMP.type.Object, null);
+    sys.Class(State, obj, null);
 
     /**
      *  Append a transition for this state
@@ -49,10 +52,11 @@
      * @param {Transition} transition
      */
     State.prototype.addTransition = function (transition) {
-        if (this.__transitions.indexOf(transition) >= 0) {
+        if (this.__transitions.indexOf(transition) < 0) {
+            this.__transitions.push(transition);
+        } else {
             throw new Error('transition exists: ' + transition);
         }
-        this.__transitions.push(transition);
     };
 
     /**
@@ -116,4 +120,4 @@
 
     ns.register('State');
 
-})(FiniteStateMachine);
+})(FiniteStateMachine, MONKEY);

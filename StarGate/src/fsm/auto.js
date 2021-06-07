@@ -32,8 +32,11 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var Runnable = sys.threading.Runnable;
+    var Thread = sys.threading.Thread;
 
     var Machine = ns.Machine;
 
@@ -46,8 +49,9 @@
     var AutoMachine = function (defaultStateName) {
         Machine.call(this, defaultStateName);
         this.__states = {}; // String -> State
+        this.__thread = null;
     };
-    DIMP.Class(AutoMachine, Machine, null);
+    sys.Class(AutoMachine, Machine, [Runnable]);
 
     AutoMachine.prototype.addState = function (state, name) {
         this.__states[name] = state;
@@ -58,20 +62,32 @@
 
     AutoMachine.prototype.start = function () {
         Machine.prototype.start.call(this);
-        run(this);
+        force_stop(this);
+        var thread = new Thread(this);
+        this.__thread = thread;
+        thread.start();
     };
 
-    var run = function (machine) {
-        if (machine.getCurrentState()) {
-            machine.tick();
-            setTimeout(function () {
-                run(machine);
-            }, machine.idle());
+    var force_stop = function (machine) {
+        var thread = machine.__thread;
+        machine.__thread = null;
+        if (thread) {
+            thread.stop();
         }
     };
 
-    AutoMachine.prototype.idle = function () {
-        return 200;
+    AutoMachine.prototype.stop = function () {
+        Machine.prototype.stop.call(this);
+        force_stop(this);
+    };
+
+    // return true for sleeping a while to continued
+    // return false to stop running
+    AutoMachine.prototype.run = function () {
+        this.tick();
+        // when machine is stopped, current state will be set to null
+        // if it's not null, return true to sleep a while to continue ticking.
+        return this.getCurrentState() != null;
     };
 
     //-------- namespace --------
@@ -79,4 +95,4 @@
 
     ns.register('AutoMachine');
 
-})(FiniteStateMachine);
+})(FiniteStateMachine, MONKEY);

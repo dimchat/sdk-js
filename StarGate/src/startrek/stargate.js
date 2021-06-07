@@ -41,10 +41,11 @@
 //! require 'gate.js'
 //! require 'dock.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
-    var Runner = ns.Runner;
+    var Runner = sys.threading.Runner;
+
     var Gate = ns.Gate;
     var Dock = ns.Dock;
     var StarShip = ns.StarShip;
@@ -55,7 +56,7 @@
         this.__docker = null;
         this.__delegate = null;
     };
-    DIMP.Class(StarGate, Runner, [Gate]);
+    sys.Class(StarGate, Runner, [Gate]);
 
     StarGate.prototype.createDock = function () {
         return new Dock();
@@ -170,4 +171,4 @@
 
     ns.register('StarGate');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

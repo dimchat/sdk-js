@@ -33,8 +33,10 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     /**
      *  Notification object with name, sender and extra info
@@ -45,15 +47,16 @@
      * @constructor
      */
     var Notification = function (name, sender, userInfo) {
+        obj.call(this);
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    DIMP.Class(Notification, DIMP.type.Object, null);
+    sys.Class(Notification, obj, null);
 
     //-------- namespace --------
     ns.Notification = Notification;
 
     ns.register('Notification');
 
-})(LocalNotificationService);
+})(LocalNotificationService, MONKEY);

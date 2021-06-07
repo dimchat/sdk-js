@@ -32,8 +32,10 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     //
     //  Host format
@@ -60,16 +62,15 @@
      * @constructor
      */
     var Host = function (ip, port, data) {
+        obj.call(this);
         // ip string
         this.ip = ip;
-
         // port number
         this.port = port;
-
         // ip data array
         this.data = data;
     };
-    DIMP.Class(Host, DIMP.type.Object, null);
+    sys.Class(Host, obj, null);
 
     Host.prototype.valueOf = function () {
         console.assert(false, 'implement me!');
@@ -116,4 +117,4 @@
 
     ns.register('Host');
 
-})(StarTrek);
+})(StarGate, MONKEY);

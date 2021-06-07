@@ -32,13 +32,15 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     /**
      *  Machine status
      */
-    var Status = DIMP.type.Enum(null, {
+    var Status = sys.type.Enum(null, {
         Stopped: 0,
         Running: 1,
         Paused: 2
@@ -51,18 +53,23 @@
      * @constructor
      */
     var Machine = function (defaultStateName) {
-        this.__default = defaultStateName ?  defaultStateName : 'default';
-        this.__current = null;
+        obj.call(this);
+        this.__default = defaultStateName ? defaultStateName : 'default';
+        this.__current = null;  // current state
         this.__status = Status.Stopped;
         this.__delegate = null;
     };
-    DIMP.Class(Machine, DIMP.type.Object, null);
+    sys.Class(Machine, obj, null);
 
     Machine.prototype.setDelegate = function (delegate) {
         this.__delegate = delegate;
     };
     Machine.prototype.getDelegate = function () {
         return this.__delegate;
+    };
+
+    Machine.prototype.getCurrentState = function () {
+        return this.__current;
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -79,10 +86,6 @@
     Machine.prototype.getState = function (name) {
         console.assert(false, 'implement me!');
         return null;
-    };
-
-    Machine.prototype.getCurrentState = function () {
-        return this.__current;
     };
 
     /**
@@ -175,4 +178,4 @@
 
     ns.register('Machine');
 
-})(FiniteStateMachine);
+})(FiniteStateMachine, MONKEY);

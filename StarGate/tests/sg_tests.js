@@ -7,7 +7,7 @@ sg_tests = [];
 
 var g_variables = {};
 
-!function (ns) {
+!function (ns, sys) {
     'use strict';
 
     var Connection = ns.Connection;
@@ -15,7 +15,7 @@ var g_variables = {};
 
     var ConnectionDelegate = function () {
     };
-    DIMP.Class(ConnectionDelegate, null, [Connection.Delegate]);
+    sys.Class(ConnectionDelegate, null, [Connection.Delegate]);
     ConnectionDelegate.prototype.onConnectionStatusChanged = function (connection, oldStatus, newStatus) {
         console.log('connection status changed: ' + oldStatus + ' -> ' + newStatus);
     };
@@ -30,7 +30,7 @@ var g_variables = {};
         var port = 9394;
 
         var text = 'Hello world!\n';
-        var data = DIMP.format.UTF8.encode(text);
+        var data = sys.format.UTF8.encode(text);
 
         var connection = new ActiveConnection(host, port);
         connection.start();
@@ -41,4 +41,4 @@ var g_variables = {};
     };
     sg_tests.push(test_connection);
 
-}(StarTrek);
+}(StarGate, MONKEY);

@@ -40,12 +40,12 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var Ship = function () {
     };
-    DIMP.Interface(Ship, null);
+    sys.Interface(Ship, null);
 
     /**
      *  Get the data package in this Ship
@@ -83,7 +83,7 @@
      */
     var ShipDelegate = function () {
     };
-    DIMP.Interface(ShipDelegate, null);
+    sys.Interface(ShipDelegate, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -103,4 +103,4 @@
 
     ns.register('Ship');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

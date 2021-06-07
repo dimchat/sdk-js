@@ -39,15 +39,15 @@
 
 //! require 'skywalker.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
-    var Handler = ns.Handler;
-    var Processor = ns.Processor;
+    var Handler = sys.threading.Handler;
+    var Processor = sys.threading.Processor;
 
     var Docker = function () {
     };
-    DIMP.Interface(Docker, [Handler, Processor]);
+    sys.Interface(Docker, [Handler, Processor]);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -68,4 +68,4 @@
 
     ns.register('Docker');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

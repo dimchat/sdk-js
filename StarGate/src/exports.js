@@ -19,3 +19,8 @@ if (typeof DIMP.startrek !== 'object') {
     DIMP.startrek = {};
 }
 StarTrek.exports(DIMP.startrek);
+
+if (typeof DIMP.stargate !== 'object') {
+    DIMP.stargate = {};
+}
+StarGate.exports(DIMP.stargate);

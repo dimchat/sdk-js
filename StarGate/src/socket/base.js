@@ -33,13 +33,13 @@
 //! require 'connection.js'
 //! require 'mem.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var Runner = sys.threading.Runner;
 
     var MemoryCache = ns.MemoryCache;
     var Connection = ns.Connection;
-
-    var Runner = ns.Runner;
 
     var BaseConnection = function (socket) {
         Runner.call(this);
@@ -50,7 +50,7 @@
         this.__lastSentTime = 0;
         this.__lastReceivedTime = 0;
     };
-    DIMP.Class(BaseConnection, Runner, [Connection]);
+    sys.Class(BaseConnection, Runner, [Connection]);
 
     BaseConnection.prototype.createCachePool = function () {
         return new MemoryCache();
@@ -197,6 +197,7 @@
 
     BaseConnection.prototype.stop = function () {
         close.call(this);
+        Runner.prototype.stop.call(this);
     };
 
     BaseConnection.prototype.setup = function () {
@@ -222,6 +223,7 @@
         // 1. try to read bytes
         var data = this._receive();
         if (!data || data.length === 0) {
+            // receive nothing to process now
             return false;
         }
         // 2. cache it
@@ -232,10 +234,6 @@
             delegate.onConnectionReceivedData(this, data);
         }
         return true;
-    };
-
-    BaseConnection.prototype.idle = function () {
-        return 128;
     };
 
     //
@@ -322,4 +320,4 @@
 
     ns.register('BaseConnection');
 
-})(StarTrek);
+})(StarGate, MONKEY);

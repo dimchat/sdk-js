@@ -33,10 +33,13 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
+    var obj = sys.type.Object;
+
     var Storage = function (storage, prefix) {
+        obj.call(this);
         // Web storage
         this.storage = storage;
         // key prefix
@@ -46,7 +49,7 @@
             this.ROOT = 'dim';
         }
     };
-    DIMP.Class(Storage, DIMP.type.Object, null);
+    sys.Class(Storage, obj, null);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
@@ -103,7 +106,7 @@
         if (!base64) {
             return null;
         }
-        return DIMP.format.Base64.decode(base64);
+        return sys.format.Base64.decode(base64);
     };
 
     /**
@@ -117,7 +120,7 @@
         if (!json) {
             return null;
         }
-        return DIMP.format.JSON.decode(json);
+        return sys.format.JSON.decode(json);
     };
 
     //
@@ -159,7 +162,7 @@
     Storage.prototype.saveData = function (data, path) {
         var base64 = null;
         if (data) {
-            base64 = DIMP.format.Base64.encode(data);
+            base64 = sys.format.Base64.encode(data);
         }
         return this.saveText(base64, path);
     };
@@ -173,8 +176,8 @@
     Storage.prototype.saveJSON = function (container, path) {
         var json = null;
         if (container) {
-            json = DIMP.format.JSON.encode(container);
-            json = DIMP.format.UTF8.decode(json);
+            json = sys.format.JSON.encode(container);
+            json = sys.format.UTF8.decode(json);
         }
         return this.saveText(json, path);
     };
@@ -186,4 +189,4 @@
     ns.register('LocalStorage');
     ns.register('SessionStorage');
 
-})(FileSystem);
+})(FileSystem, MONKEY);

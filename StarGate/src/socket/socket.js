@@ -37,7 +37,7 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var connect = function (url, proxy) {
@@ -59,11 +59,11 @@
     };
 
     var build_url = function (host, port) {
-        var scheme = 'ws';
         if ('https' === window.location.protocol.split(':')[0]) {
-            scheme = 'wss';
+            return 'wss://' + host + ':' + port;
+        } else {
+            return 'ws://' + host + ':' + port;
         }
-        return scheme + '://' + host + ':' + port;
     };
     var parse_url = function (url) {
         var pos1 = url.indexOf('://');
@@ -99,7 +99,10 @@
         };
     };
 
+    var obj = sys.type.Object;
+
     var Socket = function (url) {
+        obj.call(this);
         this.__packages = [];
         this.__connected = false;
         if (url) {
@@ -113,7 +116,7 @@
             this.__ws = null;
         }
     };
-    DIMP.Class(Socket, null);
+    sys.Class(Socket, obj, null);
 
     Socket.prototype.getHost = function () {
         return this.__host;
@@ -167,4 +170,4 @@
 
     ns.register('Socket');
 
-})(StarTrek);
+})(StarGate, MONKEY);

@@ -32,16 +32,19 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     /**
      *  State Transition
      */
     var Transition = function (targetStateName) {
+        obj.call(this);
         this.target = targetStateName;
     };
-    DIMP.Class(Transition, DIMP.type.Object, null);
+    sys.Class(Transition, obj, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -60,4 +63,4 @@
 
     ns.register('Transition');
 
-})(FiniteStateMachine);
+})(FiniteStateMachine, MONKEY);

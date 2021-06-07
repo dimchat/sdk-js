@@ -37,12 +37,12 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var CachePool = function () {
     };
-    DIMP.Interface(CachePool, null);
+    sys.Interface(CachePool, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -93,4 +93,4 @@
 
     ns.register('CachePool');
 
-})(StarTrek);
+})(StarGate, MONKEY);

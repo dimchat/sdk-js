@@ -38,12 +38,12 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var Connection = function () {
     };
-    DIMP.Interface(Connection, null);
+    sys.Interface(Connection, null);
 
     Connection.MAX_CACHE_LENGTH = 65536;  // 64 KB
     Connection.EXPIRES = 16 * 1000;  // 16 seconds
@@ -162,7 +162,7 @@
      *
      *      (All above are just some advices to help choosing numbers :P)
      */
-    var ConnectionStatus = DIMP.type.Enum(null, {
+    var ConnectionStatus = sys.type.Enum(null, {
         Default:     (0x00),  // 0000 0000
         Connecting:  (0x01),  // 0000 0001, sent just now
         Connected:   (0x11),  // 0001 0001, received just now
@@ -202,7 +202,7 @@
 
     var ConnectionDelegate = function () {
     };
-    DIMP.Interface(ConnectionDelegate, null);
+    sys.Interface(ConnectionDelegate, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -236,4 +236,4 @@
 
     ns.register('Connection');
 
-})(StarTrek);
+})(StarGate, MONKEY);

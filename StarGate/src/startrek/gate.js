@@ -39,12 +39,12 @@
 
 //! require 'starship.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     var Gate = function () {
     };
-    DIMP.Interface(Gate, null);
+    sys.Interface(Gate, null);
 
     /**
      *  Get callback
@@ -175,7 +175,7 @@
         return null;
     };
 
-    var GateStatus = DIMP.type.Enum(null, {
+    var GateStatus = sys.type.Enum(null, {
         Error:     -1,
         Init:       0,
         Connecting: 1,
@@ -188,7 +188,7 @@
      */
     var GateDelegate = function () {
     };
-    DIMP.Interface(GateDelegate, null);
+    sys.Interface(GateDelegate, null);
     // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when connection status changed
@@ -221,4 +221,4 @@
 
     ns.register('Gate');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

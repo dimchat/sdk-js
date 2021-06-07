@@ -32,21 +32,22 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     /**
-     *  State machine delegate
+     *  State Machine Delegate
+     *  ~~~~~~~~~~~~~~~~~~~~~~
      */
     var Delegate = function () {
     };
-    DIMP.Interface(Delegate, null);
+    sys.Interface(Delegate, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when entering a new state
      *
-     * @param {State} state
+     * @param {State} state - new state
      * @param {Machine} machine
      */
     Delegate.prototype.enterState = function (state, machine) {
@@ -56,7 +57,7 @@
     /**
      *  Callback when exit from current state
      *
-     * @param {State} state
+     * @param {State} state - old state
      * @param {Machine} machine
      */
     Delegate.prototype.exitState = function (state, machine) {
@@ -67,7 +68,7 @@
     /**
      *  Callback when pause current state
      *
-     * @param {State} state
+     * @param {State} state - current state
      * @param {Machine} machine
      */
     Delegate.prototype.pauseState = function (state, machine) {
@@ -77,7 +78,7 @@
     /**
      *  Callback when resume current state
      *
-     * @param {State} state
+     * @param {State} state - current state
      * @param {Machine} machine
      */
     Delegate.prototype.resumeState = function (state, machine) {
@@ -85,8 +86,8 @@
     };
 
     //-------- namespace --------
-    ns.StateDelegate = Delegate;
+    ns.Delegate = Delegate;
 
-    ns.register('StateDelegate');
+    ns.register('Delegate');
 
-})(FiniteStateMachine);
+})(FiniteStateMachine, MONKEY);

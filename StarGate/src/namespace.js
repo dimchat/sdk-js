@@ -43,12 +43,19 @@ if (typeof StarTrek !== 'object') {
     StarTrek = {};
 }
 
+if (typeof StarGate !== 'object') {
+    StarGate = {};
+}
+
 (function (ns) {
     "use strict";
+
+    //-------- namespace --------
 
     ns.Namespace(LocalNotificationService);
     ns.Namespace(FiniteStateMachine);
     ns.Namespace(FileSystem);
     ns.Namespace(StarTrek);
+    ns.Namespace(StarGate);
 
-})(DIMP);
+})(MONKEY);

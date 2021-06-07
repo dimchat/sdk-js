@@ -33,7 +33,7 @@
 //! require <dimp.js>
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
     /**
@@ -41,7 +41,7 @@
      */
     var Observer = function () {
     };
-    DIMP.Interface(Observer, null);
+    sys.Interface(Observer, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -58,4 +58,4 @@
 
     ns.register('Observer');
 
-})(LocalNotificationService);
+})(LocalNotificationService, MONKEY);

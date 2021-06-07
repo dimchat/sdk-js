@@ -39,16 +39,19 @@
 
 //! require 'starship.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
+
+    var obj = sys.type.Object;
 
     var StarShip = ns.StarShip;
 
     var Dock = function () {
+        obj.call(this);
         this.__priorities = [];  // int[]
         this.__fleets = {}       // int -> StarShip[]
     };
-    DIMP.Class(Dock, null);
+    sys.Class(Dock, obj, null);
 
     /**
      *  Park this ship in the Dock for departure
@@ -189,4 +192,4 @@
 
     ns.register('Dock');
 
-})(StarTrek);
+})(StarTrek, MONKEY);

@@ -37,10 +37,11 @@
 
 //! require 'namespace.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
-    var Runner = ns.Runner;
+    var Runner = sys.threading.Runner;
+
     var Socket = ns.Socket;
     var Connection = ns.Connection;
     var BaseConnection = ns.BaseConnection;
@@ -51,7 +52,7 @@
         this.__port = port;
         this.__connecting = 0;
     };
-    DIMP.Class(ActiveConnection, BaseConnection);
+    sys.Class(ActiveConnection, BaseConnection, null);
 
     var connect = function () {
         this.setStatus(Connection.Status.Connecting);
@@ -127,4 +128,4 @@
 
     ns.register('ActiveConnection');
 
-})(StarTrek);
+})(StarGate, MONKEY);

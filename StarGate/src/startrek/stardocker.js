@@ -41,11 +41,11 @@
 //! require 'gate.js'
 //! require 'starship.js'
 
-(function (ns) {
+(function (ns, sys) {
     "use strict";
 
+    var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
-    var Runner = ns.Runner;
 
     var StarDocker = function (gate) {
         Runner.call(this);
@@ -53,7 +53,7 @@
         // time for checking heartbeat
         this.__heartbeatExpired = (new Date()).getTime() + 2000;
     };
-    DIMP.Class(StarDocker, Runner, [Docker]);
+    sys.Class(StarDocker, Runner, [Docker]);
 
     StarDocker.prototype.getGate = function () {
         return this.__gate;
@@ -189,4 +189,4 @@
 
     ns.register('StarDocker');
 
-})(StarTrek);
+})(StarTrek, MONKEY);
