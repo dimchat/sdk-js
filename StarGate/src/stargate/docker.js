@@ -62,16 +62,24 @@
 
     WSDocker.prototype.processIncomeShip = function (income) {
         var data = income.getPayload();
-        if (data.length <= 4) {
-            if (sys.format.Arrays.equals(data, PING)) {
+        if (data.length === 0) {
+            // error
+            return null;
+        } else if (data.length === 2) {
+            if (sys.format.Arrays.equals(data, OK)) {
+                // just ignore
+                return null;
+            }
+        } else if (data.length === 4) {
+            if (sys.format.Arrays.equals(data, NOOP)) {
                 // just ignore
                 return null;
             } else if (sys.format.Arrays.equals(data, PONG)) {
                 // just ignore
                 return null;
-            } else if (sys.format.Arrays.equals(data, OK)) {
-                // just ignore
-                return null;
+            } else if (sys.format.Arrays.equals(data, PING)) {
+                // 'PING' -> 'PONG'
+                return new WSShip(PONG, StarShip.SLOWER, null);
             }
         }
         var gate = this.getGate();
@@ -89,6 +97,7 @@
 
     var PING = sys.format.UTF8.encode('PING');
     var PONG = sys.format.UTF8.encode('PONG');
+    var NOOP = sys.format.UTF8.encode('NOOP');
     var OK = sys.format.UTF8.encode('OK');
 
     //-------- namespace --------

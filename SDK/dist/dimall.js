@@ -7,8 +7,8 @@
  * @copyright (c) 2021 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
-if (typeof DIMP !== "object") {
-    DIMP = {}
+if (typeof MONKEY !== "object") {
+    MONKEY = {}
 }
 (function(ns) {
     var namespacefy = function(space) {
@@ -73,10 +73,13 @@ if (typeof DIMP !== "object") {
     ns.Namespace = namespacefy;
     namespacefy(ns);
     ns.register("Namespace")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     if (typeof ns.type !== "object") {
         ns.type = {}
+    }
+    if (typeof ns.threading !== "object") {
+        ns.threading = {}
     }
     if (typeof ns.format !== "object") {
         ns.format = {}
@@ -88,14 +91,16 @@ if (typeof DIMP !== "object") {
         ns.crypto = {}
     }
     ns.Namespace(ns.type);
+    ns.Namespace(ns.threading);
     ns.Namespace(ns.format);
     ns.Namespace(ns.digest);
     ns.Namespace(ns.crypto);
     ns.register("type");
+    ns.register("threading");
     ns.register("format");
     ns.register("digest");
     ns.register("crypto")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var conforms = function(object, protocol) {
         if (!object) {
@@ -183,7 +188,7 @@ if (typeof DIMP !== "object") {
     ns.Class = classify;
     ns.register("Interface");
     ns.register("Class")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var is_null = function(object) {
         if (typeof object === "undefined") {
@@ -223,7 +228,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.Object = obj;
     ns.type.register("Object")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var is_array = function(obj) {
         if (obj instanceof Array) {
@@ -396,7 +401,7 @@ if (typeof DIMP !== "object") {
         copy: copy_items
     };
     ns.type.register("Arrays")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var get_alias = function(value) {
         var enumeration = this.constructor;
@@ -476,7 +481,7 @@ if (typeof DIMP !== "object") {
     ns.type.Enum = enumify;
     ns.type.register("BaseEnum");
     ns.type.register("Enum")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Arrays = ns.type.Arrays;
     var bytes = function() {
@@ -762,7 +767,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.Data = bytes;
     ns.type.register("Data")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Arrays = ns.type.Arrays;
     var bytes = ns.type.Data;
@@ -855,8 +860,7 @@ if (typeof DIMP !== "object") {
     };
     bytes.prototype.append = function(source) {
         if (arguments.length > 1 && typeof arguments[1] !== "number") {
-            for (var i = 0;
-                 i < arguments.length; ++i) {
+            for (var i = 0; i < arguments.length; ++i) {
                 this.append(arguments[i])
             }
             return
@@ -978,7 +982,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.MutableData = bytes;
     ns.type.register("MutableData")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var str = function(value) {
         if (!value) {
@@ -1033,7 +1037,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.String = str;
     ns.type.register("String")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var map = function() {};
     ns.Interface(map, null);
@@ -1069,7 +1073,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.Map = map;
     ns.type.register("Map")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Arrays = ns.type.Arrays;
     var map = ns.type.Map;
@@ -1122,7 +1126,7 @@ if (typeof DIMP !== "object") {
     };
     ns.type.Dictionary = dict;
     ns.type.register("Dictionary")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var obj = ns.type.Object;
     var str = ns.type.String;
@@ -1197,7 +1201,186 @@ if (typeof DIMP !== "object") {
     wrapper.unwrap = unwrap;
     ns.type.Wrapper = wrapper;
     ns.type.register("Wrapper")
-})(DIMP);
+})(MONKEY);
+(function(ns) {
+    var Runnable = function() {};
+    ns.Interface(Runnable, null);
+    Runnable.prototype.run = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.threading.Runnable = Runnable;
+    ns.threading.register("Runnable")
+})(MONKEY);
+(function(ns) {
+    var obj = ns.type.Object;
+    var Runnable = ns.threading.Runnable;
+    var Thread = function() {
+        obj.call(this);
+        if (arguments.length === 0) {
+            this.__target = null;
+            this.__interval = 128
+        } else {
+            if (arguments.length === 2) {
+                this.__target = arguments[0];
+                this.__interval = arguments[1]
+            } else {
+                if (typeof arguments[0] === "number") {
+                    this.__target = null;
+                    this.__interval = arguments[0]
+                } else {
+                    this.__target = arguments[0];
+                    this.__interval = 128
+                }
+            }
+        }
+        this.__running = false;
+        this.__thread_id = 0
+    };
+    ns.Class(Thread, obj, [Runnable]);
+    Thread.prototype.start = function() {
+        this.__running = true;
+        run(this)
+    };
+    Thread.prototype.stop = function() {
+        this.__running = false;
+        var tid = this.__thread_id;
+        if (tid > 0) {
+            this.__thread_id = 0;
+            clearTimeout(tid)
+        }
+    };
+    var run = function(thread) {
+        if (thread.isRunning() && thread.run()) {
+            thread.__thread_id = setTimeout(function() {
+                thread.__thread_id = 0;
+                run(thread)
+            }, thread.getInterval())
+        }
+    };
+    Thread.prototype.isRunning = function() {
+        return this.__running
+    };
+    Thread.prototype.getInterval = function() {
+        return this.__interval
+    };
+    Thread.prototype.run = function() {
+        var target = this.__target;
+        if (!target || target === this) {
+            throw SyntaxError("Thread::run() > override me!")
+        } else {
+            return target.run()
+        }
+    };
+    ns.threading.Thread = Thread;
+    ns.threading.register("Thread")
+})(MONKEY);
+(function(ns) {
+    var Handler = function() {};
+    ns.Interface(Handler, null);
+    Handler.prototype.setup = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Handler.prototype.handle = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    Handler.prototype.finish = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.threading.Handler = Handler;
+    ns.threading.register("Handler")
+})(MONKEY);
+(function(ns) {
+    var Processor = function() {};
+    ns.Interface(Processor, null);
+    Processor.prototype.process = function() {
+        console.assert(false, "implement me!");
+        return false
+    };
+    ns.threading.Processor = Processor;
+    ns.threading.register("Processor")
+})(MONKEY);
+(function(ns) {
+    var Thread = ns.threading.Thread;
+    var Handler = ns.threading.Handler;
+    var Processor = ns.threading.Processor;
+    var STAGE_INIT = 0;
+    var STAGE_HANDLING = 1;
+    var STAGE_CLEANING = 2;
+    var STAGE_STOPPED = 3;
+    var Runner = function() {
+        if (arguments.length === 0) {
+            Thread.call(this);
+            this.__processor = null
+        } else {
+            if (arguments.length === 2) {
+                Thread.call(this, arguments[1]);
+                this.__processor = arguments[0]
+            } else {
+                if (typeof arguments[0] === "number") {
+                    Thread.call(this, arguments[0]);
+                    this.__processor = null
+                } else {
+                    Thread.call(this);
+                    this.__processor = arguments[0]
+                }
+            }
+        }
+        this.__stage = STAGE_INIT
+    };
+    ns.Class(Runner, Thread, [Handler, Processor]);
+    Runner.prototype.run = function() {
+        if (this.__stage === STAGE_INIT) {
+            if (this.setup()) {
+                return true
+            }
+            this.__stage = STAGE_HANDLING
+        }
+        if (this.__stage === STAGE_HANDLING) {
+            try {
+                if (this.handle()) {
+                    return true
+                }
+            } catch (e) {}
+            this.__stage = STAGE_CLEANING
+        }
+        if (this.__stage === STAGE_CLEANING) {
+            if (this.finish()) {
+                return true
+            }
+            this.__stage = STAGE_STOPPED
+        }
+        return false
+    };
+    Runner.prototype.setup = function() {
+        return false
+    };
+    Runner.prototype.handle = function() {
+        while (this.process()) {
+            if (this.isRunning()) {
+                continue
+            }
+            return false
+        }
+        return this.isRunning()
+    };
+    Runner.prototype.finish = function() {
+        return false
+    };
+    Runner.prototype.process = function() {
+        var processor = this.__processor;
+        if (!processor || processor === this) {
+            throw SyntaxError("Runner::process() > override me!")
+        } else {
+            return processor.process()
+        }
+    };
+    ns.threading.Runner = Runner;
+    ns.threading.register("Runner")
+})(MONKEY);
 (function(ns) {
     var hash = function() {};
     ns.Interface(hash, null);
@@ -1216,7 +1399,7 @@ if (typeof DIMP !== "object") {
     ns.digest.HashLib = lib;
     ns.digest.register("Hash");
     ns.digest.register("HashLib")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Hash = ns.digest.Hash;
     var Lib = ns.digest.HashLib;
@@ -1228,7 +1411,7 @@ if (typeof DIMP !== "object") {
     };
     ns.digest.MD5 = new Lib(new md5());
     ns.digest.register("MD5")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Hash = ns.digest.Hash;
     var Lib = ns.digest.HashLib;
@@ -1240,7 +1423,7 @@ if (typeof DIMP !== "object") {
     };
     ns.digest.SHA1 = new Lib(new sha1());
     ns.digest.register("SHA1")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Hash = ns.digest.Hash;
     var Lib = ns.digest.HashLib;
@@ -1252,7 +1435,7 @@ if (typeof DIMP !== "object") {
     };
     ns.digest.SHA256 = new Lib(new sha256());
     ns.digest.register("SHA256")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Hash = ns.digest.Hash;
     var Lib = ns.digest.HashLib;
@@ -1264,7 +1447,7 @@ if (typeof DIMP !== "object") {
     };
     ns.digest.RIPEMD160 = new Lib(new ripemd160());
     ns.digest.register("RIPEMD160")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Hash = ns.digest.Hash;
     var Lib = ns.digest.HashLib;
@@ -1276,7 +1459,7 @@ if (typeof DIMP !== "object") {
     };
     ns.digest.KECCAK256 = new Lib(new keccak256());
     ns.digest.register("KECCAK256")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var coder = function() {};
     ns.Interface(coder, null);
@@ -1302,7 +1485,7 @@ if (typeof DIMP !== "object") {
     ns.format.CoderLib = lib;
     ns.format.register("BaseCoder");
     ns.format.register("CoderLib")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Data = ns.type.Data;
     var Coder = ns.format.BaseCoder;
@@ -1362,7 +1545,7 @@ if (typeof DIMP !== "object") {
     };
     ns.format.Hex = new Lib(new hex());
     ns.format.register("Hex")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Coder = ns.format.BaseCoder;
     var Lib = ns.format.CoderLib;
@@ -1378,7 +1561,7 @@ if (typeof DIMP !== "object") {
     };
     ns.format.Base58 = new Lib(new base58());
     ns.format.register("Base58")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Data = ns.type.Data;
     var Coder = ns.format.BaseCoder;
@@ -1463,7 +1646,7 @@ if (typeof DIMP !== "object") {
     };
     ns.format.Base64 = new Lib(new base64());
     ns.format.register("Base64")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var parser = function() {};
     ns.Interface(parser, null);
@@ -1489,7 +1672,7 @@ if (typeof DIMP !== "object") {
     ns.format.ParserLib = lib;
     ns.format.register("DataParser");
     ns.format.register("ParserLib")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Data = ns.type.Data;
     var Parser = ns.format.DataParser;
@@ -1570,7 +1753,7 @@ if (typeof DIMP !== "object") {
     utf8.prototype.decode = utf8_decode;
     ns.format.UTF8 = new Lib(new utf8());
     ns.format.register("UTF8")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var Parser = ns.format.DataParser;
     var Lib = ns.format.ParserLib;
@@ -1597,7 +1780,7 @@ if (typeof DIMP !== "object") {
     };
     ns.format.JSON = new Lib(new json());
     ns.format.register("JSON")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var map = ns.type.Map;
     var CryptographyKey = function() {};
@@ -1630,7 +1813,7 @@ if (typeof DIMP !== "object") {
     };
     ns.crypto.CryptographyKey = CryptographyKey;
     ns.crypto.register("CryptographyKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var CryptographyKey = ns.crypto.CryptographyKey;
     var EncryptKey = function() {};
@@ -1653,7 +1836,7 @@ if (typeof DIMP !== "object") {
     ns.crypto.DecryptKey = DecryptKey;
     ns.crypto.register("EncryptKey");
     ns.crypto.register("DecryptKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var EncryptKey = ns.crypto.EncryptKey;
     var DecryptKey = ns.crypto.DecryptKey;
@@ -1663,7 +1846,7 @@ if (typeof DIMP !== "object") {
     SymmetricKey.DES = "DES";
     ns.crypto.SymmetricKey = SymmetricKey;
     ns.crypto.register("SymmetricKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var map = ns.type.Map;
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -1712,7 +1895,7 @@ if (typeof DIMP !== "object") {
         }
         return factory.parseSymmetricKey(key)
     }
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = function(key) {};
@@ -1746,7 +1929,7 @@ if (typeof DIMP !== "object") {
     ns.crypto.register("AsymmetricKey");
     ns.crypto.register("SignKey");
     ns.crypto.register("VerifyKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var VerifyKey = ns.crypto.VerifyKey;
@@ -1756,7 +1939,7 @@ if (typeof DIMP !== "object") {
     PublicKey.ECC = AsymmetricKey.ECC;
     ns.crypto.PublicKey = PublicKey;
     ns.crypto.register("PublicKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var map = ns.type.Map;
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -1794,7 +1977,7 @@ if (typeof DIMP !== "object") {
         }
         return factory.parsePublicKey(key)
     }
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var SignKey = ns.crypto.SignKey;
@@ -1808,7 +1991,7 @@ if (typeof DIMP !== "object") {
     };
     ns.crypto.PrivateKey = PrivateKey;
     ns.crypto.register("PrivateKey")
-})(DIMP);
+})(MONKEY);
 (function(ns) {
     var map = ns.type.Map;
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -1857,7 +2040,7 @@ if (typeof DIMP !== "object") {
         }
         return factory.parsePrivateKey(key)
     }
-})(DIMP);
+})(MONKEY);
 if (typeof MingKeMing !== "object") {
     MingKeMing = {}
 }
@@ -1868,7 +2051,7 @@ if (typeof MingKeMing !== "object") {
     }
     base.Namespace(ns.protocol);
     ns.register("protocol")
-})(MingKeMing, DIMP);
+})(MingKeMing, MONKEY);
 (function(ns) {
     var NetworkType = ns.type.Enum(null, {
         BTC_MAIN: (0),
@@ -4036,6 +4219,9 @@ if (typeof DaoKeDao !== "object") {
     ns.ReliableMessageFactory = ReliableMessageFactory;
     ns.register("ReliableMessageFactory")
 })(DaoKeDao);
+if (typeof DIMP !== "object") {
+    DIMP = {}
+}
 (function(ns, base) {
     base.exports(ns);
     if (typeof ns.core !== "object") {
@@ -8488,14 +8674,20 @@ if (typeof FileSystem !== "object") {
 if (typeof StarTrek !== "object") {
     StarTrek = {}
 }
+if (typeof StarGate !== "object") {
+    StarGate = {}
+}
 (function(ns) {
     ns.Namespace(LocalNotificationService);
     ns.Namespace(FiniteStateMachine);
     ns.Namespace(FileSystem);
-    ns.Namespace(StarTrek)
-})(DIMP);
-(function(ns) {
+    ns.Namespace(StarTrek);
+    ns.Namespace(StarGate)
+})(MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var Storage = function(storage, prefix) {
+        obj.call(this);
         this.storage = storage;
         if (prefix) {
             this.ROOT = prefix
@@ -8503,7 +8695,7 @@ if (typeof StarTrek !== "object") {
             this.ROOT = "dim"
         }
     };
-    DIMP.Class(Storage, DIMP.type.Object, null);
+    sys.Class(Storage, obj, null);
     Storage.prototype.getItem = function(key) {
         return this.storage.getItem(key)
     };
@@ -8533,14 +8725,14 @@ if (typeof StarTrek !== "object") {
         if (!base64) {
             return null
         }
-        return DIMP.format.Base64.decode(base64)
+        return sys.format.Base64.decode(base64)
     };
     Storage.prototype.loadJSON = function(path) {
         var json = this.loadText(path);
         if (!json) {
             return null
         }
-        return DIMP.format.JSON.decode(json)
+        return sys.format.JSON.decode(json)
     };
     Storage.prototype.remove = function(path) {
         this.removeItem(this.ROOT + "." + path);
@@ -8558,15 +8750,15 @@ if (typeof StarTrek !== "object") {
     Storage.prototype.saveData = function(data, path) {
         var base64 = null;
         if (data) {
-            base64 = DIMP.format.Base64.encode(data)
+            base64 = sys.format.Base64.encode(data)
         }
         return this.saveText(base64, path)
     };
     Storage.prototype.saveJSON = function(container, path) {
         var json = null;
         if (container) {
-            json = DIMP.format.JSON.encode(container);
-            json = DIMP.format.UTF8.decode(json)
+            json = sys.format.JSON.encode(container);
+            json = sys.format.UTF8.decode(json)
         }
         return this.saveText(json, path)
     };
@@ -8574,33 +8766,38 @@ if (typeof StarTrek !== "object") {
     ns.SessionStorage = new Storage(window.sessionStorage, "dim.mem");
     ns.register("LocalStorage");
     ns.register("SessionStorage")
-})(FileSystem);
-(function(ns) {
+})(FileSystem, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var Notification = function(name, sender, userInfo) {
+        obj.call(this);
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo
     };
-    DIMP.Class(Notification, DIMP.type.Object, null);
+    sys.Class(Notification, obj, null);
     ns.Notification = Notification;
     ns.register("Notification")
-})(LocalNotificationService);
-(function(ns) {
+})(LocalNotificationService, MONKEY);
+(function(ns, sys) {
     var Observer = function() {};
-    DIMP.Interface(Observer, null);
+    sys.Interface(Observer, null);
     Observer.prototype.onReceiveNotification = function(notification) {
         console.assert(false, "implement me!")
     };
     ns.Observer = Observer;
     ns.register("Observer")
-})(LocalNotificationService);
-(function(ns) {
+})(LocalNotificationService, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
+    var Arrays = sys.type.Arrays;
     var Notification = ns.Notification;
     var Observer = ns.Observer;
     var Center = function() {
+        obj.call(this);
         this.__observers = {}
     };
-    DIMP.Class(Center, DIMP.type.Object, null);
+    sys.Class(Center, obj, null);
     Center.prototype.addObserver = function(observer, name) {
         var list = this.__observers[name];
         if (list) {
@@ -8617,7 +8814,7 @@ if (typeof StarTrek !== "object") {
         if (name) {
             var list = this.__observers[name];
             if (list) {
-                DIMP.type.Arrays.remove(list, observer)
+                Arrays.remove(list, observer)
             }
         } else {
             var names = Object.keys(this.__observers);
@@ -8637,7 +8834,7 @@ if (typeof StarTrek !== "object") {
         var obs;
         for (var i = 0; i < observers.length; ++i) {
             obs = observers[i];
-            if (DIMP.Interface.conforms(obs, Observer)) {
+            if (ns.Interface.conforms(obs, Observer)) {
                 obs.onReceiveNotification(notification)
             } else {
                 if (typeof obs === "function") {
@@ -8655,10 +8852,10 @@ if (typeof StarTrek !== "object") {
     };
     ns.NotificationCenter = Center;
     ns.register("NotificationCenter")
-})(LocalNotificationService);
-(function(ns) {
+})(LocalNotificationService, MONKEY);
+(function(ns, sys) {
     var Delegate = function() {};
-    DIMP.Interface(Delegate, null);
+    sys.Interface(Delegate, null);
     Delegate.prototype.enterState = function(state, machine) {
         console.assert(false, "implement me!")
     };
@@ -8667,31 +8864,36 @@ if (typeof StarTrek !== "object") {
     };
     Delegate.prototype.pauseState = function(state, machine) {};
     Delegate.prototype.resumeState = function(state, machine) {};
-    ns.StateDelegate = Delegate;
-    ns.register("StateDelegate")
-})(FiniteStateMachine);
-(function(ns) {
+    ns.Delegate = Delegate;
+    ns.register("Delegate")
+})(FiniteStateMachine, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var Transition = function(targetStateName) {
+        obj.call(this);
         this.target = targetStateName
     };
-    DIMP.Class(Transition, DIMP.type.Object, null);
+    sys.Class(Transition, obj, null);
     Transition.prototype.evaluate = function(machine) {
         console.assert(false, "implement me!");
         return false
     };
     ns.Transition = Transition;
     ns.register("Transition")
-})(FiniteStateMachine);
-(function(ns) {
+})(FiniteStateMachine, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var State = function() {
+        obj.call(this);
         this.__transitions = []
     };
-    DIMP.Class(State, DIMP.type.Object, null);
+    sys.Class(State, obj, null);
     State.prototype.addTransition = function(transition) {
-        if (this.__transitions.indexOf(transition) >= 0) {
+        if (this.__transitions.indexOf(transition) < 0) {
+            this.__transitions.push(transition)
+        } else {
             throw new Error("transition exists: " + transition)
         }
-        this.__transitions.push(transition)
     };
     State.prototype.tick = function(machine) {
         var transition;
@@ -8713,25 +8915,30 @@ if (typeof StarTrek !== "object") {
     State.prototype.onResume = function(machine) {};
     ns.State = State;
     ns.register("State")
-})(FiniteStateMachine);
-(function(ns) {
-    var Status = DIMP.type.Enum(null, {
+})(FiniteStateMachine, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
+    var Status = sys.type.Enum(null, {
         Stopped: 0,
         Running: 1,
         Paused: 2
     });
     var Machine = function(defaultStateName) {
+        obj.call(this);
         this.__default = defaultStateName ? defaultStateName : "default";
         this.__current = null;
         this.__status = Status.Stopped;
         this.__delegate = null
     };
-    DIMP.Class(Machine, DIMP.type.Object, null);
+    sys.Class(Machine, obj, null);
     Machine.prototype.setDelegate = function(delegate) {
         this.__delegate = delegate
     };
     Machine.prototype.getDelegate = function() {
         return this.__delegate
+    };
+    Machine.prototype.getCurrentState = function() {
+        return this.__current
     };
     Machine.prototype.addState = function(state, name) {
         console.assert(false, "implement me!")
@@ -8739,9 +8946,6 @@ if (typeof StarTrek !== "object") {
     Machine.prototype.getState = function(name) {
         console.assert(false, "implement me!");
         return null
-    };
-    Machine.prototype.getCurrentState = function() {
-        return this.__current
     };
     Machine.prototype.changeState = function(name) {
         var delegate = this.getDelegate();
@@ -8806,14 +9010,17 @@ if (typeof StarTrek !== "object") {
     };
     ns.Machine = Machine;
     ns.register("Machine")
-})(FiniteStateMachine);
-(function(ns) {
+})(FiniteStateMachine, MONKEY);
+(function(ns, sys) {
+    var Runnable = sys.threading.Runnable;
+    var Thread = sys.threading.Thread;
     var Machine = ns.Machine;
     var AutoMachine = function(defaultStateName) {
         Machine.call(this, defaultStateName);
-        this.__states = {}
+        this.__states = {};
+        this.__thread = null
     };
-    DIMP.Class(AutoMachine, Machine, null);
+    sys.Class(AutoMachine, Machine, [Runnable]);
     AutoMachine.prototype.addState = function(state, name) {
         this.__states[name] = state
     };
@@ -8822,123 +9029,32 @@ if (typeof StarTrek !== "object") {
     };
     AutoMachine.prototype.start = function() {
         Machine.prototype.start.call(this);
-        run(this)
+        force_stop(this);
+        var thread = new Thread(this);
+        this.__thread = thread;
+        thread.start()
     };
-    var run = function(machine) {
-        if (machine.getCurrentState()) {
-            machine.tick();
-            setTimeout(function() {
-                run(machine)
-            }, machine.idle())
+    var force_stop = function(machine) {
+        var thread = machine.__thread;
+        machine.__thread = null;
+        if (thread) {
+            thread.stop()
         }
     };
-    AutoMachine.prototype.idle = function() {
-        return 200
+    AutoMachine.prototype.stop = function() {
+        Machine.prototype.stop.call(this);
+        force_stop(this)
+    };
+    AutoMachine.prototype.run = function() {
+        this.tick();
+        return this.getCurrentState() != null
     };
     ns.AutoMachine = AutoMachine;
     ns.register("AutoMachine")
-})(FiniteStateMachine);
-(function(ns) {
-    var Handler = function() {};
-    DIMP.Interface(Handler, null);
-    Handler.prototype.setup = function() {
-        console.assert(false, "implement me!");
-        return false
-    };
-    Handler.prototype.handle = function() {
-        console.assert(false, "implement me!");
-        return false
-    };
-    Handler.prototype.finish = function() {
-        console.assert(false, "implement me!");
-        return false
-    };
-    ns.Handler = Handler;
-    ns.register("Handler")
-})(StarTrek);
-(function(ns) {
-    var Processor = function() {};
-    DIMP.Interface(Processor, null);
-    Processor.prototype.process = function() {
-        console.assert(false, "implement me!");
-        return false
-    };
-    ns.Processor = Processor;
-    ns.register("Processor")
-})(StarTrek);
-(function(ns) {
-    var Handler = ns.Handler;
-    var Processor = ns.Processor;
-    var STAGE_SETTING = 0;
-    var STAGE_RUNNING = 1;
-    var STAGE_CLOSING = 2;
-    var STAGE_STOPPED = 3;
-    var Runner = function() {
-        this.__running = false;
-        this.__stage = STAGE_SETTING
-    };
-    DIMP.Class(Runner, null, [Handler, Processor]);
-    Runner.prototype.isRunning = function() {
-        return this.__running
-    };
-    Runner.prototype.start = function() {
-        this.__running = true;
-        run(this)
-    };
-    Runner.prototype.stop = function() {
-        this.__running = false
-    };
-    var run = function(runner) {
-        if (runner.isRunning() && runner.run()) {
-            setTimeout(function() {
-                run(runner)
-            }, runner.idle())
-        }
-    };
-    Runner.prototype.idle = function() {
-        return 8
-    };
-    Runner.prototype.run = function() {
-        if (this.__stage === STAGE_SETTING) {
-            if (this.setup()) {
-                return true
-            } else {
-                this.__stage = STAGE_RUNNING
-            }
-        }
-        if (this.__stage === STAGE_RUNNING) {
-            try {
-                if (this.handle()) {
-                    return true
-                } else {
-                    this.__stage = STAGE_CLOSING
-                }
-            } catch (e) {
-                this.__stage = STAGE_CLOSING
-            }
-        }
-        if (this.__stage === STAGE_CLOSING) {
-            if (this.finish()) {
-                return true
-            } else {
-                this.__stage = STAGE_STOPPED
-            }
-        }
-        this.__running = false;
-        return false
-    };
-    Runner.prototype.setup = function() {};
-    Runner.prototype.handle = function() {
-        while (this.isRunning() && this.process()) {}
-        return this.isRunning()
-    };
-    Runner.prototype.finish = function() {};
-    ns.Runner = Runner;
-    ns.register("Runner")
-})(StarTrek);
-(function(ns) {
+})(FiniteStateMachine, MONKEY);
+(function(ns, sys) {
     var Ship = function() {};
-    DIMP.Interface(Ship, null);
+    sys.Interface(Ship, null);
     Ship.prototype.getPackage = function() {
         console.assert(false, "implement me!");
         return null
@@ -8952,23 +9068,25 @@ if (typeof StarTrek !== "object") {
         return null
     };
     var ShipDelegate = function() {};
-    DIMP.Interface(ShipDelegate, null);
+    sys.Interface(ShipDelegate, null);
     ShipDelegate.prototype.onShipSent = function(ship, error) {
         console.assert(false, "implement me!")
     };
     Ship.Delegate = ShipDelegate;
     ns.Ship = Ship;
     ns.register("Ship")
-})(StarTrek);
-(function(ns) {
+})(StarTrek, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var Ship = ns.Ship;
     var StarShip = function(priority, delegate) {
+        obj.call(this);
         this.priority = priority;
         this.__delegate = delegate;
         this.__timestamp = 0;
         this.__retries = -1
     };
-    DIMP.Class(StarShip, null, [Ship]);
+    sys.Class(StarShip, obj, [Ship]);
     StarShip.EXPIRES = 120 * 1000;
     StarShip.RETRIES = 2;
     StarShip.URGENT = -1;
@@ -8993,14 +9111,16 @@ if (typeof StarTrek !== "object") {
     };
     ns.StarShip = StarShip;
     ns.register("StarShip")
-})(StarTrek);
-(function(ns) {
+})(StarTrek, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var StarShip = ns.StarShip;
     var Dock = function() {
+        obj.call(this);
         this.__priorities = [];
         this.__fleets = {}
     };
-    DIMP.Class(Dock, null);
+    sys.Class(Dock, obj, null);
     Dock.prototype.put = function(task) {
         var prior = task.priority;
         var fleet = this.__fleets[prior];
@@ -9096,28 +9216,28 @@ if (typeof StarTrek !== "object") {
     };
     ns.Dock = Dock;
     ns.register("Dock")
-})(StarTrek);
-(function(ns) {
-    var Handler = ns.Handler;
-    var Processor = ns.Processor;
+})(StarTrek, MONKEY);
+(function(ns, sys) {
+    var Handler = sys.threading.Handler;
+    var Processor = sys.threading.Processor;
     var Docker = function() {};
-    DIMP.Interface(Docker, [Handler, Processor]);
+    sys.Interface(Docker, [Handler, Processor]);
     Docker.prototype.pack = function(payload, priority, delegate) {
         console.assert(false, "implement me!");
         return null
     };
     ns.Docker = Docker;
     ns.register("Docker")
-})(StarTrek);
-(function(ns) {
+})(StarTrek, MONKEY);
+(function(ns, sys) {
+    var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
-    var Runner = ns.Runner;
     var StarDocker = function(gate) {
         Runner.call(this);
         this.__gate = gate;
         this.__heartbeatExpired = (new Date()).getTime() + 2000
     };
-    DIMP.Class(StarDocker, Runner, [Docker]);
+    sys.Class(StarDocker, Runner, [Docker]);
     StarDocker.prototype.getGate = function() {
         return this.__gate
     };
@@ -9194,15 +9314,14 @@ if (typeof StarTrek !== "object") {
         }
     };
     StarDocker.prototype.getHeartbeat = function() {
-        console.assert(false, "implement me!");
         return null
     };
     ns.StarDocker = StarDocker;
     ns.register("StarDocker")
-})(StarTrek);
-(function(ns) {
+})(StarTrek, MONKEY);
+(function(ns, sys) {
     var Gate = function() {};
-    DIMP.Interface(Gate, null);
+    sys.Interface(Gate, null);
     Gate.prototype.getDelegate = function() {
         console.assert(false, "implement me!");
         return null
@@ -9243,14 +9362,14 @@ if (typeof StarTrek !== "object") {
         console.assert(false, "implement me!");
         return null
     };
-    var GateStatus = DIMP.type.Enum(null, {
+    var GateStatus = sys.type.Enum(null, {
         Error: -1,
         Init: 0,
         Connecting: 1,
         Connected: 2
     });
     var GateDelegate = function() {};
-    DIMP.Interface(GateDelegate, null);
+    sys.Interface(GateDelegate, null);
     GateDelegate.prototype.onGateStatusChanged = function(gate, oldStatus, newStatus) {
         console.assert(false, "implement me!")
     };
@@ -9262,9 +9381,9 @@ if (typeof StarTrek !== "object") {
     Gate.Delegate = GateDelegate;
     ns.Gate = Gate;
     ns.register("Gate")
-})(StarTrek);
-(function(ns) {
-    var Runner = ns.Runner;
+})(StarTrek, MONKEY);
+(function(ns, sys) {
+    var Runner = sys.threading.Runner;
     var Gate = ns.Gate;
     var Dock = ns.Dock;
     var StarShip = ns.StarShip;
@@ -9274,7 +9393,7 @@ if (typeof StarTrek !== "object") {
         this.__docker = null;
         this.__delegate = null
     };
-    DIMP.Class(StarGate, Runner, [Gate]);
+    sys.Class(StarGate, Runner, [Gate]);
     StarGate.prototype.createDock = function() {
         return new Dock()
     };
@@ -9356,10 +9475,10 @@ if (typeof StarTrek !== "object") {
     };
     ns.StarGate = StarGate;
     ns.register("StarGate")
-})(StarTrek);
-(function(ns) {
+})(StarTrek, MONKEY);
+(function(ns, sys) {
     var CachePool = function() {};
-    DIMP.Interface(CachePool, null);
+    sys.Interface(CachePool, null);
     CachePool.prototype.push = function(data) {
         console.assert(false, "implement me!");
         return null
@@ -9378,14 +9497,16 @@ if (typeof StarTrek !== "object") {
     };
     ns.CachePool = CachePool;
     ns.register("CachePool")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var CachePool = ns.CachePool;
     var MemoryCache = function() {
+        obj.call(this);
         this.__packages = [];
         this.__occupied = 0
     };
-    DIMP.Class(MemoryCache, null, [CachePool]);
+    sys.Class(MemoryCache, obj, [CachePool]);
     MemoryCache.prototype.push = function(data) {
         this.__packages.push(data);
         this.__occupied += data.length
@@ -9419,8 +9540,8 @@ if (typeof StarTrek !== "object") {
     };
     ns.MemoryCache = MemoryCache;
     ns.register("MemoryCache")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
     var connect = function(url, proxy) {
         var ws = new WebSocket(url);
         ws.onopen = function(ev) {
@@ -9439,11 +9560,11 @@ if (typeof StarTrek !== "object") {
         return ws
     };
     var build_url = function(host, port) {
-        var scheme = "ws";
         if ("https" === window.location.protocol.split(":")[0]) {
-            scheme = "wss"
+            return "wss://" + host + ":" + port
+        } else {
+            return "ws://" + host + ":" + port
         }
-        return scheme + "://" + host + ":" + port
     };
     var parse_url = function(url) {
         var pos1 = url.indexOf("://");
@@ -9479,7 +9600,9 @@ if (typeof StarTrek !== "object") {
             "port": port
         }
     };
+    var obj = sys.type.Object;
     var Socket = function(url) {
+        obj.call(this);
         this.__packages = [];
         this.__connected = false;
         if (url) {
@@ -9493,7 +9616,7 @@ if (typeof StarTrek !== "object") {
             this.__ws = null
         }
     };
-    DIMP.Class(Socket, null);
+    sys.Class(Socket, obj, null);
     Socket.prototype.getHost = function() {
         return this.__host
     };
@@ -9536,10 +9659,10 @@ if (typeof StarTrek !== "object") {
     };
     ns.Socket = Socket;
     ns.register("Socket")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
     var Connection = function() {};
-    DIMP.Interface(Connection, null);
+    sys.Interface(Connection, null);
     Connection.MAX_CACHE_LENGTH = 65536;
     Connection.EXPIRES = 16 * 1000;
     Connection.prototype.send = function(data) {
@@ -9577,7 +9700,7 @@ if (typeof StarTrek !== "object") {
         console.assert(false, "implement me!");
         return null
     };
-    var ConnectionStatus = DIMP.type.Enum(null, {
+    var ConnectionStatus = sys.type.Enum(null, {
         Default: (0),
         Connecting: (1),
         Connected: (17),
@@ -9586,7 +9709,7 @@ if (typeof StarTrek !== "object") {
         Error: (136)
     });
     var ConnectionDelegate = function() {};
-    DIMP.Interface(ConnectionDelegate, null);
+    sys.Interface(ConnectionDelegate, null);
     ConnectionDelegate.prototype.onConnectionStatusChanged = function(connection, oldStatus, newStatus) {
         console.assert(false, "implement me!")
     };
@@ -9597,11 +9720,11 @@ if (typeof StarTrek !== "object") {
     Connection.Delegate = ConnectionDelegate;
     ns.Connection = Connection;
     ns.register("Connection")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
+    var Runner = sys.threading.Runner;
     var MemoryCache = ns.MemoryCache;
     var Connection = ns.Connection;
-    var Runner = ns.Runner;
     var BaseConnection = function(socket) {
         Runner.call(this);
         this._socket = socket;
@@ -9611,7 +9734,7 @@ if (typeof StarTrek !== "object") {
         this.__lastSentTime = 0;
         this.__lastReceivedTime = 0
     };
-    DIMP.Class(BaseConnection, Runner, [Connection]);
+    sys.Class(BaseConnection, Runner, [Connection]);
     BaseConnection.prototype.createCachePool = function() {
         return new MemoryCache()
     };
@@ -9702,7 +9825,7 @@ if (typeof StarTrek !== "object") {
     BaseConnection.prototype.receive = function(maxLength) {
         return this.__cache.shift(maxLength)
     };
-    BaseConnection.prototype.getState = function() {
+    BaseConnection.prototype.getStatus = function() {
         var now = new Date();
         fsm_tick.call(this, now.getTime());
         return this.__status
@@ -9724,7 +9847,8 @@ if (typeof StarTrek !== "object") {
         }
     };
     BaseConnection.prototype.stop = function() {
-        close.call(this)
+        close.call(this);
+        Runner.prototype.stop.call(this)
     };
     BaseConnection.prototype.setup = function() {
         this.setStatus(Connection.Status.Connecting)
@@ -9748,9 +9872,6 @@ if (typeof StarTrek !== "object") {
             delegate.onConnectionReceivedData(this, data)
         }
         return true
-    };
-    BaseConnection.prototype.idle = function() {
-        return 128
     };
     var fsm_tick = function(now) {
         var tick = evaluations[this.__status];
@@ -9821,9 +9942,9 @@ if (typeof StarTrek !== "object") {
     };
     ns.BaseConnection = BaseConnection;
     ns.register("BaseConnection")
-})(StarTrek);
-(function(ns) {
-    var Runner = ns.Runner;
+})(StarGate, MONKEY);
+(function(ns, sys) {
+    var Runner = sys.threading.Runner;
     var Socket = ns.Socket;
     var Connection = ns.Connection;
     var BaseConnection = ns.BaseConnection;
@@ -9833,7 +9954,7 @@ if (typeof StarTrek !== "object") {
         this.__port = port;
         this.__connecting = 0
     };
-    DIMP.Class(ActiveConnection, BaseConnection);
+    sys.Class(ActiveConnection, BaseConnection, null);
     var connect = function() {
         this.setStatus(Connection.Status.Connecting);
         try {
@@ -9896,14 +10017,16 @@ if (typeof StarTrek !== "object") {
     };
     ns.ActiveConnection = ActiveConnection;
     ns.register("ActiveConnection")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
+    var obj = sys.type.Object;
     var Host = function(ip, port, data) {
+        obj.call(this);
         this.ip = ip;
         this.port = port;
         this.data = data
     };
-    DIMP.Class(Host, DIMP.type.Object, null);
+    sys.Class(Host, obj, null);
     Host.prototype.valueOf = function() {
         console.assert(false, "implement me!");
         return null
@@ -9936,8 +10059,8 @@ if (typeof StarTrek !== "object") {
     };
     ns.Host = Host;
     ns.register("Host")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
     var Host = ns.Host;
     var IPv4 = function(ip, port, data) {
         if (data) {
@@ -9960,7 +10083,7 @@ if (typeof StarTrek !== "object") {
         }
         Host.call(this, ip, port, data)
     };
-    DIMP.Class(IPv4, Host, null);
+    sys.Class(IPv4, Host, null);
     IPv4.prototype.valueOf = function() {
         if (this.port === 0) {
             return this.ip
@@ -9983,8 +10106,8 @@ if (typeof StarTrek !== "object") {
     };
     ns.IPv4 = IPv4;
     ns.register("IPv4")
-})(StarTrek);
-(function(ns) {
+})(StarGate, MONKEY);
+(function(ns, sys) {
     var Host = ns.Host;
     var parse_v4 = function(data, array) {
         var item, index = data.byteLength;
@@ -10071,7 +10194,7 @@ if (typeof StarTrek !== "object") {
         }
         Host.call(this, ip, port, data)
     };
-    DIMP.Class(IPv6, Host, null);
+    sys.Class(IPv6, Host, null);
     IPv6.prototype.valueOf = function() {
         if (this.port === 0) {
             return this.ip
@@ -10098,7 +10221,165 @@ if (typeof StarTrek !== "object") {
     };
     ns.IPv6 = IPv6;
     ns.register("IPv6")
-})(StarTrek);
+})(StarGate, MONKEY);
+(function(ns, base, sys) {
+    var StarShip = base.StarShip;
+    var WSShip = function(pack, priority, delegate) {
+        StarShip.call(this, priority, delegate);
+        this.__pack = pack
+    };
+    sys.Class(WSShip, StarShip, null);
+    WSShip.prototype.getPackage = function() {
+        return this.__pack
+    };
+    WSShip.prototype.getSN = function() {
+        return this.__pack
+    };
+    WSShip.prototype.getPayload = function() {
+        return this.__pack
+    };
+    ns.WSShip = WSShip;
+    ns.register("WSShip")
+})(StarGate, StarTrek, MONKEY);
+(function(ns, base, sys) {
+    var StarDocker = base.StarDocker;
+    var StarShip = base.StarShip;
+    var WSShip = ns.WSShip;
+    var WSDocker = function(gate) {
+        StarDocker.call(this, gate)
+    };
+    sys.Class(WSDocker, StarDocker, null);
+    WSDocker.prototype.pack = function(payload, priority, delegate) {
+        return new WSShip(payload, priority, delegate)
+    };
+    WSDocker.prototype.getIncomeShip = function() {
+        var gate = this.getGate();
+        var pack = gate.receive(1024 * 1024, true);
+        if (!pack) {
+            return null
+        }
+        return new WSShip(pack, 0, null)
+    };
+    WSDocker.prototype.processIncomeShip = function(income) {
+        var data = income.getPayload();
+        if (data.length === 0) {
+            return null
+        } else {
+            if (data.length === 2) {
+                if (sys.format.Arrays.equals(data, OK)) {
+                    return null
+                }
+            } else {
+                if (data.length === 4) {
+                    if (sys.format.Arrays.equals(data, NOOP)) {
+                        return null
+                    } else {
+                        if (sys.format.Arrays.equals(data, PONG)) {
+                            return null
+                        } else {
+                            if (sys.format.Arrays.equals(data, PING)) {
+                                return new WSShip(PONG, StarShip.SLOWER, null)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        var gate = this.getGate();
+        var delegate = gate.getDelegate();
+        var res = delegate.onGateReceived(gate, income);
+        if (!res) {
+            res = OK
+        }
+        return new WSShip(res, StarShip.NORMAL, null)
+    };
+    WSDocker.prototype.getHeartbeat = function() {
+        return new WSShip(PING, StarShip.SLOWER, null)
+    };
+    var PING = sys.format.UTF8.encode("PING");
+    var PONG = sys.format.UTF8.encode("PONG");
+    var NOOP = sys.format.UTF8.encode("NOOP");
+    var OK = sys.format.UTF8.encode("OK");
+    ns.WSDocker = WSDocker;
+    ns.register("WSDocker")
+})(StarGate, StarTrek, MONKEY);
+(function(ns, base, sys) {
+    var Gate = base.Gate;
+    var StarGate = base.StarGate;
+    var Connection = ns.Connection;
+    var WSDocker = ns.WSDocker;
+    var WSGate = function(connection) {
+        StarGate.call(this);
+        this.connection = connection
+    };
+    sys.Class(WSGate, StarGate, [Connection.Delegate]);
+    WSGate.prototype.createDocker = function() {
+        return new WSDocker(this)
+    };
+    WSGate.prototype.isRunning = function() {
+        var running = StarGate.prototype.isRunning.call(this);
+        return running && this.connection.isRunning()
+    };
+    WSGate.prototype.isExpired = function() {
+        var status = this.connection.getStatus();
+        return Connection.Status.Expired.equals(status)
+    };
+    WSGate.prototype.getStatus = function() {
+        var status = this.connection.getStatus();
+        return WSGate.getStatus(status)
+    };
+    WSGate.getStatus = function(connStatus) {
+        if (Connection.Status.Connecting.equals(connStatus)) {
+            return Gate.Status.Connecting
+        } else {
+            if (Connection.Status.Connected.equals(connStatus)) {
+                return Gate.Status.Connected
+            } else {
+                if (Connection.Status.Maintaining.equals(connStatus)) {
+                    return Gate.Status.Connected
+                } else {
+                    if (Connection.Status.Expired.equals(connStatus)) {
+                        return Gate.Status.Connected
+                    } else {
+                        if (Connection.Status.Error.equals(connStatus)) {
+                            return Gate.Status.Error
+                        } else {
+                            return Gate.Status.Init
+                        }
+                    }
+                }
+            }
+        }
+    };
+    WSGate.prototype.send = function(pack) {
+        var conn = this.connection;
+        if (conn.isRunning()) {
+            return conn.send(pack) === pack.length
+        } else {
+            return false
+        }
+    };
+    WSGate.prototype.receive = function(length, remove) {
+        var available = this.connection.available();
+        if (available < length) {
+            return null
+        }
+        return this.connection.receive(length)
+    };
+    WSGate.prototype.onConnectionStatusChanged = function(connection, oldStatus, newStatus) {
+        var s1 = WSGate.getStatus(oldStatus);
+        var s2 = WSGate.getStatus(newStatus);
+        if (!s1.equals(s2)) {
+            var delegate = this.getDelegate();
+            if (delegate) {
+                delegate.onGateStatusChanged(this, s1, s2)
+            }
+        }
+    };
+    WSGate.prototype.onConnectionReceivedData = function(connection, data) {};
+    ns.WSGate = WSGate;
+    ns.register("WSGate")
+})(StarGate, StarTrek, MONKEY);
 if (typeof DIMP.lnc !== "object") {
     DIMP.lnc = {}
 }
@@ -10115,3 +10396,7 @@ if (typeof DIMP.startrek !== "object") {
     DIMP.startrek = {}
 }
 StarTrek.exports(DIMP.startrek);
+if (typeof DIMP.stargate !== "object") {
+    DIMP.stargate = {}
+}
+StarGate.exports(DIMP.stargate);

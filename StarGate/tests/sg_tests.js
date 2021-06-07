@@ -10,8 +10,6 @@ var g_variables = {};
 (function (ns, sys) {
     'use strict';
 
-    var Thread = sys.threading.Thread;
-
     var ActiveConnection = ns.ActiveConnection;
     var WSGate = ns.WSGate;
 

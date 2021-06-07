@@ -1607,15 +1607,25 @@ if (typeof StarGate !== "object") {
     };
     WSDocker.prototype.processIncomeShip = function(income) {
         var data = income.getPayload();
-        if (data.length <= 4) {
-            if (sys.format.Arrays.equals(data, PING)) {
-                return null
-            } else {
-                if (sys.format.Arrays.equals(data, PONG)) {
+        if (data.length === 0) {
+            return null
+        } else {
+            if (data.length === 2) {
+                if (sys.format.Arrays.equals(data, OK)) {
                     return null
-                } else {
-                    if (sys.format.Arrays.equals(data, OK)) {
+                }
+            } else {
+                if (data.length === 4) {
+                    if (sys.format.Arrays.equals(data, NOOP)) {
                         return null
+                    } else {
+                        if (sys.format.Arrays.equals(data, PONG)) {
+                            return null
+                        } else {
+                            if (sys.format.Arrays.equals(data, PING)) {
+                                return new WSShip(PONG, StarShip.SLOWER, null)
+                            }
+                        }
                     }
                 }
             }
@@ -1633,6 +1643,7 @@ if (typeof StarGate !== "object") {
     };
     var PING = sys.format.UTF8.encode("PING");
     var PONG = sys.format.UTF8.encode("PONG");
+    var NOOP = sys.format.UTF8.encode("NOOP");
     var OK = sys.format.UTF8.encode("OK");
     ns.WSDocker = WSDocker;
     ns.register("WSDocker")
