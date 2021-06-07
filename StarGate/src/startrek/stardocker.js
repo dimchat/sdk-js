@@ -180,7 +180,7 @@
      * @return {StarShip}
      */
     StarDocker.prototype.getHeartbeat = function () {
-        console.assert(false, 'implement me!');
+        // console.assert(false, 'implement me!');
         return null;
     };
 

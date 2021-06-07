@@ -166,7 +166,7 @@
     //  Status
     //
 
-    BaseConnection.prototype.getState = function () {
+    BaseConnection.prototype.getStatus = function () {
         var now = new Date();
         fsm_tick.call(this, now.getTime());
         return this.__status;

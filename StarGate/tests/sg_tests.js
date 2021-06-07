@@ -7,20 +7,34 @@ sg_tests = [];
 
 var g_variables = {};
 
-!function (ns, sys) {
+(function (ns, sys) {
     'use strict';
 
-    var Connection = ns.Connection;
-    var ActiveConnection = ns.ActiveConnection;
+    var Thread = sys.threading.Thread;
 
-    var ConnectionDelegate = function () {
+    var ActiveConnection = ns.ActiveConnection;
+    var WSGate = ns.WSGate;
+
+    var StarTrek = function (connection) {
+        WSGate.call(this, connection);
     };
-    sys.Class(ConnectionDelegate, null, [Connection.Delegate]);
-    ConnectionDelegate.prototype.onConnectionStatusChanged = function (connection, oldStatus, newStatus) {
-        console.log('connection status changed: ' + oldStatus + ' -> ' + newStatus);
+    sys.Class(StarTrek, WSGate, null);
+
+    StarTrek.createGate = function (host, port) {
+        var conn = new ActiveConnection(host, port);
+        var gate = new StarTrek(conn);
+        conn.setDelegate(gate);
+        return gate;
     };
-    ConnectionDelegate.prototype.onConnectionReceivedData = function (connection, data) {
-        console.log('connection received data: ' + data.length + ' byte(s)');
+
+    StarTrek.prototype.start = function () {
+        this.connection.start();
+        WSGate.prototype.start.call(this);
+    };
+
+    StarTrek.prototype.finish = function () {
+        WSGate.prototype.finish.call(this);
+        this.connection.stop();
     };
 
     var test_connection = function () {
@@ -29,16 +43,16 @@ var g_variables = {};
         // var host = '106.52.25.169';
         var port = 9394;
 
-        var text = 'Hello world!\n';
-        var data = sys.format.UTF8.encode(text);
+        var gate = StarTrek.createGate(host, port);
+        gate.start();
+        g_variables['gate'] = gate;
 
-        var connection = new ActiveConnection(host, port);
-        connection.start();
+        var text = 'PING';
+        var data = sys.format.UTF8.encode(text);
         setTimeout(function () {
-            connection.send(data);
+            gate.send(data);
         }, 2000);
-        g_variables['connection'] = connection;
     };
     sg_tests.push(test_connection);
 
-}(StarGate, MONKEY);
+})(StarGate, MONKEY);
