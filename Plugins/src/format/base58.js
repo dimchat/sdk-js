@@ -196,7 +196,7 @@
         return bs58.decode(string);
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.format.Base58.coder = new base58();
 
 })(DIMP);

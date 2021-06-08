@@ -60,7 +60,7 @@
 
     WSGate.prototype.isExpired = function () {
         var status = this.connection.getStatus();
-        return Connection.Status.Expired.equals(status);
+        return Connection.Status.EXPIRED.equals(status);
     };
 
     WSGate.prototype.getStatus = function () {
@@ -68,24 +68,24 @@
         return WSGate.getStatus(status);
     };
     WSGate.getStatus = function (connStatus) {
-        if (Connection.Status.Connecting.equals(connStatus)) {
-            // Connecting -> Connecting
-            return Gate.Status.Connecting;
-        } else if (Connection.Status.Connected.equals(connStatus)) {
-            // Connected -> Connected
-            return Gate.Status.Connected;
-        } else if (Connection.Status.Maintaining.equals(connStatus)) {
-            // Maintaining -> Connected
-            return Gate.Status.Connected;
-        } else if (Connection.Status.Expired.equals(connStatus)) {
-            // Expired -> Connected
-            return Gate.Status.Connected;
-        } else if (Connection.Status.Error.equals(connStatus)) {
-            // Error -> Error
-            return Gate.Status.Error;
+        if (Connection.Status.CONNECTING.equals(connStatus)) {
+            // CONNECTING -> CONNECTING
+            return Gate.Status.CONNECTING;
+        } else if (Connection.Status.CONNECTED.equals(connStatus)) {
+            // CONNECTED -> CONNECTED
+            return Gate.Status.CONNECTED;
+        } else if (Connection.Status.MAINTAINING.equals(connStatus)) {
+            // MAINTAINING -> CONNECTED
+            return Gate.Status.CONNECTED;
+        } else if (Connection.Status.EXPIRED.equals(connStatus)) {
+            // EXPIRED -> CONNECTED
+            return Gate.Status.CONNECTED;
+        } else if (Connection.Status.ERROR.equals(connStatus)) {
+            // ERROR -> ERROR
+            return Gate.Status.ERROR;
         } else {
-            // Default -> Init
-            return Gate.Status.Init;
+            // DEFAULT -> INIT
+            return Gate.Status.INIT;
         }
     };
 

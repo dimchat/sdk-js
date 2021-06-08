@@ -139,7 +139,9 @@
         return decode_rsa_private(pem);
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.format.PEM = new pem();
+
+    ns.format.register('PEM');
 
 })(DIMP);

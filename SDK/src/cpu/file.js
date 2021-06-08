@@ -41,8 +41,8 @@
 
     var ContentProcessor = ns.cpu.ContentProcessor;
 
-    var FileContentProcessor = function (messenger) {
-        ContentProcessor.call(this, messenger);
+    var FileContentProcessor = function () {
+        ContentProcessor.call(this);
     };
     ns.Class(FileContentProcessor, ContentProcessor, null);
 

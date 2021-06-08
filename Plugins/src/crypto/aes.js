@@ -170,10 +170,6 @@
         return CryptographyKey.matches(pKey, this);
     };
 
-    //-------- register --------
-    SymmetricKey.register(SymmetricKey.AES, AESKey);
-    SymmetricKey.register('AES/CBC/PKCS7Padding', AESKey);
-
     //-------- namespace --------
     ns.crypto.AESKey = AESKey;
 

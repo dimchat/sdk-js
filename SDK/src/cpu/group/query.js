@@ -41,8 +41,8 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var QueryCommandProcessor = function (messenger) {
-        GroupCommandProcessor.call(this, messenger);
+    var QueryCommandProcessor = function () {
+        GroupCommandProcessor.call(this);
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
 

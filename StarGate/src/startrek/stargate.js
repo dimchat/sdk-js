@@ -95,7 +95,7 @@
     };
 
     StarGate.prototype.sendShip = function (outgo) {
-        if (!this.getStatus().equals(Gate.Status.Connected)) {
+        if (!this.getStatus().equals(Gate.Status.CONNECTED)) {
             // not connect yet
             return false;
         } else if (outgo.priority > StarShip.URGENT) {

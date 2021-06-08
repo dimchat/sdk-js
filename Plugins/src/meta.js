@@ -90,7 +90,7 @@
         return address;
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.DefaultMeta = DefaultMeta;
 
     ns.register('DefaultMeta');
@@ -149,7 +149,7 @@
         return this.__address;
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.BTCMeta = BTCMeta;
 
     ns.register('BTCMeta');

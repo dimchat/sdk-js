@@ -37,8 +37,8 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var ExpelCommandProcessor = function (messenger) {
-        GroupCommandProcessor.call(this, messenger);
+    var ExpelCommandProcessor = function () {
+        GroupCommandProcessor.call(this);
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
 

@@ -39,8 +39,8 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var InviteCommandProcessor = function (messenger) {
-        GroupCommandProcessor.call(this, messenger);
+    var InviteCommandProcessor = function () {
+        GroupCommandProcessor.call(this);
     };
     ns.Class(InviteCommandProcessor, GroupCommandProcessor, null);
 

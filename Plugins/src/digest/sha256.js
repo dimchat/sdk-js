@@ -50,7 +50,7 @@
         return ns.format.Hex.decode(result.toString());
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.digest.SHA256.hash = new sha256();
 
 })(DIMP);

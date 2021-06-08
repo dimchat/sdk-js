@@ -46,7 +46,7 @@
         this._socket = socket;  // connected Socket
         this.__cache = this.createCachePool();
         this.__delegate = null;
-        this.__status = Connection.Status.Default;
+        this.__status = Connection.Status.DEFAULT;
         this.__lastSentTime = 0;
         this.__lastReceivedTime = 0;
     };
@@ -103,7 +103,7 @@
     var write = function (data) {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error('socket lost, cannot write data: ' + data.length + ' byte(s)');
+            throw new Error('socket lost, cannot write data: ' + data.length + ' byte(s)');
         }
         sock.send(data);
         this.__lastSentTime = (new Date()).getTime();
@@ -112,7 +112,7 @@
     var read = function () {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error('socket lost, cannot read data');
+            throw new Error('socket lost, cannot read data');
         }
         var data = sock.receive();
         if (data) {
@@ -135,7 +135,7 @@
         } catch (e) {
             // [TCP] failed to receive data
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null;
         }
     };
@@ -145,7 +145,7 @@
         } catch (e) {
             // [TCP] failed to send data
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null;
         }
     };
@@ -177,8 +177,8 @@
             return;
         }
         this.__status = newStatus;
-        if (newStatus.equals(Connection.Status.Connected) &&
-            !oldStatus.equals(Connection.Status.Maintaining)) {
+        if (newStatus.equals(Connection.Status.CONNECTED) &&
+            !oldStatus.equals(Connection.Status.MAINTAINING)) {
             // change status to 'connected', reset times to just expired
             var now = (new Date()).getTime();
             this.__lastSentTime = now - Connection.EXPIRES - 1;
@@ -201,12 +201,12 @@
     };
 
     BaseConnection.prototype.setup = function () {
-        this.setStatus(Connection.Status.Connecting);
+        this.setStatus(Connection.Status.CONNECTING);
     };
 
     BaseConnection.prototype.finish = function () {
         close.call(this);
-        this.setStatus(Connection.Status.Default);
+        this.setStatus(Connection.Status.DEFAULT);
     };
 
     /**
@@ -252,66 +252,66 @@
     var evaluations = {
     };
     // Connection not started yet
-    evaluations[Connection.Status.Default] = function (now) {
+    evaluations[Connection.Status.DEFAULT] = function (now) {
         if (this.isRunning()) {
             // connection started, change status to 'connecting'
-            this.setStatus(Connection.Status.Connecting);
+            this.setStatus(Connection.Status.CONNECTING);
         }
     };
     // Connection started, not connected yet
-    evaluations[Connection.Status.Connecting] = function (now) {
+    evaluations[Connection.Status.CONNECTING] = function (now) {
         if (!this.isRunning()) {
             // connection stopped, change status to 'not_connect'
-            this.setStatus(Connection.Status.Default);
+            this.setStatus(Connection.Status.DEFAULT);
         } else if (this.getSocket() != null) {
             // connection connected, change status to 'connected'
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
         }
     };
     // Normal status of connection
-    evaluations[Connection.Status.Connected] = function (now) {
+    evaluations[Connection.Status.CONNECTED] = function (now) {
         if (this.getSocket() == null) {
             // connection lost, change status to 'error'
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
         } else if (now > this.__lastReceivedTime + Connection.EXPIRES) {
             // long time no response, change status to 'maintain_expired'
-            this.setStatus(Connection.Status.Expired);
+            this.setStatus(Connection.Status.EXPIRED);
         }
     };
     // Long time no response, need maintaining
-    evaluations[Connection.Status.Expired] = function (now) {
+    evaluations[Connection.Status.EXPIRED] = function (now) {
         if (this.getSocket() == null) {
             // connection lost, change status to 'error'
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
         } else if (now < this.__lastSentTime + Connection.EXPIRES) {
             // sent recently, change status to 'maintaining'
-            this.setStatus(Connection.Status.Maintaining);
+            this.setStatus(Connection.Status.MAINTAINING);
         }
     };
     // Heartbeat sent, waiting response
-    evaluations[Connection.Status.Maintaining] = function (now) {
+    evaluations[Connection.Status.MAINTAINING] = function (now) {
         if (this.getSocket() == null) {
             // connection lost, change status to 'error'
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
         } else if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
             // long long time no response, change status to 'error
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
         } else if (now < this.__lastReceivedTime + Connection.EXPIRES) {
             // received recently, change status to 'connected'
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
         } else if (now > this.__lastSentTime + Connection.EXPIRES) {
             // long time no sending, change status to 'maintain_expired'
-            this.setStatus(Connection.Status.Expired);
+            this.setStatus(Connection.Status.EXPIRED);
         }
     };
     // Connection lost
-    evaluations[Connection.Status.Error] = function (now) {
+    evaluations[Connection.Status.ERROR] = function (now) {
         if (!this.isRunning()) {
             // connection stopped, change status to 'not_connect'
-            this.setStatus(Connection.Status.Default);
+            this.setStatus(Connection.Status.DEFAULT);
         } else if (this.getSocket() != null) {
             // connection reconnected, change status to 'connected'
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
         }
     };
 

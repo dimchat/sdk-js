@@ -50,7 +50,7 @@
         return ns.format.Hex.decode(result.toString());
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.digest.MD5.hash = new md5();
 
 })(DIMP);

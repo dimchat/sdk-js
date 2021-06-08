@@ -275,7 +275,8 @@
     pem.prototype.decodePrivateKey = function(pem) {
         return decode_rsa_private(pem)
     };
-    ns.format.PEM = new pem()
+    ns.format.PEM = new pem();
+    ns.format.register("PEM")
 })(DIMP);
 (function(ns) {
     var Hex = ns.format.Hex;
@@ -349,9 +350,6 @@
         }
         throw new Error("RSA encrypt error: " + plaintext)
     };
-    PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
-    PublicKey.register("SHA256withRSA", RSAPublicKey);
-    PublicKey.register("RSA/ECB/PKCS1Padding", RSAPublicKey);
     ns.crypto.RSAPublicKey = RSAPublicKey;
     ns.crypto.register("RSAPublicKey")
 })(DIMP);
@@ -443,9 +441,6 @@
     RSAPrivateKey.prototype.matches = function(pKey) {
         return CryptographyKey.matches(pKey, this)
     };
-    PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
-    PrivateKey.register("SHA256withRSA", RSAPrivateKey);
-    PrivateKey.register("RSA/ECB/PKCS1Padding", RSAPrivateKey);
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
     ns.crypto.register("RSAPrivateKey")
 })(DIMP);
@@ -544,8 +539,6 @@
     AESKey.prototype.matches = function(pKey) {
         return CryptographyKey.matches(pKey, this)
     };
-    SymmetricKey.register(SymmetricKey.AES, AESKey);
-    SymmetricKey.register("AES/CBC/PKCS7Padding", AESKey);
     ns.crypto.AESKey = AESKey;
     ns.crypto.register("AESKey")
 })(DIMP);
@@ -887,7 +880,9 @@
     PlainKeyFactory.prototype.parseSymmetricKey = function(key) {
         return PlainKey.getInstance()
     };
-    SymmetricKey.register(SymmetricKey.AES, new AESKeyFactory());
+    var aes = new AESKeyFactory();
+    SymmetricKey.register(SymmetricKey.AES, aes);
+    SymmetricKey.register("AES/CBC/PKCS7Padding", aes);
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory())
 })(DIMP);
 (function(ns) {
@@ -911,6 +906,12 @@
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new RSAPublicKey(key)
     };
-    PrivateKey.register(AsymmetricKey.RSA, new RSAPrivateKeyFactory());
-    PublicKey.register(AsymmetricKey.RSA, new RSAPublicKeyFactory())
+    var rsa_pri = new RSAPrivateKeyFactory();
+    PrivateKey.register(AsymmetricKey.RSA, rsa_pri);
+    PrivateKey.register("SHA256withRSA", rsa_pri);
+    PrivateKey.register("RSA/ECB/PKCS1Padding", rsa_pri);
+    var rsa_pub = new RSAPublicKeyFactory();
+    PublicKey.register(AsymmetricKey.RSA, rsa_pub);
+    PublicKey.register("SHA256withRSA", rsa_pub);
+    PublicKey.register("RSA/ECB/PKCS1Padding", rsa_pub)
 })(DIMP);

@@ -42,8 +42,8 @@
 
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
 
-    var DocumentCommandProcessor = function (messenger) {
-        MetaCommandProcessor.call(this, messenger);
+    var DocumentCommandProcessor = function () {
+        MetaCommandProcessor.call(this);
     };
     ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null);
 

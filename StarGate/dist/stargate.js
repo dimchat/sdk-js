@@ -708,10 +708,10 @@ if (typeof StarGate !== "object") {
         return null
     };
     var GateStatus = sys.type.Enum(null, {
-        Error: -1,
-        Init: 0,
-        Connecting: 1,
-        Connected: 2
+        ERROR: -1,
+        INIT: 0,
+        CONNECTING: 1,
+        CONNECTED: 2
     });
     var GateDelegate = function() {};
     sys.Interface(GateDelegate, null);
@@ -771,7 +771,7 @@ if (typeof StarGate !== "object") {
         }
     };
     StarGate.prototype.sendShip = function(outgo) {
-        if (!this.getStatus().equals(Gate.Status.Connected)) {
+        if (!this.getStatus().equals(Gate.Status.CONNECTED)) {
             return false
         } else {
             if (outgo.priority > StarShip.URGENT) {
@@ -935,7 +935,7 @@ if (typeof StarGate !== "object") {
                 if (scheme === "wss" || scheme === "https") {
                     port = 443
                 } else {
-                    throw URIError("URL scheme error: " + scheme)
+                    throw new URIError("URL scheme error: " + scheme)
                 }
             }
         }
@@ -1046,12 +1046,12 @@ if (typeof StarGate !== "object") {
         return null
     };
     var ConnectionStatus = sys.type.Enum(null, {
-        Default: (0),
-        Connecting: (1),
-        Connected: (17),
-        Maintaining: (33),
-        Expired: (34),
-        Error: (136)
+        DEFAULT: (0),
+        CONNECTING: (1),
+        CONNECTED: (17),
+        MAINTAINING: (33),
+        EXPIRED: (34),
+        ERROR: (136)
     });
     var ConnectionDelegate = function() {};
     sys.Interface(ConnectionDelegate, null);
@@ -1075,7 +1075,7 @@ if (typeof StarGate !== "object") {
         this._socket = socket;
         this.__cache = this.createCachePool();
         this.__delegate = null;
-        this.__status = Connection.Status.Default;
+        this.__status = Connection.Status.DEFAULT;
         this.__lastSentTime = 0;
         this.__lastReceivedTime = 0
     };
@@ -1119,7 +1119,7 @@ if (typeof StarGate !== "object") {
     var write = function(data) {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error("socket lost, cannot write data: " + data.length + " byte(s)")
+            throw new Error("socket lost, cannot write data: " + data.length + " byte(s)")
         }
         sock.send(data);
         this.__lastSentTime = (new Date()).getTime();
@@ -1128,7 +1128,7 @@ if (typeof StarGate !== "object") {
     var read = function() {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error("socket lost, cannot read data")
+            throw new Error("socket lost, cannot read data")
         }
         var data = sock.receive();
         if (data) {
@@ -1148,7 +1148,7 @@ if (typeof StarGate !== "object") {
             return read.call(this)
         } catch (e) {
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null
         }
     };
@@ -1157,7 +1157,7 @@ if (typeof StarGate !== "object") {
             return write.call(this, data)
         } catch (e) {
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null
         }
     };
@@ -1181,7 +1181,7 @@ if (typeof StarGate !== "object") {
             return
         }
         this.__status = newStatus;
-        if (newStatus.equals(Connection.Status.Connected) && !oldStatus.equals(Connection.Status.Maintaining)) {
+        if (newStatus.equals(Connection.Status.CONNECTED) && !oldStatus.equals(Connection.Status.MAINTAINING)) {
             var now = (new Date()).getTime();
             this.__lastSentTime = now - Connection.EXPIRES - 1;
             this.__lastReceivedTime = now - Connection.EXPIRES - 1
@@ -1196,11 +1196,11 @@ if (typeof StarGate !== "object") {
         Runner.prototype.stop.call(this)
     };
     BaseConnection.prototype.setup = function() {
-        this.setStatus(Connection.Status.Connecting)
+        this.setStatus(Connection.Status.CONNECTING)
     };
     BaseConnection.prototype.finish = function() {
         close.call(this);
-        this.setStatus(Connection.Status.Default)
+        this.setStatus(Connection.Status.DEFAULT)
     };
     BaseConnection.prototype.process = function() {
         var count = this.__cache.length();
@@ -1227,61 +1227,61 @@ if (typeof StarGate !== "object") {
         }
     };
     var evaluations = {};
-    evaluations[Connection.Status.Default] = function(now) {
+    evaluations[Connection.Status.DEFAULT] = function(now) {
         if (this.isRunning()) {
-            this.setStatus(Connection.Status.Connecting)
+            this.setStatus(Connection.Status.CONNECTING)
         }
     };
-    evaluations[Connection.Status.Connecting] = function(now) {
+    evaluations[Connection.Status.CONNECTING] = function(now) {
         if (!this.isRunning()) {
-            this.setStatus(Connection.Status.Default)
+            this.setStatus(Connection.Status.DEFAULT)
         } else {
             if (this.getSocket() != null) {
-                this.setStatus(Connection.Status.Connected)
+                this.setStatus(Connection.Status.CONNECTED)
             }
         }
     };
-    evaluations[Connection.Status.Connected] = function(now) {
+    evaluations[Connection.Status.CONNECTED] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + Connection.EXPIRES) {
-                this.setStatus(Connection.Status.Expired)
+                this.setStatus(Connection.Status.EXPIRED)
             }
         }
     };
-    evaluations[Connection.Status.Expired] = function(now) {
+    evaluations[Connection.Status.EXPIRED] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now < this.__lastSentTime + Connection.EXPIRES) {
-                this.setStatus(Connection.Status.Maintaining)
+                this.setStatus(Connection.Status.MAINTAINING)
             }
         }
     };
-    evaluations[Connection.Status.Maintaining] = function(now) {
+    evaluations[Connection.Status.MAINTAINING] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
-                this.setStatus(Connection.Status.Error)
+                this.setStatus(Connection.Status.ERROR)
             } else {
                 if (now < this.__lastReceivedTime + Connection.EXPIRES) {
-                    this.setStatus(Connection.Status.Connected)
+                    this.setStatus(Connection.Status.CONNECTED)
                 } else {
                     if (now > this.__lastSentTime + Connection.EXPIRES) {
-                        this.setStatus(Connection.Status.Expired)
+                        this.setStatus(Connection.Status.EXPIRED)
                     }
                 }
             }
         }
     };
-    evaluations[Connection.Status.Error] = function(now) {
+    evaluations[Connection.Status.ERROR] = function(now) {
         if (!this.isRunning()) {
-            this.setStatus(Connection.Status.Default)
+            this.setStatus(Connection.Status.DEFAULT)
         } else {
             if (this.getSocket() != null) {
-                this.setStatus(Connection.Status.Connected)
+                this.setStatus(Connection.Status.CONNECTED)
             }
         }
     };
@@ -1301,15 +1301,15 @@ if (typeof StarGate !== "object") {
     };
     sys.Class(ActiveConnection, BaseConnection, null);
     var connect = function() {
-        this.setStatus(Connection.Status.Connecting);
+        this.setStatus(Connection.Status.CONNECTING);
         try {
             var sock = new Socket(null);
             sock.connect(this.getHost(), this.getPort());
             this._socket = sock;
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
             return true
         } catch (e) {
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return false
         }
     };
@@ -1667,29 +1667,29 @@ if (typeof StarGate !== "object") {
     };
     WSGate.prototype.isExpired = function() {
         var status = this.connection.getStatus();
-        return Connection.Status.Expired.equals(status)
+        return Connection.Status.EXPIRED.equals(status)
     };
     WSGate.prototype.getStatus = function() {
         var status = this.connection.getStatus();
         return WSGate.getStatus(status)
     };
     WSGate.getStatus = function(connStatus) {
-        if (Connection.Status.Connecting.equals(connStatus)) {
-            return Gate.Status.Connecting
+        if (Connection.Status.CONNECTING.equals(connStatus)) {
+            return Gate.Status.CONNECTING
         } else {
-            if (Connection.Status.Connected.equals(connStatus)) {
-                return Gate.Status.Connected
+            if (Connection.Status.CONNECTED.equals(connStatus)) {
+                return Gate.Status.CONNECTED
             } else {
-                if (Connection.Status.Maintaining.equals(connStatus)) {
-                    return Gate.Status.Connected
+                if (Connection.Status.MAINTAINING.equals(connStatus)) {
+                    return Gate.Status.CONNECTED
                 } else {
-                    if (Connection.Status.Expired.equals(connStatus)) {
-                        return Gate.Status.Connected
+                    if (Connection.Status.EXPIRED.equals(connStatus)) {
+                        return Gate.Status.CONNECTED
                     } else {
-                        if (Connection.Status.Error.equals(connStatus)) {
-                            return Gate.Status.Error
+                        if (Connection.Status.ERROR.equals(connStatus)) {
+                            return Gate.Status.ERROR
                         } else {
-                            return Gate.Status.Init
+                            return Gate.Status.INIT
                         }
                     }
                 }

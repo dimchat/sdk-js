@@ -148,11 +148,6 @@
         throw new Error('RSA encrypt error: ' + plaintext);
     };
 
-    //-------- register --------
-    PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
-    PublicKey.register('SHA256withRSA', RSAPublicKey);
-    PublicKey.register('RSA/ECB/PKCS1Padding', RSAPublicKey);
-
     //-------- namespace --------
     ns.crypto.RSAPublicKey = RSAPublicKey;
 
@@ -288,11 +283,6 @@
     RSAPrivateKey.prototype.matches = function (pKey) {
         return CryptographyKey.matches(pKey, this);
     };
-
-    //-------- register --------
-    PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
-    PrivateKey.register('SHA256withRSA', RSAPrivateKey);
-    PrivateKey.register('RSA/ECB/PKCS1Padding', RSAPrivateKey);
 
     //-------- namespace --------
     ns.crypto.RSAPrivateKey = RSAPrivateKey;

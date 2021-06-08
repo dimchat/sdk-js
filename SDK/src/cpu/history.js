@@ -40,8 +40,8 @@
 
     var CommandProcessor = ns.cpu.CommandProcessor;
 
-    var HistoryCommandProcessor = function (messenger) {
-        CommandProcessor.call(this, messenger);
+    var HistoryCommandProcessor = function () {
+        CommandProcessor.call(this);
     };
     ns.Class(HistoryCommandProcessor, CommandProcessor, null);
 

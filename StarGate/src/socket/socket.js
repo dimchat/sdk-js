@@ -89,7 +89,7 @@
             } else if (scheme === 'wss' || scheme === 'https') {
                 port = 443;
             } else {
-                throw URIError('URL scheme error: ' + scheme);
+                throw new URIError('URL scheme error: ' + scheme);
             }
         }
         return {

@@ -37,8 +37,8 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var QuitCommandProcessor = function (messenger) {
-        GroupCommandProcessor.call(this, messenger);
+    var QuitCommandProcessor = function () {
+        GroupCommandProcessor.call(this);
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
 

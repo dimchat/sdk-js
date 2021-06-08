@@ -118,9 +118,6 @@
         commandProcessors[command] = cpu;
     };
 
-    //-------- register --------
-    ContentProcessor.register(ContentType.COMMAND, CommandProcessor);
-
     //-------- namespace --------
     ns.cpu.CommandProcessor = CommandProcessor;
 

@@ -50,7 +50,7 @@
         return ns.format.Hex.decode(result.toString());
     };
 
-    //-------- register --------
+    //-------- namespace --------
     ns.digest.RIPEMD160.hash = new ripemd160();
 
 })(DIMP);

@@ -113,6 +113,7 @@
         }
     };
 
+    //-------- namespace --------
     ns.cpu.ContentProcessor = ContentProcessor;
 
     ns.cpu.register('ContentProcessor')

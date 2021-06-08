@@ -254,7 +254,10 @@
      *  Register symmetric key parsers
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    SymmetricKey.register(SymmetricKey.AES, new AESKeyFactory());
+    var aes = new AESKeyFactory();
+    SymmetricKey.register(SymmetricKey.AES, aes);
+    SymmetricKey.register('AES/CBC/PKCS7Padding', aes);
+
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory());
 
 })(DIMP);
@@ -302,7 +305,14 @@
      *  Register asymmetric key parsers
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    PrivateKey.register(AsymmetricKey.RSA, new RSAPrivateKeyFactory());
-    PublicKey.register(AsymmetricKey.RSA, new RSAPublicKeyFactory());
+    var rsa_pri = new RSAPrivateKeyFactory();
+    PrivateKey.register(AsymmetricKey.RSA, rsa_pri);
+    PrivateKey.register('SHA256withRSA', rsa_pri);
+    PrivateKey.register('RSA/ECB/PKCS1Padding', rsa_pri);
+
+    var rsa_pub = new RSAPublicKeyFactory();
+    PublicKey.register(AsymmetricKey.RSA, rsa_pub);
+    PublicKey.register('SHA256withRSA', rsa_pub);
+    PublicKey.register('RSA/ECB/PKCS1Padding', rsa_pub);
 
 })(DIMP);

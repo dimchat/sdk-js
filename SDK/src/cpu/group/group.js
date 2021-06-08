@@ -43,8 +43,8 @@
     /**
      *  Group Command Processor
      */
-    var GroupCommandProcessor = function (messenger) {
-        HistoryCommandProcessor.call(this, messenger);
+    var GroupCommandProcessor = function () {
+        HistoryCommandProcessor.call(this);
     };
     ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
 

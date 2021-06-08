@@ -176,10 +176,10 @@
     };
 
     var GateStatus = sys.type.Enum(null, {
-        Error:     -1,
-        Init:       0,
-        Connecting: 1,
-        Connected:  2
+        ERROR:     -1,
+        INIT:       0,
+        CONNECTING: 1,
+        CONNECTED:  2
     });
 
     /**

@@ -39,8 +39,8 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var ResetCommandProcessor = function (messenger) {
-        GroupCommandProcessor.call(this, messenger);
+    var ResetCommandProcessor = function () {
+        GroupCommandProcessor.call(this);
     };
     ns.Class(ResetCommandProcessor, GroupCommandProcessor, null);
 

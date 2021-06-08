@@ -55,15 +55,15 @@
     sys.Class(ActiveConnection, BaseConnection, null);
 
     var connect = function () {
-        this.setStatus(Connection.Status.Connecting);
+        this.setStatus(Connection.Status.CONNECTING);
         try {
             var sock = new Socket(null);
             sock.connect(this.getHost(), this.getPort());
             this._socket = sock;
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
             return true;
         } catch (e) {
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return false;
         }
     };

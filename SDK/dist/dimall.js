@@ -1267,7 +1267,7 @@ if (typeof MONKEY !== "object") {
     Thread.prototype.run = function() {
         var target = this.__target;
         if (!target || target === this) {
-            throw SyntaxError("Thread::run() > override me!")
+            throw new SyntaxError("Thread::run() > override me!")
         } else {
             return target.run()
         }
@@ -1373,7 +1373,7 @@ if (typeof MONKEY !== "object") {
     Runner.prototype.process = function() {
         var processor = this.__processor;
         if (!processor || processor === this) {
-            throw SyntaxError("Runner::process() > override me!")
+            throw new SyntaxError("Runner::process() > override me!")
         } else {
             return processor.process()
         }
@@ -4751,7 +4751,6 @@ if (typeof DIMP !== "object") {
         Command.setCommand(name, this.getMap())
     };
     Command.META = "meta";
-    Command.PROFILE = "profile";
     Command.DOCUMENT = "document";
     Command.RECEIPT = "receipt";
     Command.HANDSHAKE = "handshake";
@@ -4865,7 +4864,7 @@ if (typeof DIMP !== "object") {
     var DocumentCommand = function() {
         if (arguments.length === 1) {
             if (ns.Interface.conforms(arguments[0], ID)) {
-                MetaCommand.call(this, Command.PROFILE, arguments[0])
+                MetaCommand.call(this, Command.DOCUMENT, arguments[0])
             } else {
                 MetaCommand.call(this, arguments[0])
             }
@@ -4873,10 +4872,10 @@ if (typeof DIMP !== "object") {
         } else {
             if (arguments.length === 2) {
                 if (ns.Interface.conforms(arguments[1], Meta)) {
-                    MetaCommand.call(this, Command.PROFILE, arguments[0], arguments[1])
+                    MetaCommand.call(this, Command.DOCUMENT, arguments[0], arguments[1])
                 } else {
                     if (typeof arguments[1] === "string") {
-                        MetaCommand.call(this, Command.PROFILE, arguments[0], null);
+                        MetaCommand.call(this, Command.DOCUMENT, arguments[0], null);
                         this.setSignature(arguments[1])
                     } else {
                         throw new SyntaxError("document command arguments error: " + arguments)
@@ -4885,7 +4884,7 @@ if (typeof DIMP !== "object") {
                 this.__document = null
             } else {
                 if (arguments.length === 3) {
-                    MetaCommand.call(this, Command.PROFILE, arguments[0], arguments[1]);
+                    MetaCommand.call(this, Command.DOCUMENT, arguments[0], arguments[1]);
                     this.setDocument(arguments[2])
                 } else {
                     throw new SyntaxError("document command arguments error: " + arguments)
@@ -6127,7 +6126,9 @@ if (typeof DIMP !== "object") {
         Command.register(Command.META, new CommandFactory(ns.protocol.MetaCommand));
         var dpu = new CommandFactory(ns.protocol.DocumentCommand);
         Command.register(Command.DOCUMENT, dpu);
-        Command.register(Command.PROFILE, dpu);
+        Command.register("profile", dpu);
+        Command.register("visa", dpu);
+        Command.register("bulletin", dpu);
         Command.register("group", new GroupCommandFactory());
         Command.register(GroupCommand.INVITE, new CommandFactory(ns.protocol.group.InviteCommand));
         Command.register(GroupCommand.EXPEL, new CommandFactory(ns.protocol.group.ExpelCommand));
@@ -6136,18 +6137,22 @@ if (typeof DIMP !== "object") {
         Command.register(GroupCommand.QUERY, new CommandFactory(ns.protocol.group.QueryCommand));
         Command.register(GroupCommand.RESET, new CommandFactory(ns.protocol.group.ResetCommand))
     };
-    registerContentFactories();
-    registerCommandFactories();
+    var registerCoreFactories = function() {
+        registerContentFactories();
+        registerCommandFactories()
+    };
     ns.core.ContentFactory = ContentFactory;
     ns.core.CommandFactory = CommandFactory;
     ns.core.GeneralCommandFactory = GeneralCommandFactory;
     ns.core.HistoryCommandFactory = HistoryCommandFactory;
     ns.core.GroupCommandFactory = GroupCommandFactory;
+    ns.core.registerAllFactories = registerCoreFactories;
     ns.core.register("ContentFactory");
     ns.core.register("CommandFactory");
     ns.core.register("GeneralCommandFactory");
     ns.core.register("HistoryCommandFactory");
-    ns.core.register("GroupCommandFactory")
+    ns.core.register("GroupCommandFactory");
+    ns.core.register("registerAllFactories")
 })(DIMP);
 (function(ns) {
     if (typeof String.prototype.repeat !== "function") {
@@ -6417,7 +6422,8 @@ if (typeof DIMP !== "object") {
     pem.prototype.decodePrivateKey = function(pem) {
         return decode_rsa_private(pem)
     };
-    ns.format.PEM = new pem()
+    ns.format.PEM = new pem();
+    ns.format.register("PEM")
 })(DIMP);
 (function(ns) {
     var Hex = ns.format.Hex;
@@ -6491,9 +6497,6 @@ if (typeof DIMP !== "object") {
         }
         throw new Error("RSA encrypt error: " + plaintext)
     };
-    PublicKey.register(AsymmetricKey.RSA, RSAPublicKey);
-    PublicKey.register("SHA256withRSA", RSAPublicKey);
-    PublicKey.register("RSA/ECB/PKCS1Padding", RSAPublicKey);
     ns.crypto.RSAPublicKey = RSAPublicKey;
     ns.crypto.register("RSAPublicKey")
 })(DIMP);
@@ -6585,9 +6588,6 @@ if (typeof DIMP !== "object") {
     RSAPrivateKey.prototype.matches = function(pKey) {
         return CryptographyKey.matches(pKey, this)
     };
-    PrivateKey.register(AsymmetricKey.RSA, RSAPrivateKey);
-    PrivateKey.register("SHA256withRSA", RSAPrivateKey);
-    PrivateKey.register("RSA/ECB/PKCS1Padding", RSAPrivateKey);
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
     ns.crypto.register("RSAPrivateKey")
 })(DIMP);
@@ -6686,8 +6686,6 @@ if (typeof DIMP !== "object") {
     AESKey.prototype.matches = function(pKey) {
         return CryptographyKey.matches(pKey, this)
     };
-    SymmetricKey.register(SymmetricKey.AES, AESKey);
-    SymmetricKey.register("AES/CBC/PKCS7Padding", AESKey);
     ns.crypto.AESKey = AESKey;
     ns.crypto.register("AESKey")
 })(DIMP);
@@ -7029,7 +7027,9 @@ if (typeof DIMP !== "object") {
     PlainKeyFactory.prototype.parseSymmetricKey = function(key) {
         return PlainKey.getInstance()
     };
-    SymmetricKey.register(SymmetricKey.AES, new AESKeyFactory());
+    var aes = new AESKeyFactory();
+    SymmetricKey.register(SymmetricKey.AES, aes);
+    SymmetricKey.register("AES/CBC/PKCS7Padding", aes);
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory())
 })(DIMP);
 (function(ns) {
@@ -7053,8 +7053,14 @@ if (typeof DIMP !== "object") {
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new RSAPublicKey(key)
     };
-    PrivateKey.register(AsymmetricKey.RSA, new RSAPrivateKeyFactory());
-    PublicKey.register(AsymmetricKey.RSA, new RSAPublicKeyFactory())
+    var rsa_pri = new RSAPrivateKeyFactory();
+    PrivateKey.register(AsymmetricKey.RSA, rsa_pri);
+    PrivateKey.register("SHA256withRSA", rsa_pri);
+    PrivateKey.register("RSA/ECB/PKCS1Padding", rsa_pri);
+    var rsa_pub = new RSAPublicKeyFactory();
+    PublicKey.register(AsymmetricKey.RSA, rsa_pub);
+    PublicKey.register("SHA256withRSA", rsa_pub);
+    PublicKey.register("RSA/ECB/PKCS1Padding", rsa_pub)
 })(DIMP);
 (function(ns) {
     if (typeof ns.cpu !== "object") {
@@ -7598,15 +7604,14 @@ if (typeof DIMP !== "object") {
     CommandProcessor.register = function(command, cpu) {
         commandProcessors[command] = cpu
     };
-    ContentProcessor.register(ContentType.COMMAND, CommandProcessor);
     ns.cpu.CommandProcessor = CommandProcessor;
     ns.cpu.register("CommandProcessor")
 })(DIMP);
 (function(ns) {
     var ForwardContent = ns.protocol.ForwardContent;
     var ContentProcessor = ns.cpu.ContentProcessor;
-    var ForwardContentProcessor = function(messenger) {
-        ContentProcessor.call(this, messenger)
+    var ForwardContentProcessor = function() {
+        ContentProcessor.call(this)
     };
     ns.Class(ForwardContentProcessor, ContentProcessor, null);
     ForwardContentProcessor.prototype.process = function(content, rMsg) {
@@ -7624,8 +7629,8 @@ if (typeof DIMP !== "object") {
     var FileContent = ns.protocol.FileContent;
     var InstantMessage = ns.protocol.InstantMessage;
     var ContentProcessor = ns.cpu.ContentProcessor;
-    var FileContentProcessor = function(messenger) {
-        ContentProcessor.call(this, messenger)
+    var FileContentProcessor = function() {
+        ContentProcessor.call(this)
     };
     ns.Class(FileContentProcessor, ContentProcessor, null);
     FileContentProcessor.prototype.uploadFileContent = function(content, pwd, iMsg) {
@@ -7677,8 +7682,8 @@ if (typeof DIMP !== "object") {
     var MetaCommand = ns.protocol.MetaCommand;
     var ReceiptCommand = ns.protocol.ReceiptCommand;
     var CommandProcessor = ns.cpu.CommandProcessor;
-    var MetaCommandProcessor = function(messenger) {
-        CommandProcessor.call(this, messenger)
+    var MetaCommandProcessor = function() {
+        CommandProcessor.call(this)
     };
     ns.Class(MetaCommandProcessor, CommandProcessor, null);
     var get_meta = function(identifier, facebook) {
@@ -7715,8 +7720,8 @@ if (typeof DIMP !== "object") {
     var DocumentCommand = ns.protocol.DocumentCommand;
     var ReceiptCommand = ns.protocol.ReceiptCommand;
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
-    var DocumentCommandProcessor = function(messenger) {
-        MetaCommandProcessor.call(this, messenger)
+    var DocumentCommandProcessor = function() {
+        MetaCommandProcessor.call(this)
     };
     ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null);
     var get_doc = function(identifier, type, facebook) {
@@ -7764,8 +7769,8 @@ if (typeof DIMP !== "object") {
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var CommandProcessor = ns.cpu.CommandProcessor;
-    var HistoryCommandProcessor = function(messenger) {
-        CommandProcessor.call(this, messenger)
+    var HistoryCommandProcessor = function() {
+        CommandProcessor.call(this)
     };
     ns.Class(HistoryCommandProcessor, CommandProcessor, null);
     HistoryCommandProcessor.prototype.execute = function(cmd, rMsg) {
@@ -7784,8 +7789,8 @@ if (typeof DIMP !== "object") {
     var TextContent = ns.protocol.TextContent;
     var CommandProcessor = ns.cpu.CommandProcessor;
     var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
-    var GroupCommandProcessor = function(messenger) {
-        HistoryCommandProcessor.call(this, messenger)
+    var GroupCommandProcessor = function() {
+        HistoryCommandProcessor.call(this)
     };
     ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
     GroupCommandProcessor.getProcessor = CommandProcessor.getProcessor;
@@ -7822,8 +7827,8 @@ if (typeof DIMP !== "object") {
 (function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
-    var InviteCommandProcessor = function(messenger) {
-        GroupCommandProcessor.call(this, messenger)
+    var InviteCommandProcessor = function() {
+        GroupCommandProcessor.call(this)
     };
     ns.Class(InviteCommandProcessor, GroupCommandProcessor, null);
     var call_reset = function(cmd, rMsg) {
@@ -7876,8 +7881,8 @@ if (typeof DIMP !== "object") {
 })(DIMP);
 (function(ns) {
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
-    var ExpelCommandProcessor = function(messenger) {
-        GroupCommandProcessor.call(this, messenger)
+    var ExpelCommandProcessor = function() {
+        GroupCommandProcessor.call(this)
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
     ExpelCommandProcessor.prototype.execute = function(cmd, rMsg) {
@@ -7925,8 +7930,8 @@ if (typeof DIMP !== "object") {
 })(DIMP);
 (function(ns) {
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
-    var QuitCommandProcessor = function(messenger) {
-        GroupCommandProcessor.call(this, messenger)
+    var QuitCommandProcessor = function() {
+        GroupCommandProcessor.call(this)
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
     QuitCommandProcessor.prototype.execute = function(cmd, rMsg) {
@@ -7960,8 +7965,8 @@ if (typeof DIMP !== "object") {
     var InviteCommand = ns.protocol.InviteCommand;
     var ResetCommand = ns.protocol.group.ResetCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
-    var QueryCommandProcessor = function(messenger) {
-        GroupCommandProcessor.call(this, messenger)
+    var QueryCommandProcessor = function() {
+        GroupCommandProcessor.call(this)
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
     QueryCommandProcessor.prototype.execute = function(cmd, rMsg) {
@@ -7995,8 +8000,8 @@ if (typeof DIMP !== "object") {
 (function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
-    var ResetCommandProcessor = function(messenger) {
-        GroupCommandProcessor.call(this, messenger)
+    var ResetCommandProcessor = function() {
+        GroupCommandProcessor.call(this)
     };
     ns.Class(ResetCommandProcessor, GroupCommandProcessor, null);
     var save = function(cmd, sender) {
@@ -8661,6 +8666,63 @@ if (typeof DIMP !== "object") {
     };
     ns.Messenger = Messenger;
     ns.register("Messenger")
+})(DIMP);
+(function(ns) {
+    var ContentType = ns.protocol.ContentType;
+    var Command = ns.protocol.Command;
+    var GroupCommand = ns.protocol.GroupCommand;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
+    var HandshakeCommand = ns.protocol.HandshakeCommand;
+    var LoginCommand = ns.protocol.LoginCommand;
+    var MuteCommand = ns.protocol.MuteCommand;
+    var BlockCommand = ns.protocol.BlockCommand;
+    var StorageCommand = ns.protocol.StorageCommand;
+    var CommandFactory = ns.core.CommandFactory;
+    var ContentProcessor = ns.cpu.ContentProcessor;
+    var CommandProcessor = ns.cpu.CommandProcessor;
+    var registerCommandFactories = function() {
+        Command.register(Command.RECEIPT, new CommandFactory(ReceiptCommand));
+        Command.register(Command.HANDSHAKE, new CommandFactory(HandshakeCommand));
+        Command.register(Command.LOGIN, new CommandFactory(LoginCommand));
+        Command.register(MuteCommand.MUTE, new CommandFactory(MuteCommand));
+        Command.register(BlockCommand.BLOCK, new CommandFactory(BlockCommand));
+        var spu = new CommandFactory(StorageCommand);
+        Command.register(StorageCommand.STORAGE, spu);
+        Command.register(StorageCommand.CONTACTS, spu);
+        Command.register(StorageCommand.PRIVATE_KEY, spu)
+    };
+    var registerCommandProcessors = function() {
+        CommandProcessor.register(Command.META, new ns.cpu.MetaCommandProcessor());
+        var dpu = new ns.cpu.DocumentCommandProcessor();
+        CommandProcessor.register(Command.DOCUMENT, dpu);
+        CommandProcessor.register("profile", dpu);
+        CommandProcessor.register("visa", dpu);
+        CommandProcessor.register("bulletin", dpu);
+        CommandProcessor.register("group", new ns.cpu.GroupCommandProcessor());
+        CommandProcessor.register(GroupCommand.INVITE, new ns.cpu.group.InviteCommandProcessor());
+        CommandProcessor.register(GroupCommand.EXPEL, new ns.cpu.group.ExpelCommandProcessor());
+        CommandProcessor.register(GroupCommand.QUIT, new ns.cpu.group.QuitCommandProcessor());
+        CommandProcessor.register(GroupCommand.QUERY, new ns.cpu.group.QueryCommandProcessor());
+        CommandProcessor.register(GroupCommand.RESET, new ns.cpu.group.ResetCommandProcessor())
+    };
+    var registerContentProcessors = function() {
+        ContentProcessor.register(ContentType.FORWARD, new ns.cpu.ForwardContentProcessor());
+        var fpu = new ns.cpu.FileContentProcessor();
+        ContentProcessor.register(ContentType.FILE, fpu);
+        ContentProcessor.register(ContentType.IMAGE, fpu);
+        ContentProcessor.register(ContentType.AUDIO, fpu);
+        ContentProcessor.register(ContentType.VIDEO, fpu);
+        ContentProcessor.register(ContentType.COMMAND, new ns.cpu.CommandProcessor());
+        ContentProcessor.register(ContentType.HISTORY, new ns.cpu.HistoryCommandProcessor());
+        ContentProcessor.register(0, new ns.cpu.ContentProcessor())
+    };
+    var registerAllFactories = function() {
+        ns.core.registerAllFactories();
+        registerCommandFactories();
+        registerCommandProcessors();
+        registerContentProcessors()
+    };
+    registerAllFactories()
 })(DIMP);
 if (typeof LocalNotificationService !== "object") {
     LocalNotificationService = {}
@@ -9363,10 +9425,10 @@ if (typeof StarGate !== "object") {
         return null
     };
     var GateStatus = sys.type.Enum(null, {
-        Error: -1,
-        Init: 0,
-        Connecting: 1,
-        Connected: 2
+        ERROR: -1,
+        INIT: 0,
+        CONNECTING: 1,
+        CONNECTED: 2
     });
     var GateDelegate = function() {};
     sys.Interface(GateDelegate, null);
@@ -9426,7 +9488,7 @@ if (typeof StarGate !== "object") {
         }
     };
     StarGate.prototype.sendShip = function(outgo) {
-        if (!this.getStatus().equals(Gate.Status.Connected)) {
+        if (!this.getStatus().equals(Gate.Status.CONNECTED)) {
             return false
         } else {
             if (outgo.priority > StarShip.URGENT) {
@@ -9590,7 +9652,7 @@ if (typeof StarGate !== "object") {
                 if (scheme === "wss" || scheme === "https") {
                     port = 443
                 } else {
-                    throw URIError("URL scheme error: " + scheme)
+                    throw new URIError("URL scheme error: " + scheme)
                 }
             }
         }
@@ -9701,12 +9763,12 @@ if (typeof StarGate !== "object") {
         return null
     };
     var ConnectionStatus = sys.type.Enum(null, {
-        Default: (0),
-        Connecting: (1),
-        Connected: (17),
-        Maintaining: (33),
-        Expired: (34),
-        Error: (136)
+        DEFAULT: (0),
+        CONNECTING: (1),
+        CONNECTED: (17),
+        MAINTAINING: (33),
+        EXPIRED: (34),
+        ERROR: (136)
     });
     var ConnectionDelegate = function() {};
     sys.Interface(ConnectionDelegate, null);
@@ -9730,7 +9792,7 @@ if (typeof StarGate !== "object") {
         this._socket = socket;
         this.__cache = this.createCachePool();
         this.__delegate = null;
-        this.__status = Connection.Status.Default;
+        this.__status = Connection.Status.DEFAULT;
         this.__lastSentTime = 0;
         this.__lastReceivedTime = 0
     };
@@ -9774,7 +9836,7 @@ if (typeof StarGate !== "object") {
     var write = function(data) {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error("socket lost, cannot write data: " + data.length + " byte(s)")
+            throw new Error("socket lost, cannot write data: " + data.length + " byte(s)")
         }
         sock.send(data);
         this.__lastSentTime = (new Date()).getTime();
@@ -9783,7 +9845,7 @@ if (typeof StarGate !== "object") {
     var read = function() {
         var sock = this.getSocket();
         if (!sock) {
-            throw Error("socket lost, cannot read data")
+            throw new Error("socket lost, cannot read data")
         }
         var data = sock.receive();
         if (data) {
@@ -9803,7 +9865,7 @@ if (typeof StarGate !== "object") {
             return read.call(this)
         } catch (e) {
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null
         }
     };
@@ -9812,7 +9874,7 @@ if (typeof StarGate !== "object") {
             return write.call(this, data)
         } catch (e) {
             close.call(this);
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return null
         }
     };
@@ -9836,7 +9898,7 @@ if (typeof StarGate !== "object") {
             return
         }
         this.__status = newStatus;
-        if (newStatus.equals(Connection.Status.Connected) && !oldStatus.equals(Connection.Status.Maintaining)) {
+        if (newStatus.equals(Connection.Status.CONNECTED) && !oldStatus.equals(Connection.Status.MAINTAINING)) {
             var now = (new Date()).getTime();
             this.__lastSentTime = now - Connection.EXPIRES - 1;
             this.__lastReceivedTime = now - Connection.EXPIRES - 1
@@ -9851,11 +9913,11 @@ if (typeof StarGate !== "object") {
         Runner.prototype.stop.call(this)
     };
     BaseConnection.prototype.setup = function() {
-        this.setStatus(Connection.Status.Connecting)
+        this.setStatus(Connection.Status.CONNECTING)
     };
     BaseConnection.prototype.finish = function() {
         close.call(this);
-        this.setStatus(Connection.Status.Default)
+        this.setStatus(Connection.Status.DEFAULT)
     };
     BaseConnection.prototype.process = function() {
         var count = this.__cache.length();
@@ -9882,61 +9944,61 @@ if (typeof StarGate !== "object") {
         }
     };
     var evaluations = {};
-    evaluations[Connection.Status.Default] = function(now) {
+    evaluations[Connection.Status.DEFAULT] = function(now) {
         if (this.isRunning()) {
-            this.setStatus(Connection.Status.Connecting)
+            this.setStatus(Connection.Status.CONNECTING)
         }
     };
-    evaluations[Connection.Status.Connecting] = function(now) {
+    evaluations[Connection.Status.CONNECTING] = function(now) {
         if (!this.isRunning()) {
-            this.setStatus(Connection.Status.Default)
+            this.setStatus(Connection.Status.DEFAULT)
         } else {
             if (this.getSocket() != null) {
-                this.setStatus(Connection.Status.Connected)
+                this.setStatus(Connection.Status.CONNECTED)
             }
         }
     };
-    evaluations[Connection.Status.Connected] = function(now) {
+    evaluations[Connection.Status.CONNECTED] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + Connection.EXPIRES) {
-                this.setStatus(Connection.Status.Expired)
+                this.setStatus(Connection.Status.EXPIRED)
             }
         }
     };
-    evaluations[Connection.Status.Expired] = function(now) {
+    evaluations[Connection.Status.EXPIRED] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now < this.__lastSentTime + Connection.EXPIRES) {
-                this.setStatus(Connection.Status.Maintaining)
+                this.setStatus(Connection.Status.MAINTAINING)
             }
         }
     };
-    evaluations[Connection.Status.Maintaining] = function(now) {
+    evaluations[Connection.Status.MAINTAINING] = function(now) {
         if (this.getSocket() == null) {
-            this.setStatus(Connection.Status.Error)
+            this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
-                this.setStatus(Connection.Status.Error)
+                this.setStatus(Connection.Status.ERROR)
             } else {
                 if (now < this.__lastReceivedTime + Connection.EXPIRES) {
-                    this.setStatus(Connection.Status.Connected)
+                    this.setStatus(Connection.Status.CONNECTED)
                 } else {
                     if (now > this.__lastSentTime + Connection.EXPIRES) {
-                        this.setStatus(Connection.Status.Expired)
+                        this.setStatus(Connection.Status.EXPIRED)
                     }
                 }
             }
         }
     };
-    evaluations[Connection.Status.Error] = function(now) {
+    evaluations[Connection.Status.ERROR] = function(now) {
         if (!this.isRunning()) {
-            this.setStatus(Connection.Status.Default)
+            this.setStatus(Connection.Status.DEFAULT)
         } else {
             if (this.getSocket() != null) {
-                this.setStatus(Connection.Status.Connected)
+                this.setStatus(Connection.Status.CONNECTED)
             }
         }
     };
@@ -9956,15 +10018,15 @@ if (typeof StarGate !== "object") {
     };
     sys.Class(ActiveConnection, BaseConnection, null);
     var connect = function() {
-        this.setStatus(Connection.Status.Connecting);
+        this.setStatus(Connection.Status.CONNECTING);
         try {
             var sock = new Socket(null);
             sock.connect(this.getHost(), this.getPort());
             this._socket = sock;
-            this.setStatus(Connection.Status.Connected);
+            this.setStatus(Connection.Status.CONNECTED);
             return true
         } catch (e) {
-            this.setStatus(Connection.Status.Error);
+            this.setStatus(Connection.Status.ERROR);
             return false
         }
     };
@@ -10322,29 +10384,29 @@ if (typeof StarGate !== "object") {
     };
     WSGate.prototype.isExpired = function() {
         var status = this.connection.getStatus();
-        return Connection.Status.Expired.equals(status)
+        return Connection.Status.EXPIRED.equals(status)
     };
     WSGate.prototype.getStatus = function() {
         var status = this.connection.getStatus();
         return WSGate.getStatus(status)
     };
     WSGate.getStatus = function(connStatus) {
-        if (Connection.Status.Connecting.equals(connStatus)) {
-            return Gate.Status.Connecting
+        if (Connection.Status.CONNECTING.equals(connStatus)) {
+            return Gate.Status.CONNECTING
         } else {
-            if (Connection.Status.Connected.equals(connStatus)) {
-                return Gate.Status.Connected
+            if (Connection.Status.CONNECTED.equals(connStatus)) {
+                return Gate.Status.CONNECTED
             } else {
-                if (Connection.Status.Maintaining.equals(connStatus)) {
-                    return Gate.Status.Connected
+                if (Connection.Status.MAINTAINING.equals(connStatus)) {
+                    return Gate.Status.CONNECTED
                 } else {
-                    if (Connection.Status.Expired.equals(connStatus)) {
-                        return Gate.Status.Connected
+                    if (Connection.Status.EXPIRED.equals(connStatus)) {
+                        return Gate.Status.CONNECTED
                     } else {
-                        if (Connection.Status.Error.equals(connStatus)) {
-                            return Gate.Status.Error
+                        if (Connection.Status.ERROR.equals(connStatus)) {
+                            return Gate.Status.ERROR
                         } else {
-                            return Gate.Status.Init
+                            return Gate.Status.INIT
                         }
                     }
                 }

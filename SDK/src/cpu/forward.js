@@ -40,8 +40,8 @@
 
     var ContentProcessor = ns.cpu.ContentProcessor;
 
-    var ForwardContentProcessor = function (messenger) {
-        ContentProcessor.call(this, messenger);
+    var ForwardContentProcessor = function () {
+        ContentProcessor.call(this);
     };
     ns.Class(ForwardContentProcessor, ContentProcessor, null);
 
