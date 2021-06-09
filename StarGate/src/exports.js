@@ -1,26 +1,30 @@
 ;
 
-if (typeof DIMP.lnc !== 'object') {
-    DIMP.lnc = {};
+if (typeof DIMSDK !== 'object') {
+    DIMSDK = new MONKEY.Namespace();
 }
-LocalNotificationService.exports(DIMP.lnc);
 
-if (typeof DIMP.fsm !== 'object') {
-    DIMP.fsm = {};
+if (typeof DIMSDK.lnc !== 'object') {
+    DIMSDK.lnc = new MONKEY.Namespace();
 }
-FiniteStateMachine.exports(DIMP.fsm);
+LocalNotificationService.exports(DIMSDK.lnc);
 
-if (typeof DIMP.dos !== 'object') {
-    DIMP.dos = {};
+if (typeof DIMSDK.fsm !== 'object') {
+    DIMSDK.fsm = new MONKEY.Namespace();
 }
-FileSystem.exports(DIMP.dos);
+FiniteStateMachine.exports(DIMSDK.fsm);
 
-if (typeof DIMP.startrek !== 'object') {
-    DIMP.startrek = {};
+if (typeof DIMSDK.dos !== 'object') {
+    DIMSDK.dos = new MONKEY.Namespace();
 }
-StarTrek.exports(DIMP.startrek);
+FileSystem.exports(DIMSDK.dos);
 
-if (typeof DIMP.stargate !== 'object') {
-    DIMP.stargate = {};
+if (typeof DIMSDK.startrek !== 'object') {
+    DIMSDK.startrek = new MONKEY.Namespace();
 }
-StarGate.exports(DIMP.stargate);
+StarTrek.exports(DIMSDK.startrek);
+
+if (typeof DIMSDK.stargate !== 'object') {
+    DIMSDK.stargate = new MONKEY.Namespace();
+}
+StarGate.exports(DIMSDK.stargate);

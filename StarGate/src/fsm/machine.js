@@ -176,6 +176,6 @@
     //-------- namespace --------
     ns.Machine = Machine;
 
-    ns.register('Machine');
+    ns.registers('Machine');
 
 })(FiniteStateMachine, MONKEY);

@@ -56,6 +56,6 @@
     //-------- namespace --------
     ns.Observer = Observer;
 
-    ns.register('Observer');
+    ns.registers('Observer');
 
 })(LocalNotificationService, MONKEY);

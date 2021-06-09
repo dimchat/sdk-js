@@ -181,14 +181,16 @@
 
     //-------- Base algorithm end --------
 
+    var obj = ns.type.Object;
     var BaseCoder = ns.format.BaseCoder;
 
     //
     //  Base58
     //
     var base58 = function () {
+        obj.call(this);
     };
-    ns.Class(base58, ns.type.Object, [BaseCoder]);
+    ns.Class(base58, obj, [BaseCoder]);
     base58.prototype.encode = function (data) {
         return bs58.encode(data);
     };
@@ -199,4 +201,4 @@
     //-------- namespace --------
     ns.format.Base58.coder = new base58();
 
-})(DIMP);
+})(MONKEY);

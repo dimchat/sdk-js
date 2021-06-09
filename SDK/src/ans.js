@@ -70,9 +70,11 @@
         "root", "supervisor"
     ];
 
+    var obj = ns.type.Object;
     var ID = ns.protocol.ID;
 
     var AddressNameService = function() {
+        obj.call(this);
         // constant ANS records
         var caches = {
             'all':      ID.EVERYONE,
@@ -91,7 +93,7 @@
         this.__reserved = reserved;
         this.__caches = caches;
     };
-    ns.Class(AddressNameService, ns.type.Object, null);
+    ns.Class(AddressNameService, obj, null);
 
     AddressNameService.KEYWORDS = KEYWORDS;
 
@@ -156,6 +158,6 @@
     //-------- namespace --------
     ns.AddressNameService = AddressNameService;
 
-    ns.register('AddressNameService');
+    ns.registers('AddressNameService');
 
-})(DIMP);
+})(DIMSDK);

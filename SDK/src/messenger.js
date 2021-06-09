@@ -174,6 +174,6 @@
     //-------- namespace --------
     ns.Messenger = Messenger;
 
-    ns.register('Messenger');
+    ns.registers('Messenger');
 
-})(DIMP);
+})(DIMSDK);

@@ -101,6 +101,6 @@
     //-------- namespace --------
     ns.Ship = Ship;
 
-    ns.register('Ship');
+    ns.registers('Ship');
 
 })(StarTrek, MONKEY);

@@ -89,6 +89,6 @@
     //-------- namespace --------
     ns.StarShip = StarShip;
 
-    ns.register('StarShip');
+    ns.registers('StarShip');
 
 })(StarTrek, MONKEY);

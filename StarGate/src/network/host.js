@@ -115,6 +115,6 @@
     //-------- namespace --------
     ns.Host = Host;
 
-    ns.register('Host');
+    ns.registers('Host');
 
 })(StarGate, MONKEY);

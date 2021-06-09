@@ -168,6 +168,6 @@
     //-------- namespace --------
     ns.Socket = Socket;
 
-    ns.register('Socket');
+    ns.registers('Socket');
 
 })(StarGate, MONKEY);

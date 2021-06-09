@@ -7,18 +7,20 @@
  * @copyright (c) 2021 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
-(function(ns) {
+if (typeof DIMSDK !== "object") {
+    DIMSDK = new MingKeMing.Namespace()
+}
+(function(ns, base) {
+    base.exports(ns);
     if (typeof ns.cpu !== "object") {
-        ns.cpu = {}
+        ns.cpu = new ns.Namespace()
     }
     if (typeof ns.cpu.group !== "object") {
-        ns.cpu.group = {}
+        ns.cpu.group = new ns.Namespace()
     }
-    ns.Namespace(ns.cpu);
-    ns.Namespace(ns.cpu.group);
-    ns.register("cpu");
-    ns.cpu.register("group")
-})(DIMP);
+    ns.registers("cpu");
+    ns.cpu.registers("group")
+})(DIMSDK, DIMP);
 (function(ns) {
     var Envelope = ns.protocol.Envelope;
     var Command = ns.protocol.Command;
@@ -98,8 +100,8 @@
         }
     };
     ns.protocol.ReceiptCommand = ReceiptCommand;
-    ns.protocol.register("ReceiptCommand")
-})(DIMP);
+    ns.protocol.registers("ReceiptCommand")
+})(DIMSDK);
 (function(ns) {
     var HandshakeState = ns.type.Enum(null, {
         INIT: 0,
@@ -174,9 +176,9 @@
     };
     ns.protocol.HandshakeCommand = HandshakeCommand;
     ns.protocol.HandshakeState = HandshakeState;
-    ns.protocol.register("HandshakeCommand");
-    ns.protocol.register("HandshakeState")
-})(DIMP);
+    ns.protocol.registers("HandshakeCommand");
+    ns.protocol.registers("HandshakeState")
+})(DIMSDK);
 (function(ns) {
     var map = ns.type.Map;
     var ID = ns.protocol.ID;
@@ -251,8 +253,8 @@
         this.setValue("provider", info)
     };
     ns.protocol.LoginCommand = LoginCommand;
-    ns.protocol.register("LoginCommand")
-})(DIMP);
+    ns.protocol.registers("LoginCommand")
+})(DIMSDK);
 (function(ns) {
     var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
@@ -298,8 +300,8 @@
         this.__list = list
     };
     ns.protocol.MuteCommand = MuteCommand;
-    ns.protocol.register("MuteCommand")
-})(DIMP);
+    ns.protocol.registers("MuteCommand")
+})(DIMSDK);
 (function(ns) {
     var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
@@ -345,8 +347,8 @@
         this.__list = list
     };
     ns.protocol.BlockCommand = BlockCommand;
-    ns.protocol.register("BlockCommand")
-})(DIMP);
+    ns.protocol.registers("BlockCommand")
+})(DIMSDK);
 (function(ns) {
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
@@ -455,16 +457,18 @@
     StorageCommand.CONTACTS = "contacts";
     StorageCommand.PRIVATE_KEY = "private_key";
     ns.protocol.StorageCommand = StorageCommand;
-    ns.protocol.register("StorageCommand")
-})(DIMP);
+    ns.protocol.registers("StorageCommand")
+})(DIMSDK);
 (function(ns) {
+    var obj = ns.type.Object;
     var ContentType = ns.protocol.ContentType;
     var Content = ns.protocol.Content;
     var TextContent = ns.protocol.TextContent;
     var ContentProcessor = function() {
+        obj.call(this);
         this.__messenger = null
     };
-    ns.Class(ContentProcessor, ns.type.Object, null);
+    ns.Class(ContentProcessor, obj, null);
     ContentProcessor.prototype.getMessenger = function() {
         return this.__messenger
     };
@@ -503,8 +507,8 @@
         }
     };
     ns.cpu.ContentProcessor = ContentProcessor;
-    ns.cpu.register("ContentProcessor")
-})(DIMP);
+    ns.cpu.registers("ContentProcessor")
+})(DIMSDK);
 (function(ns) {
     var ContentType = ns.protocol.ContentType;
     var TextContent = ns.protocol.TextContent;
@@ -550,8 +554,8 @@
         commandProcessors[command] = cpu
     };
     ns.cpu.CommandProcessor = CommandProcessor;
-    ns.cpu.register("CommandProcessor")
-})(DIMP);
+    ns.cpu.registers("CommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var ForwardContent = ns.protocol.ForwardContent;
     var ContentProcessor = ns.cpu.ContentProcessor;
@@ -568,8 +572,8 @@
         return null
     };
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
-    ns.cpu.register("ForwardContentProcessor")
-})(DIMP);
+    ns.cpu.registers("ForwardContentProcessor")
+})(DIMSDK);
 (function(ns) {
     var FileContent = ns.protocol.FileContent;
     var InstantMessage = ns.protocol.InstantMessage;
@@ -620,8 +624,8 @@
         return null
     };
     ns.cpu.FileContentProcessor = FileContentProcessor;
-    ns.cpu.register("FileContentProcessor")
-})(DIMP);
+    ns.cpu.registers("FileContentProcessor")
+})(DIMSDK);
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var MetaCommand = ns.protocol.MetaCommand;
@@ -658,8 +662,8 @@
         return null
     };
     ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
-    ns.cpu.register("MetaCommandProcessor")
-})(DIMP);
+    ns.cpu.registers("MetaCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var DocumentCommand = ns.protocol.DocumentCommand;
@@ -709,8 +713,8 @@
         return null
     };
     ns.cpu.DocumentCommandProcessor = DocumentCommandProcessor;
-    ns.cpu.register("DocumentCommandProcessor")
-})(DIMP);
+    ns.cpu.registers("DocumentCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var CommandProcessor = ns.cpu.CommandProcessor;
@@ -728,8 +732,8 @@
         return res
     };
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;
-    ns.cpu.register("HistoryCommandProcessor")
-})(DIMP);
+    ns.cpu.registers("HistoryCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var CommandProcessor = ns.cpu.CommandProcessor;
@@ -767,8 +771,8 @@
         return cpu.execute(cmd, rMsg)
     };
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
-    ns.cpu.register("GroupCommandProcessor")
-})(DIMP);
+    ns.cpu.registers("GroupCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
@@ -822,8 +826,8 @@
         return null
     };
     ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor;
-    ns.cpu.group.register("InviteCommandProcessor")
-})(DIMP);
+    ns.cpu.group.registers("InviteCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
     var ExpelCommandProcessor = function() {
@@ -871,8 +875,8 @@
         return null
     };
     ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor;
-    ns.cpu.group.register("ExpelCommandProcessor")
-})(DIMP);
+    ns.cpu.group.registers("ExpelCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
     var QuitCommandProcessor = function() {
@@ -903,8 +907,8 @@
         return null
     };
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;
-    ns.cpu.group.register("QuitCommandProcessor")
-})(DIMP);
+    ns.cpu.group.registers("QuitCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var TextContent = ns.protocol.TextContent;
     var InviteCommand = ns.protocol.InviteCommand;
@@ -940,8 +944,8 @@
         }
     };
     ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;
-    ns.cpu.group.register("QueryCommandProcessor")
-})(DIMP);
+    ns.cpu.group.registers("QueryCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
@@ -1018,8 +1022,8 @@
         return null
     };
     ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor;
-    ns.cpu.group.register("ResetCommandProcessor")
-})(DIMP);
+    ns.cpu.group.registers("ResetCommandProcessor")
+})(DIMSDK);
 (function(ns) {
     var Group = ns.Group;
     var Polylogue = function(identifier) {
@@ -1034,8 +1038,8 @@
         return this.getFounder()
     };
     ns.Polylogue = Polylogue;
-    ns.register("Polylogue")
-})(DIMP);
+    ns.registers("Polylogue")
+})(DIMSDK);
 (function(ns) {
     var Group = ns.Group;
     var Chatroom = function(identifier) {
@@ -1053,8 +1057,8 @@
     };
     Chatroom.DataSource = ChatroomDataSource;
     ns.Chatroom = Chatroom;
-    ns.register("Chatroom")
-})(DIMP);
+    ns.registers("Chatroom")
+})(DIMSDK);
 (function(ns) {
     var User = ns.User;
     var Robot = function(identifier) {
@@ -1062,8 +1066,8 @@
     };
     ns.Class(Robot, User, null);
     ns.Robot = Robot;
-    ns.register("Robot")
-})(DIMP);
+    ns.registers("Robot")
+})(DIMSDK);
 (function(ns) {
     var User = ns.User;
     var Station = function(identifier, host, port) {
@@ -1097,8 +1101,8 @@
         return this.port
     };
     ns.Station = Station;
-    ns.register("Station")
-})(DIMP);
+    ns.registers("Station")
+})(DIMSDK);
 (function(ns) {
     var Group = ns.Group;
     var ServiceProvider = function(identifier) {
@@ -1109,12 +1113,14 @@
         return this.getMembers()
     };
     ns.ServiceProvider = ServiceProvider;
-    ns.register("ServiceProvider")
-})(DIMP);
+    ns.registers("ServiceProvider")
+})(DIMSDK);
 (function(ns) {
     var KEYWORDS = ["all", "everyone", "anyone", "owner", "founder", "dkd", "mkm", "dimp", "dim", "dimt", "rsa", "ecc", "aes", "des", "btc", "eth", "crypto", "key", "symmetric", "asymmetric", "public", "private", "secret", "password", "id", "address", "meta", "profile", "entity", "user", "group", "contact", "member", "admin", "administrator", "assistant", "main", "polylogue", "chatroom", "social", "organization", "company", "school", "government", "department", "provider", "station", "thing", "robot", "message", "instant", "secure", "reliable", "envelope", "sender", "receiver", "time", "content", "forward", "command", "history", "keys", "data", "signature", "type", "serial", "sn", "text", "file", "image", "audio", "video", "page", "handshake", "receipt", "block", "mute", "register", "suicide", "found", "abdicate", "invite", "expel", "join", "quit", "reset", "query", "hire", "fire", "resign", "server", "client", "terminal", "local", "remote", "barrack", "cache", "transceiver", "ans", "facebook", "store", "messenger", "root", "supervisor"];
+    var obj = ns.type.Object;
     var ID = ns.protocol.ID;
     var AddressNameService = function() {
+        obj.call(this);
         var caches = {
             "all": ID.EVERYONE,
             "everyone": ID.EVERYONE,
@@ -1130,7 +1136,7 @@
         this.__reserved = reserved;
         this.__caches = caches
     };
-    ns.Class(AddressNameService, ns.type.Object, null);
+    ns.Class(AddressNameService, obj, null);
     AddressNameService.KEYWORDS = KEYWORDS;
     AddressNameService.prototype.isReserved = function(name) {
         return this.__reserved[name] === true
@@ -1165,8 +1171,8 @@
         return this.cache(name, identifier)
     };
     ns.AddressNameService = AddressNameService;
-    ns.register("AddressNameService")
-})(DIMP);
+    ns.registers("AddressNameService")
+})(DIMSDK);
 (function(ns) {
     var Callback = function() {};
     ns.Interface(Callback, null);
@@ -1174,8 +1180,8 @@
         console.assert(false, "implement me!")
     };
     ns.Callback = Callback;
-    ns.register("Callback")
-})(DIMP);
+    ns.registers("Callback")
+})(DIMSDK);
 (function(ns) {
     var CompletionHandler = function() {};
     ns.Interface(CompletionHandler, null);
@@ -1186,8 +1192,8 @@
         console.assert(false, "implement me!")
     };
     ns.CompletionHandler = CompletionHandler;
-    ns.register("CompletionHandler")
-})(DIMP);
+    ns.registers("CompletionHandler")
+})(DIMSDK);
 (function(ns) {
     var MessengerDelegate = function() {};
     ns.Interface(MessengerDelegate, null);
@@ -1204,8 +1210,8 @@
         return false
     };
     ns.MessengerDelegate = MessengerDelegate;
-    ns.register("MessengerDelegate")
-})(DIMP);
+    ns.registers("MessengerDelegate")
+})(DIMSDK);
 (function(ns) {
     var MessengerDataSource = function() {};
     ns.Interface(MessengerDataSource, null);
@@ -1220,8 +1226,8 @@
         console.assert(false, "implement me!")
     };
     ns.MessengerDataSource = MessengerDataSource;
-    ns.register("MessengerDataSource")
-})(DIMP);
+    ns.registers("MessengerDataSource")
+})(DIMSDK);
 (function(ns) {
     var NetworkType = ns.protocol.NetworkType;
     var ID = ns.protocol.ID;
@@ -1328,8 +1334,8 @@
         throw new TypeError("Unsupported group type: " + type)
     };
     ns.Facebook = Facebook;
-    ns.register("Facebook")
-})(DIMP);
+    ns.registers("Facebook")
+})(DIMSDK);
 (function(ns) {
     var CorePacker = ns.core.Packer;
     var MessagePacker = function(messenger) {
@@ -1405,8 +1411,8 @@
         return CorePacker.prototype.decryptMessage.call(this, sMsg)
     };
     ns.MessagePacker = MessagePacker;
-    ns.register("MessagePacker")
-})(DIMP);
+    ns.registers("MessagePacker")
+})(DIMSDK);
 (function(ns) {
     var Processor = ns.core.Processor;
     var MessageProcessor = function(messenger) {
@@ -1433,8 +1439,8 @@
         return cpu.process(content, rMsg)
     };
     ns.MessageProcessor = MessageProcessor;
-    ns.register("MessageProcessor")
-})(DIMP);
+    ns.registers("MessageProcessor")
+})(DIMSDK);
 (function(ns) {
     var Transmitter = function() {};
     ns.Interface(Transmitter, null);
@@ -1451,8 +1457,8 @@
         return false
     };
     ns.Transmitter = Transmitter;
-    ns.register("Transmitter")
-})(DIMP);
+    ns.registers("Transmitter")
+})(DIMSDK);
 (function(ns) {
     var obj = ns.type.Object;
     var Envelope = ns.protocol.Envelope;
@@ -1517,8 +1523,8 @@
         this.callback.onFinished(this.message, error)
     };
     ns.MessageTransmitter = MessageTransmitter;
-    ns.register("MessageTransmitter")
-})(DIMP);
+    ns.registers("MessageTransmitter")
+})(DIMSDK);
 (function(ns) {
     var ContentType = ns.protocol.ContentType;
     var FileContent = ns.protocol.FileContent;
@@ -1610,8 +1616,8 @@
         return this.getDataSource().suspendInstantMessage(iMsg)
     };
     ns.Messenger = Messenger;
-    ns.register("Messenger")
-})(DIMP);
+    ns.registers("Messenger")
+})(DIMSDK);
 (function(ns) {
     var ContentType = ns.protocol.ContentType;
     var Command = ns.protocol.Command;
@@ -1668,4 +1674,4 @@
         registerContentProcessors()
     };
     registerAllFactories()
-})(DIMP);
+})(DIMSDK);

@@ -144,6 +144,6 @@
     //-------- namespace --------
     ns.cpu.group.ResetCommandProcessor = ResetCommandProcessor;
 
-    ns.cpu.group.register('ResetCommandProcessor');
+    ns.cpu.group.registers('ResetCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

@@ -132,6 +132,6 @@
     //-------- namespace --------
     ns.NotificationCenter = Center;
 
-    ns.register('NotificationCenter');
+    ns.registers('NotificationCenter');
 
 })(LocalNotificationService, MONKEY);

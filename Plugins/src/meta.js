@@ -53,8 +53,8 @@
 
     var NetworkType = ns.protocol.NetworkType;
 
-    var BTCAddress = ns.BTCAddress;
-    var BaseMeta = ns.BaseMeta;
+    var BTCAddress = ns.mkm.BTCAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
 
     /**
      *  Create default meta
@@ -91,11 +91,11 @@
     };
 
     //-------- namespace --------
-    ns.DefaultMeta = DefaultMeta;
+    ns.mkm.DefaultMeta = DefaultMeta;
 
-    ns.register('DefaultMeta');
+    ns.mkm.registers('DefaultMeta');
 
-})(DIMP);
+})(MingKeMing);
 
 /**
  *  Meta to build BTC address for ID
@@ -116,8 +116,8 @@
 
     var NetworkType = ns.protocol.NetworkType;
 
-    var BTCAddress = ns.BTCAddress;
-    var BaseMeta = ns.BaseMeta;
+    var BTCAddress = ns.mkm.BTCAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
 
     /**
      *  Create meta for BTC address
@@ -150,8 +150,8 @@
     };
 
     //-------- namespace --------
-    ns.BTCMeta = BTCMeta;
+    ns.mkm.BTCMeta = BTCMeta;
 
-    ns.register('BTCMeta');
+    ns.mkm.registers('BTCMeta');
 
-})(DIMP);
+})(MingKeMing);

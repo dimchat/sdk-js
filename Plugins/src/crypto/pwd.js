@@ -35,12 +35,14 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
     var Data = ns.type.Data;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Password = function () {
+        obj.call(this);
     };
-    // ns.Class(Password, null, null);
+    ns.Class(Password, obj, null);
 
     Password.KEY_SIZE = 32;
     Password.BLOCK_SIZE = 16;
@@ -88,19 +90,20 @@
     //-------- namespace --------
     ns.crypto.Password = Password;
 
-    ns.crypto.register('Password');
+    ns.crypto.registers('Password');
 
-})(DIMP);
+})(MONKEY);
 
 (function (ns) {
     'use strict';
 
+    var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var PlainKey = function (key) {
-        SymmetricKey.call(this, key)
+        Dictionary.call(this, key);
     };
-    ns.Class(PlainKey, SymmetricKey, null);
+    ns.Class(PlainKey, Dictionary, [SymmetricKey]);
 
     PlainKey.prototype.encrypt = function (data) {
         return data;
@@ -128,6 +131,6 @@
     //-------- namespace --------
     ns.crypto.PlainKey = PlainKey;
 
-    ns.crypto.register('PlainKey');
+    ns.crypto.registers('PlainKey');
 
-})(DIMP);
+})(MONKEY);

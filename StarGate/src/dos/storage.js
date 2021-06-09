@@ -186,7 +186,7 @@
     ns.LocalStorage = new Storage(window.localStorage, 'dim.fs');
     ns.SessionStorage = new Storage(window.sessionStorage, 'dim.mem');
 
-    ns.register('LocalStorage');
-    ns.register('SessionStorage');
+    ns.registers('LocalStorage');
+    ns.registers('SessionStorage');
 
 })(FileSystem, MONKEY);

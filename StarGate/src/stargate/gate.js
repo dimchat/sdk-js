@@ -129,6 +129,6 @@
     //-------- namespace --------
     ns.WSGate = WSGate;
 
-    ns.register('WSGate');
+    ns.registers('WSGate');
 
 })(StarGate, StarTrek, MONKEY);

@@ -48,6 +48,6 @@
     //-------- namespace --------
     ns.Robot = Robot;
 
-    ns.register('Robot');
+    ns.registers('Robot');
 
-})(DIMP);
+})(DIMSDK);

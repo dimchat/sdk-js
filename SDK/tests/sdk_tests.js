@@ -5,27 +5,17 @@
 
     var Facebook = ns.Facebook;
 
-    var Immortals = ns.Immortals;
-
     var ClientFacebook = function () {
         Facebook.call(this);
-        if (typeof Immortals === 'function') {
-            this.immortals = new Immortals();
-        } else {
-            this.immortals = null;
-        }
     };
     ns.Class(ClientFacebook, Facebook, null);
 
     ClientFacebook.prototype.getMeta = function (identifier) {
-        if (this.immortals) {
-            return this.immortals.getMeta(identifier);
-        }
     };
 
     ns.ClientFacebook = ClientFacebook;
 
-}(DIMP);
+}(DIMSDK);
 
 //
 //  Test Cases
@@ -108,7 +98,7 @@ sdk_tests = [];
     };
     sdk_tests.push(test_messenger);
 
-}(DIMP);
+}(DIMSDK);
 
 !function (ns) {
     'use strict';
@@ -118,4 +108,4 @@ sdk_tests = [];
     };
     sdk_tests.push(test_cpu);
 
-}(DIMP);
+}(DIMSDK);

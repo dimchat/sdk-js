@@ -84,6 +84,6 @@
     //-------- namespace --------
     ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;
 
-    ns.cpu.group.register('QueryCommandProcessor');
+    ns.cpu.group.registers('QueryCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

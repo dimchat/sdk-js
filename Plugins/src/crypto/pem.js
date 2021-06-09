@@ -32,12 +32,10 @@
 
     //-------- PEM functions begin --------
 
-    var Base64 = ns.format.Base64;
-
     var MIME_LINE_MAX_LEN = 76;
     var CR_LF = '\r\n';
     var rfc2045 = function (data) {
-        var base64 = Base64.encode(data);
+        var base64 = ns.format.Base64.encode(data);
         var length = base64.length;
         if (length > MIME_LINE_MAX_LEN && base64.indexOf(CR_LF) < 0) {
             var sb = '';
@@ -72,7 +70,7 @@
         if (end < start) {
             return null;
         }
-        return Base64.decode(pem.substring(start, end));
+        return ns.format.Base64.decode(pem.substring(start, end));
     };
 
     var encode_public = function (key) {
@@ -100,7 +98,7 @@
             throw new TypeError('this is a private key content');
         } else {
             // key content without wrapper
-            return Base64.decode(pem);
+            return ns.format.Base64.decode(pem);
         }
     };
     var decode_rsa_private = function (pem) {
@@ -114,18 +112,21 @@
             throw new TypeError('this is not a RSA private key content');
         } else {
             // key content without wrapper
-            return Base64.decode(pem);
+            return ns.format.Base64.decode(pem);
         }
     };
 
     //-------- PEM functions end --------
 
+    var obj = ns.type.Object;
+
     //
     //  PEM
     //
     var pem = function () {
+        obj.call(this);
     };
-    ns.Class(pem, ns.type.Object, null);
+    ns.Class(pem, obj, null);
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };
@@ -142,6 +143,6 @@
     //-------- namespace --------
     ns.format.PEM = new pem();
 
-    ns.format.register('PEM');
+    ns.format.registers('PEM');
 
-})(DIMP);
+})(MONKEY);

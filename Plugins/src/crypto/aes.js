@@ -173,6 +173,6 @@
     //-------- namespace --------
     ns.crypto.AESKey = AESKey;
 
-    ns.crypto.register('AESKey');
+    ns.crypto.registers('AESKey');
 
-})(DIMP);
+})(MONKEY);

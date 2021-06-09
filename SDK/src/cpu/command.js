@@ -121,6 +121,6 @@
     //-------- namespace --------
     ns.cpu.CommandProcessor = CommandProcessor;
 
-    ns.cpu.register('CommandProcessor');
+    ns.cpu.registers('CommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

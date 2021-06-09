@@ -33,14 +33,16 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
 
     //
     //  SHA256
     //
     var sha256 = function () {
+        obj.call(this);
     };
-    ns.Class(sha256, ns.type.Object, [Hash]);
+    ns.Class(sha256, obj, [Hash]);
     sha256.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
@@ -53,4 +55,4 @@
     //-------- namespace --------
     ns.digest.SHA256.hash = new sha256();
 
-})(DIMP);
+})(MONKEY);

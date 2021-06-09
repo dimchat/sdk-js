@@ -58,6 +58,6 @@
     //-------- namespace --------
     ns.WSShip = WSShip;
 
-    ns.register('WSShip');
+    ns.registers('WSShip');
 
 })(StarGate, StarTrek, MONKEY);

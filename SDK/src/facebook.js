@@ -213,6 +213,6 @@
     //-------- namespace --------
     ns.Facebook = Facebook;
 
-    ns.register('Facebook');
+    ns.registers('Facebook');
 
-})(DIMP);
+})(DIMSDK);

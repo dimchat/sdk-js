@@ -88,6 +88,6 @@
     //-------- namespace --------
     ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
 
-    ns.cpu.register('GroupCommandProcessor');
+    ns.cpu.registers('GroupCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

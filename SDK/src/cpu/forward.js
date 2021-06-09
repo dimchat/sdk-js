@@ -68,6 +68,6 @@
     //-------- namespace --------
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
 
-    ns.cpu.register('ForwardContentProcessor');
+    ns.cpu.registers('ForwardContentProcessor');
 
-})(DIMP);
+})(DIMSDK);

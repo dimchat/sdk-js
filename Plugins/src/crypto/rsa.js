@@ -151,9 +151,9 @@
     //-------- namespace --------
     ns.crypto.RSAPublicKey = RSAPublicKey;
 
-    ns.crypto.register('RSAPublicKey');
+    ns.crypto.registers('RSAPublicKey');
 
-})(DIMP);
+})(MONKEY);
 
 (function (ns) {
     'use strict';
@@ -287,6 +287,6 @@
     //-------- namespace --------
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
 
-    ns.crypto.register('RSAPrivateKey');
+    ns.crypto.registers('RSAPrivateKey');
 
-})(DIMP);
+})(MONKEY);

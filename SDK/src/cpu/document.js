@@ -101,6 +101,6 @@
     //-------- namespace --------
     ns.cpu.DocumentCommandProcessor = DocumentCommandProcessor;
 
-    ns.cpu.register('DocumentCommandProcessor');
+    ns.cpu.registers('DocumentCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

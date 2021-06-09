@@ -88,6 +88,6 @@
     //-------- namespace --------
     ns.Delegate = Delegate;
 
-    ns.register('Delegate');
+    ns.registers('Delegate');
 
 })(FiniteStateMachine, MONKEY);

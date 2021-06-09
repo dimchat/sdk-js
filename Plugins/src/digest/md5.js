@@ -33,14 +33,16 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
 
     //
     //  MD5
     //
     var md5 = function () {
+        obj.call(this);
     };
-    ns.Class(md5, ns.type.Object, [Hash]);
+    ns.Class(md5, obj, [Hash]);
     md5.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
@@ -53,4 +55,4 @@
     //-------- namespace --------
     ns.digest.MD5.hash = new md5();
 
-})(DIMP);
+})(MONKEY);

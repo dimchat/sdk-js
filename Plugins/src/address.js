@@ -139,8 +139,8 @@
     };
 
     //-------- namespace --------
-    ns.BTCAddress = BTCAddress;
+    ns.mkm.BTCAddress = BTCAddress;
 
-    ns.register('BTCAddress');
+    ns.mkm.registers('BTCAddress');
 
-})(DIMP);
+})(MingKeMing);

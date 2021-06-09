@@ -107,6 +107,6 @@
     //-------- namespace --------
     ns.protocol.MuteCommand = MuteCommand;
 
-    ns.protocol.register('MuteCommand');
+    ns.protocol.registers('MuteCommand');
 
-})(DIMP);
+})(DIMSDK);

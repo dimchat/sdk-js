@@ -107,6 +107,6 @@
     //-------- namespace --------
     ns.protocol.BlockCommand = BlockCommand;
 
-    ns.protocol.register('BlockCommand');
+    ns.protocol.registers('BlockCommand');
 
-})(DIMP);
+})(DIMSDK);

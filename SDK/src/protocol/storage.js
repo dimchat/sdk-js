@@ -203,6 +203,6 @@
     //-------- namespace --------
     ns.protocol.StorageCommand = StorageCommand;
 
-    ns.protocol.register('StorageCommand');
+    ns.protocol.registers('StorageCommand');
 
-})(DIMP);
+})(DIMSDK);

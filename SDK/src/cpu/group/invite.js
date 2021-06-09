@@ -113,6 +113,6 @@
     //-------- namespace --------
     ns.cpu.group.InviteCommandProcessor = InviteCommandProcessor;
 
-    ns.cpu.group.register('InviteCommandProcessor');
+    ns.cpu.group.registers('InviteCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

@@ -97,6 +97,6 @@
     //-------- namespace --------
     ns.IPv4 = IPv4;
 
-    ns.register('IPv4');
+    ns.registers('IPv4');
 
 })(StarGate, MONKEY);

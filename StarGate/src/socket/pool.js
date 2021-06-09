@@ -91,6 +91,6 @@
     //-------- namespace --------
     ns.CachePool = CachePool;
 
-    ns.register('CachePool');
+    ns.registers('CachePool');
 
 })(StarGate, MONKEY);

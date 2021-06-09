@@ -49,6 +49,6 @@
     //-------- namespace --------
     ns.ServiceProvider = ServiceProvider;
 
-    ns.register('ServiceProvider');
+    ns.registers('ServiceProvider');
 
-})(DIMP);
+})(DIMSDK);

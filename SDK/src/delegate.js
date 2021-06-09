@@ -51,9 +51,9 @@
     //-------- namespace --------
     ns.Callback = Callback;
 
-    ns.register('Callback');
+    ns.registers('Callback');
 
-})(DIMP);
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
@@ -78,9 +78,9 @@
     //-------- namespace --------
     ns.CompletionHandler = CompletionHandler;
 
-    ns.register('CompletionHandler');
+    ns.registers('CompletionHandler');
 
-})(DIMP);
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
@@ -136,9 +136,9 @@
     //-------- namespace --------
     ns.MessengerDelegate = MessengerDelegate;
 
-    ns.register('MessengerDelegate');
+    ns.registers('MessengerDelegate');
 
-})(DIMP);
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
@@ -187,6 +187,6 @@
     //-------- namespace --------
     ns.MessengerDataSource = MessengerDataSource;
 
-    ns.register('MessengerDataSource');
+    ns.registers('MessengerDataSource');
 
-})(DIMP);
+})(DIMSDK);

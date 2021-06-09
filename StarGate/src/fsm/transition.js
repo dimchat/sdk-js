@@ -61,6 +61,6 @@
     //-------- namespace --------
     ns.Transition = Transition;
 
-    ns.register('Transition');
+    ns.registers('Transition');
 
 })(FiniteStateMachine, MONKEY);

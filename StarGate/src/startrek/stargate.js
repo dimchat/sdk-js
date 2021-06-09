@@ -169,6 +169,6 @@
     //-------- namespace --------
     ns.StarGate = StarGate;
 
-    ns.register('StarGate');
+    ns.registers('StarGate');
 
 })(StarTrek, MONKEY);

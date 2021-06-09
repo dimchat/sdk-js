@@ -91,9 +91,9 @@
     //-------- namespace --------
     ns.Transmitter = Transmitter;
 
-    ns.register('Transmitter');
+    ns.registers('Transmitter');
 
-})(DIMP);
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
@@ -185,6 +185,6 @@
     //-------- namespace --------
     ns.MessageTransmitter = MessageTransmitter;
 
-    ns.register('MessageTransmitter');
+    ns.registers('MessageTransmitter');
 
-})(DIMP);
+})(DIMSDK);

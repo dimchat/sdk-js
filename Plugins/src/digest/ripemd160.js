@@ -33,14 +33,16 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
 
     //
     //  RIPEMD160
     //
     var ripemd160 = function () {
+        obj.call(this);
     };
-    ns.Class(ripemd160, ns.type.Object, [Hash]);
+    ns.Class(ripemd160, obj, [Hash]);
     ripemd160.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
@@ -53,4 +55,4 @@
     //-------- namespace --------
     ns.digest.RIPEMD160.hash = new ripemd160();
 
-})(DIMP);
+})(MONKEY);

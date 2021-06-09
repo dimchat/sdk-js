@@ -32,21 +32,25 @@
 
 //! require <dimp.js>
 
-(function (ns) {
+if (typeof DIMSDK !== "object") {
+    DIMSDK = new MingKeMing.Namespace();
+}
+
+(function (ns, base) {
     'use strict';
+
+    // exports namespace from DaoKeDao
+    base.exports(ns);
 
     //-------- namespace --------
     if (typeof ns.cpu !== 'object') {
-        ns.cpu = {};
+        ns.cpu = new ns.Namespace();
     }
     if (typeof ns.cpu.group !== 'object') {
-        ns.cpu.group = {};
+        ns.cpu.group = new ns.Namespace();
     }
 
-    ns.Namespace(ns.cpu);
-    ns.Namespace(ns.cpu.group);
+    ns.registers('cpu');
+    ns.cpu.registers('group');
 
-    ns.register('cpu');
-    ns.cpu.register('group');
-
-})(DIMP);
+})(DIMSDK, DIMP);

@@ -103,6 +103,6 @@
     //-------- namespace --------
     ns.WSDocker = WSDocker;
 
-    ns.register('WSDocker');
+    ns.registers('WSDocker');
 
 })(StarGate, StarTrek, MONKEY);

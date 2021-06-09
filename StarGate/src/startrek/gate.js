@@ -219,6 +219,6 @@
     //-------- namespace --------
     ns.Gate = Gate;
 
-    ns.register('Gate');
+    ns.registers('Gate');
 
 })(StarTrek, MONKEY);

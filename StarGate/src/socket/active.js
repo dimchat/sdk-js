@@ -126,6 +126,6 @@
     //-------- namespace --------
     ns.ActiveConnection = ActiveConnection;
 
-    ns.register('ActiveConnection');
+    ns.registers('ActiveConnection');
 
 })(StarGate, MONKEY);

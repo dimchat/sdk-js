@@ -119,6 +119,6 @@
     //-------- namespace --------
     ns.cpu.FileContentProcessor = FileContentProcessor;
 
-    ns.cpu.register('FileContentProcessor');
+    ns.cpu.registers('FileContentProcessor');
 
-})(DIMP);
+})(DIMSDK);

@@ -118,6 +118,6 @@
     //-------- namespace --------
     ns.State = State;
 
-    ns.register('State');
+    ns.registers('State');
 
 })(FiniteStateMachine, MONKEY);

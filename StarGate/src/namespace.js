@@ -25,37 +25,24 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+//! require <crypto.js>
 
 if (typeof LocalNotificationService !== 'object') {
-    LocalNotificationService = {};
+    LocalNotificationService = new MONKEY.Namespace();
 }
 
 if (typeof FiniteStateMachine !== 'object') {
-    FiniteStateMachine = {};
+    FiniteStateMachine = new MONKEY.Namespace();
 }
 
 if (typeof FileSystem !== 'object') {
-    FileSystem = {};
+    FileSystem = new MONKEY.Namespace();
 }
 
 if (typeof StarTrek !== 'object') {
-    StarTrek = {};
+    StarTrek = new MONKEY.Namespace();
 }
 
 if (typeof StarGate !== 'object') {
-    StarGate = {};
+    StarGate = new MONKEY.Namespace();
 }
-
-(function (ns) {
-    "use strict";
-
-    //-------- namespace --------
-
-    ns.Namespace(LocalNotificationService);
-    ns.Namespace(FiniteStateMachine);
-    ns.Namespace(FileSystem);
-    ns.Namespace(StarTrek);
-    ns.Namespace(StarGate);
-
-})(MONKEY);

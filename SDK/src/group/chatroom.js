@@ -72,6 +72,6 @@
     //-------- namespace --------
     ns.Chatroom = Chatroom;
 
-    ns.register('Chatroom');
+    ns.registers('Chatroom');
 
-})(DIMP);
+})(DIMSDK);

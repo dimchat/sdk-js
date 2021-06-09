@@ -190,6 +190,6 @@
     //-------- namespace --------
     ns.Dock = Dock;
 
-    ns.register('Dock');
+    ns.registers('Dock');
 
 })(StarTrek, MONKEY);

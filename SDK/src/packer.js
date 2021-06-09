@@ -136,6 +136,6 @@
     //-------- namespace --------
     ns.MessagePacker = MessagePacker;
 
-    ns.register('MessagePacker');
+    ns.registers('MessagePacker');
 
-})(DIMP);
+})(DIMSDK);

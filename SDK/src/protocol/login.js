@@ -192,6 +192,6 @@
     //-------- namespace --------
     ns.protocol.LoginCommand = LoginCommand;
 
-    ns.protocol.register('LoginCommand');
+    ns.protocol.registers('LoginCommand');
 
-})(DIMP);
+})(DIMSDK);

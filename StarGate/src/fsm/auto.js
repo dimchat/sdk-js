@@ -93,6 +93,6 @@
     //-------- namespace --------
     ns.AutoMachine = AutoMachine;
 
-    ns.register('AutoMachine');
+    ns.registers('AutoMachine');
 
 })(FiniteStateMachine, MONKEY);

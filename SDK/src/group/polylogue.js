@@ -57,6 +57,6 @@
     //-------- namespace --------
     ns.Polylogue = Polylogue;
 
-    ns.register('Polylogue');
+    ns.registers('Polylogue');
 
-})(DIMP);
+})(DIMSDK);

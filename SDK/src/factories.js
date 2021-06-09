@@ -132,4 +132,4 @@
 
     registerAllFactories();
 
-})(DIMP);
+})(DIMSDK);

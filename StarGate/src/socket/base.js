@@ -318,6 +318,6 @@
     //-------- namespace --------
     ns.BaseConnection = BaseConnection;
 
-    ns.register('BaseConnection');
+    ns.registers('BaseConnection');
 
 })(StarGate, MONKEY);

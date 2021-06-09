@@ -87,6 +87,6 @@
     //-------- namespace --------
     ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
 
-    ns.cpu.register('MetaCommandProcessor');
+    ns.cpu.registers('MetaCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

@@ -187,6 +187,6 @@
     //-------- namespace --------
     ns.StarDocker = StarDocker;
 
-    ns.register('StarDocker');
+    ns.registers('StarDocker');
 
 })(StarTrek, MONKEY);

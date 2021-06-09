@@ -147,6 +147,6 @@
     //-------- namespace --------
     ns.protocol.ReceiptCommand = ReceiptCommand;
 
-    ns.protocol.register('ReceiptCommand');
+    ns.protocol.registers('ReceiptCommand');
 
-})(DIMP);
+})(DIMSDK);

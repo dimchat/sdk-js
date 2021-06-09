@@ -100,6 +100,6 @@
     //-------- namespace --------
     ns.MemoryCache = MemoryCache;
 
-    ns.register('MemoryCache');
+    ns.registers('MemoryCache');
 
 })(StarGate, MONKEY);

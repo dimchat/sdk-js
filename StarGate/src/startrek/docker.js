@@ -66,6 +66,6 @@
     //-------- namespace --------
     ns.Docker = Docker;
 
-    ns.register('Docker');
+    ns.registers('Docker');
 
 })(StarTrek, MONKEY);

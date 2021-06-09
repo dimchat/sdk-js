@@ -60,6 +60,6 @@
     //-------- namespace --------
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;
 
-    ns.cpu.register('HistoryCommandProcessor');
+    ns.cpu.registers('HistoryCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

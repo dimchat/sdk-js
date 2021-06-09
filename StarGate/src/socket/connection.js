@@ -234,6 +234,6 @@
     //-------- namespace --------
     ns.Connection = Connection;
 
-    ns.register('Connection');
+    ns.registers('Connection');
 
 })(StarGate, MONKEY);

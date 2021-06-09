@@ -35,6 +35,8 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
+
     var ContentType = ns.protocol.ContentType;
     var Content = ns.protocol.Content;
     var TextContent = ns.protocol.TextContent;
@@ -44,9 +46,10 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var ContentProcessor = function () {
+        obj.call(this);
         this.__messenger = null;
     };
-    ns.Class(ContentProcessor, ns.type.Object, null);
+    ns.Class(ContentProcessor, obj, null);
 
     ContentProcessor.prototype.getMessenger = function () {
         return this.__messenger;
@@ -116,6 +119,6 @@
     //-------- namespace --------
     ns.cpu.ContentProcessor = ContentProcessor;
 
-    ns.cpu.register('ContentProcessor')
+    ns.cpu.registers('ContentProcessor')
 
-})(DIMP);
+})(DIMSDK);

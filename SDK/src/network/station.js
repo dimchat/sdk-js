@@ -76,6 +76,6 @@
     //-------- namespace --------
     ns.Station = Station;
 
-    ns.register('Station');
+    ns.registers('Station');
 
-})(DIMP);
+})(DIMSDK);

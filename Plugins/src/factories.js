@@ -36,8 +36,8 @@
     'use strict';
 
     var Address = ns.protocol.Address;
-    var AddressFactory = ns.AddressFactory;
-    var BTCAddress = ns.BTCAddress;
+    var AddressFactory = ns.mkm.AddressFactory;
+    var BTCAddress = ns.mkm.BTCAddress;
 
     /**
      *  Address factory
@@ -46,7 +46,7 @@
     var GeneralAddressFactory = function () {
         AddressFactory.call(this);
     };
-    ns.Class(GeneralAddressFactory, AddressFactory);
+    ns.Class(GeneralAddressFactory, AddressFactory, null);
 
     GeneralAddressFactory.prototype.createAddress = function(address) {
         // TODO: check for ETH address
@@ -59,24 +59,27 @@
      */
     Address.setFactory(new GeneralAddressFactory());
 
-})(DIMP);
+})(MingKeMing);
 
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
+
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
-    var DefaultMeta = ns.DefaultMeta;
-    var BTCMeta = ns.BTCMeta;
+    var DefaultMeta = ns.mkm.DefaultMeta;
+    var BTCMeta = ns.mkm.BTCMeta;
 
     /**
      *  Meta factory
      *  ~~~~~~~~~~~~
      */
     var GeneralMetaFactory = function (type) {
+        obj.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralMetaFactory, null, [Meta.Factory]);
+    ns.Class(GeneralMetaFactory, obj, [Meta.Factory]);
 
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
         if (MetaType.MKM.equals(this.__type)) {
@@ -125,15 +128,17 @@
      */
     Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
 
-})(DIMP);
+})(MingKeMing);
 
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
+
     var Document = ns.protocol.Document;
-    var BaseDocument = ns.BaseDocument;
-    var BaseBulletin = ns.BaseBulletin;
-    var BaseVisa = ns.BaseVisa;
+    var BaseDocument = ns.mkm.BaseDocument;
+    var BaseBulletin = ns.mkm.BaseBulletin;
+    var BaseVisa = ns.mkm.BaseVisa;
 
     var doc_type = function (type, identifier) {
         if (type === '*') {
@@ -154,9 +159,10 @@
      *  ~~~~~~~~~~~~~~~~
      */
     var GeneralDocumentFactory = function (type) {
+        obj.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralDocumentFactory, null, [Document.Factory]);
+    ns.Class(GeneralDocumentFactory, obj, [Document.Factory]);
 
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
         var type = doc_type(this.__type, identifier);
@@ -207,10 +213,12 @@
     Document.register(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
     Document.register(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
 
-})(DIMP);
+})(MingKeMing);
 
 (function (ns) {
     'use strict';
+
+    var obj = ns.type.Object;
 
     var SymmetricKey = ns.crypto.SymmetricKey;
     var AESKey = ns.crypto.AESKey;
@@ -221,8 +229,9 @@
      *  ~~~~~~~~~~~~~~~
      */
     var AESKeyFactory = function () {
+        obj.call(this);
     };
-    ns.Class(AESKeyFactory, null, [SymmetricKey.Factory]);
+    ns.Class(AESKeyFactory, obj, [SymmetricKey.Factory]);
 
     AESKeyFactory.prototype.generateSymmetricKey = function() {
         return new AESKey({
@@ -239,8 +248,9 @@
      *  ~~~~~~~~~~~~~~~~~
      */
     var PlainKeyFactory = function () {
+        obj.call(this);
     };
-    ns.Class(PlainKeyFactory, null, [SymmetricKey.Factory]);
+    ns.Class(PlainKeyFactory, obj, [SymmetricKey.Factory]);
 
     PlainKeyFactory.prototype.generateSymmetricKey = function() {
         return PlainKey.getInstance();
@@ -260,10 +270,12 @@
 
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory());
 
-})(DIMP);
+})(MONKEY);
 
 (function (ns) {
     'use strict';
+
+    var obj = ns.type.Object;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
@@ -276,8 +288,9 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var RSAPrivateKeyFactory = function () {
+        obj.call(this);
     };
-    ns.Class(RSAPrivateKeyFactory, null, [PrivateKey.Factory]);
+    ns.Class(RSAPrivateKeyFactory, obj, [PrivateKey.Factory]);
 
     RSAPrivateKeyFactory.prototype.generatePrivateKey = function() {
         return new RSAPrivateKey({
@@ -294,8 +307,9 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var RSAPublicKeyFactory = function () {
+        obj.call(this);
     };
-    ns.Class(RSAPublicKeyFactory, null, [PublicKey.Factory]);
+    ns.Class(RSAPublicKeyFactory, obj, [PublicKey.Factory]);
 
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new RSAPublicKey(key);
@@ -315,4 +329,4 @@
     PublicKey.register('SHA256withRSA', rsa_pub);
     PublicKey.register('RSA/ECB/PKCS1Padding', rsa_pub);
 
-})(DIMP);
+})(MONKEY);

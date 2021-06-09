@@ -73,6 +73,6 @@
     //-------- namespace --------
     ns.MessageProcessor = MessageProcessor;
 
-    ns.register('MessageProcessor');
+    ns.registers('MessageProcessor');
 
-})(DIMP);
+})(DIMSDK);

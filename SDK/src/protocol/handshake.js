@@ -153,7 +153,7 @@
     ns.protocol.HandshakeCommand = HandshakeCommand;
     ns.protocol.HandshakeState = HandshakeState;
 
-    ns.protocol.register('HandshakeCommand');
-    ns.protocol.register('HandshakeState');
+    ns.protocol.registers('HandshakeCommand');
+    ns.protocol.registers('HandshakeState');
 
-})(DIMP);
+})(DIMSDK);

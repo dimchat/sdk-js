@@ -57,6 +57,6 @@
     //-------- namespace --------
     ns.Notification = Notification;
 
-    ns.register('Notification');
+    ns.registers('Notification');
 
 })(LocalNotificationService, MONKEY);

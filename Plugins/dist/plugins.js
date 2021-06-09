@@ -145,9 +145,12 @@
         }
     }
     var bs58 = base("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
+    var obj = ns.type.Object;
     var BaseCoder = ns.format.BaseCoder;
-    var base58 = function() {};
-    ns.Class(base58, ns.type.Object, [BaseCoder]);
+    var base58 = function() {
+        obj.call(this)
+    };
+    ns.Class(base58, obj, [BaseCoder]);
     base58.prototype.encode = function(data) {
         return bs58.encode(data)
     };
@@ -155,11 +158,14 @@
         return bs58.decode(string)
     };
     ns.format.Base58.coder = new base58()
-})(DIMP);
+})(MONKEY);
 (function(ns) {
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var md5 = function() {};
-    ns.Class(md5, ns.type.Object, [Hash]);
+    var md5 = function() {
+        obj.call(this)
+    };
+    ns.Class(md5, obj, [Hash]);
     md5.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -167,11 +173,14 @@
         return ns.format.Hex.decode(result.toString())
     };
     ns.digest.MD5.hash = new md5()
-})(DIMP);
+})(MONKEY);
 (function(ns) {
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var sha256 = function() {};
-    ns.Class(sha256, ns.type.Object, [Hash]);
+    var sha256 = function() {
+        obj.call(this)
+    };
+    ns.Class(sha256, obj, [Hash]);
     sha256.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -179,11 +188,14 @@
         return ns.format.Hex.decode(result.toString())
     };
     ns.digest.SHA256.hash = new sha256()
-})(DIMP);
+})(MONKEY);
 (function(ns) {
+    var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var ripemd160 = function() {};
-    ns.Class(ripemd160, ns.type.Object, [Hash]);
+    var ripemd160 = function() {
+        obj.call(this)
+    };
+    ns.Class(ripemd160, obj, [Hash]);
     ripemd160.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -191,13 +203,12 @@
         return ns.format.Hex.decode(result.toString())
     };
     ns.digest.RIPEMD160.hash = new ripemd160()
-})(DIMP);
+})(MONKEY);
 (function(ns) {
-    var Base64 = ns.format.Base64;
     var MIME_LINE_MAX_LEN = 76;
     var CR_LF = "\r\n";
     var rfc2045 = function(data) {
-        var base64 = Base64.encode(data);
+        var base64 = ns.format.Base64.encode(data);
         var length = base64.length;
         if (length > MIME_LINE_MAX_LEN && base64.indexOf(CR_LF) < 0) {
             var sb = "";
@@ -231,7 +242,7 @@
         if (end < start) {
             return null
         }
-        return Base64.decode(pem.substring(start, end))
+        return ns.format.Base64.decode(pem.substring(start, end))
     };
     var encode_public = function(key) {
         return encode_key(key, "-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----")
@@ -247,7 +258,7 @@
         if (pem.indexOf("PRIVATE KEY") > 0) {
             throw new TypeError("this is a private key content")
         } else {
-            return Base64.decode(pem)
+            return ns.format.Base64.decode(pem)
         }
     };
     var decode_rsa_private = function(pem) {
@@ -258,11 +269,14 @@
         if (pem.indexOf("PUBLIC KEY") > 0) {
             throw new TypeError("this is not a RSA private key content")
         } else {
-            return Base64.decode(pem)
+            return ns.format.Base64.decode(pem)
         }
     };
-    var pem = function() {};
-    ns.Class(pem, ns.type.Object, null);
+    var obj = ns.type.Object;
+    var pem = function() {
+        obj.call(this)
+    };
+    ns.Class(pem, obj, null);
     pem.prototype.encodePublicKey = function(key) {
         return encode_public(key)
     };
@@ -276,8 +290,8 @@
         return decode_rsa_private(pem)
     };
     ns.format.PEM = new pem();
-    ns.format.register("PEM")
-})(DIMP);
+    ns.format.registers("PEM")
+})(MONKEY);
 (function(ns) {
     var Hex = ns.format.Hex;
     var Base64 = ns.format.Base64;
@@ -351,8 +365,8 @@
         throw new Error("RSA encrypt error: " + plaintext)
     };
     ns.crypto.RSAPublicKey = RSAPublicKey;
-    ns.crypto.register("RSAPublicKey")
-})(DIMP);
+    ns.crypto.registers("RSAPublicKey")
+})(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
     var Hex = ns.format.Hex;
@@ -442,8 +456,8 @@
         return CryptographyKey.matches(pKey, this)
     };
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
-    ns.crypto.register("RSAPrivateKey")
-})(DIMP);
+    ns.crypto.registers("RSAPrivateKey")
+})(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -540,12 +554,16 @@
         return CryptographyKey.matches(pKey, this)
     };
     ns.crypto.AESKey = AESKey;
-    ns.crypto.register("AESKey")
-})(DIMP);
+    ns.crypto.registers("AESKey")
+})(MONKEY);
 (function(ns) {
+    var obj = ns.type.Object;
     var Data = ns.type.Data;
     var SymmetricKey = ns.crypto.SymmetricKey;
-    var Password = function() {};
+    var Password = function() {
+        obj.call(this)
+    };
+    ns.Class(Password, obj, null);
     Password.KEY_SIZE = 32;
     Password.BLOCK_SIZE = 16;
     Password.generate = function(password) {
@@ -578,14 +596,15 @@
         return SymmetricKey.parse(key)
     };
     ns.crypto.Password = Password;
-    ns.crypto.register("Password")
-})(DIMP);
+    ns.crypto.registers("Password")
+})(MONKEY);
 (function(ns) {
+    var Dictionary = ns.type.Dictionary;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PlainKey = function(key) {
-        SymmetricKey.call(this, key)
+        Dictionary.call(this, key)
     };
-    ns.Class(PlainKey, SymmetricKey, null);
+    ns.Class(PlainKey, Dictionary, [SymmetricKey]);
     PlainKey.prototype.encrypt = function(data) {
         return data
     };
@@ -604,8 +623,8 @@
     };
     PlainKey.PLAIN = "PLAIN";
     ns.crypto.PlainKey = PlainKey;
-    ns.crypto.register("PlainKey")
-})(DIMP);
+    ns.crypto.registers("PlainKey")
+})(MONKEY);
 (function(ns) {
     var str = ns.type.String;
     var Data = ns.type.Data;
@@ -667,13 +686,13 @@
         var sha256d = SHA256.digest(SHA256.digest(data));
         return sha256d.subarray(0, 4)
     };
-    ns.BTCAddress = BTCAddress;
-    ns.register("BTCAddress")
-})(DIMP);
+    ns.mkm.BTCAddress = BTCAddress;
+    ns.mkm.registers("BTCAddress")
+})(MingKeMing);
 (function(ns) {
     var NetworkType = ns.protocol.NetworkType;
-    var BTCAddress = ns.BTCAddress;
-    var BaseMeta = ns.BaseMeta;
+    var BTCAddress = ns.mkm.BTCAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
     var DefaultMeta = function() {
         if (arguments.length === 1) {
             BaseMeta.call(this, arguments[0])
@@ -696,13 +715,13 @@
         }
         return address
     };
-    ns.DefaultMeta = DefaultMeta;
-    ns.register("DefaultMeta")
-})(DIMP);
+    ns.mkm.DefaultMeta = DefaultMeta;
+    ns.mkm.registers("DefaultMeta")
+})(MingKeMing);
 (function(ns) {
     var NetworkType = ns.protocol.NetworkType;
-    var BTCAddress = ns.BTCAddress;
-    var BaseMeta = ns.BaseMeta;
+    var BTCAddress = ns.mkm.BTCAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
     var BTCMeta = function() {
         if (arguments.length === 1) {
             BaseMeta.call(this, arguments[0])
@@ -721,31 +740,33 @@
         }
         return this.__address
     };
-    ns.BTCMeta = BTCMeta;
-    ns.register("BTCMeta")
-})(DIMP);
+    ns.mkm.BTCMeta = BTCMeta;
+    ns.mkm.registers("BTCMeta")
+})(MingKeMing);
 (function(ns) {
     var Address = ns.protocol.Address;
-    var AddressFactory = ns.AddressFactory;
-    var BTCAddress = ns.BTCAddress;
+    var AddressFactory = ns.mkm.AddressFactory;
+    var BTCAddress = ns.mkm.BTCAddress;
     var GeneralAddressFactory = function() {
         AddressFactory.call(this)
     };
-    ns.Class(GeneralAddressFactory, AddressFactory);
+    ns.Class(GeneralAddressFactory, AddressFactory, null);
     GeneralAddressFactory.prototype.createAddress = function(address) {
         return BTCAddress.parse(address)
     };
     Address.setFactory(new GeneralAddressFactory())
-})(DIMP);
+})(MingKeMing);
 (function(ns) {
+    var obj = ns.type.Object;
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
-    var DefaultMeta = ns.DefaultMeta;
-    var BTCMeta = ns.BTCMeta;
+    var DefaultMeta = ns.mkm.DefaultMeta;
+    var BTCMeta = ns.mkm.BTCMeta;
     var GeneralMetaFactory = function(type) {
+        obj.call(this);
         this.__type = type
     };
-    ns.Class(GeneralMetaFactory, null, [Meta.Factory]);
+    ns.Class(GeneralMetaFactory, obj, [Meta.Factory]);
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
         if (MetaType.MKM.equals(this.__type)) {
             return new DefaultMeta(this.__type, key, seed, fingerprint)
@@ -785,12 +806,13 @@
         }
     };
     Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM))
-})(DIMP);
+})(MingKeMing);
 (function(ns) {
+    var obj = ns.type.Object;
     var Document = ns.protocol.Document;
-    var BaseDocument = ns.BaseDocument;
-    var BaseBulletin = ns.BaseBulletin;
-    var BaseVisa = ns.BaseVisa;
+    var BaseDocument = ns.mkm.BaseDocument;
+    var BaseBulletin = ns.mkm.BaseBulletin;
+    var BaseVisa = ns.mkm.BaseVisa;
     var doc_type = function(type, identifier) {
         if (type === "*") {
             if (identifier.isGroup()) {
@@ -807,9 +829,10 @@
         }
     };
     var GeneralDocumentFactory = function(type) {
+        obj.call(this);
         this.__type = type
     };
-    ns.Class(GeneralDocumentFactory, null, [Document.Factory]);
+    ns.Class(GeneralDocumentFactory, obj, [Document.Factory]);
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
         var type = doc_type(this.__type, identifier);
         if (type === Document.VISA) {
@@ -857,13 +880,16 @@
     Document.register(Document.VISA, new GeneralDocumentFactory(Document.VISA));
     Document.register(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
     Document.register(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN))
-})(DIMP);
+})(MingKeMing);
 (function(ns) {
+    var obj = ns.type.Object;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var AESKey = ns.crypto.AESKey;
     var PlainKey = ns.crypto.PlainKey;
-    var AESKeyFactory = function() {};
-    ns.Class(AESKeyFactory, null, [SymmetricKey.Factory]);
+    var AESKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(AESKeyFactory, obj, [SymmetricKey.Factory]);
     AESKeyFactory.prototype.generateSymmetricKey = function() {
         return new AESKey({
             "algorithm": SymmetricKey.AES
@@ -872,8 +898,10 @@
     AESKeyFactory.prototype.parseSymmetricKey = function(key) {
         return new AESKey(key)
     };
-    var PlainKeyFactory = function() {};
-    ns.Class(PlainKeyFactory, null, [SymmetricKey.Factory]);
+    var PlainKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(PlainKeyFactory, obj, [SymmetricKey.Factory]);
     PlainKeyFactory.prototype.generateSymmetricKey = function() {
         return PlainKey.getInstance()
     };
@@ -884,15 +912,18 @@
     SymmetricKey.register(SymmetricKey.AES, aes);
     SymmetricKey.register("AES/CBC/PKCS7Padding", aes);
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory())
-})(DIMP);
+})(MONKEY);
 (function(ns) {
+    var obj = ns.type.Object;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var PublicKey = ns.crypto.PublicKey;
     var RSAPrivateKey = ns.crypto.RSAPrivateKey;
     var RSAPublicKey = ns.crypto.RSAPublicKey;
-    var RSAPrivateKeyFactory = function() {};
-    ns.Class(RSAPrivateKeyFactory, null, [PrivateKey.Factory]);
+    var RSAPrivateKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(RSAPrivateKeyFactory, obj, [PrivateKey.Factory]);
     RSAPrivateKeyFactory.prototype.generatePrivateKey = function() {
         return new RSAPrivateKey({
             "algorithm": AsymmetricKey.RSA
@@ -901,8 +932,10 @@
     RSAPrivateKeyFactory.prototype.parsePrivateKey = function(key) {
         return new RSAPrivateKey(key)
     };
-    var RSAPublicKeyFactory = function() {};
-    ns.Class(RSAPublicKeyFactory, null, [PublicKey.Factory]);
+    var RSAPublicKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(RSAPublicKeyFactory, obj, [PublicKey.Factory]);
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new RSAPublicKey(key)
     };
@@ -914,4 +947,4 @@
     PublicKey.register(AsymmetricKey.RSA, rsa_pub);
     PublicKey.register("SHA256withRSA", rsa_pub);
     PublicKey.register("RSA/ECB/PKCS1Padding", rsa_pub)
-})(DIMP);
+})(MONKEY);

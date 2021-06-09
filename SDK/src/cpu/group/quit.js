@@ -79,6 +79,6 @@
     //-------- namespace --------
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;
 
-    ns.cpu.group.register('QuitCommandProcessor');
+    ns.cpu.group.registers('QuitCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

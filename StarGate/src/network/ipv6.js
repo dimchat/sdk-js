@@ -180,6 +180,6 @@
     //-------- namespace --------
     ns.IPv6 = IPv6;
 
-    ns.register('IPv6');
+    ns.registers('IPv6');
 
 })(StarGate, MONKEY);

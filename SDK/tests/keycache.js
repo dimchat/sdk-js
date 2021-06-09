@@ -35,6 +35,7 @@
 (function (ns) {
     'use strict';
 
+    var obj = ns.type.Object;
     var CipherKeyDelegate = ns.CipherKeyDelegate;
 
     /**
@@ -43,11 +44,12 @@
      *  Manage keys for conversations
      */
     var KeyCache = function () {
+        obj.call(this);
         // memory cache
         this.keyMap = {};
         this.isDirty = false;
     };
-    ns.Class(KeyCache, ns.type.Object, [CipherKeyDelegate]);
+    ns.Class(KeyCache, obj, [CipherKeyDelegate]);
 
     /**
      *  Trigger for loading cipher key table
@@ -180,9 +182,9 @@
     //-------- namespace --------
     ns.core.KeyCache = KeyCache;
 
-    ns.core.register('KeyCache');
+    ns.core.registers('KeyCache');
 
-})(DIMP);
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
@@ -233,6 +235,6 @@
     //-------- namespace --------
     ns.KeyStore = KeyStore;
 
-    ns.register('KeyStore');
+    ns.registers('KeyStore');
 
-})(DIMP);
+})(DIMSDK);

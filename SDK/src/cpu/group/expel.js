@@ -102,6 +102,6 @@
     //-------- namespace --------
     ns.cpu.group.ExpelCommandProcessor = ExpelCommandProcessor;
 
-    ns.cpu.group.register('ExpelCommandProcessor');
+    ns.cpu.group.registers('ExpelCommandProcessor');
 
-})(DIMP);
+})(DIMSDK);

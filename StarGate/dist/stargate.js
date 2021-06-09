@@ -8,27 +8,20 @@
  * @license   {@link https://mit-license.org | MIT License}
  */;
 if (typeof LocalNotificationService !== "object") {
-    LocalNotificationService = {}
+    LocalNotificationService = new MONKEY.Namespace()
 }
 if (typeof FiniteStateMachine !== "object") {
-    FiniteStateMachine = {}
+    FiniteStateMachine = new MONKEY.Namespace()
 }
 if (typeof FileSystem !== "object") {
-    FileSystem = {}
+    FileSystem = new MONKEY.Namespace()
 }
 if (typeof StarTrek !== "object") {
-    StarTrek = {}
+    StarTrek = new MONKEY.Namespace()
 }
 if (typeof StarGate !== "object") {
-    StarGate = {}
+    StarGate = new MONKEY.Namespace()
 }
-(function(ns) {
-    ns.Namespace(LocalNotificationService);
-    ns.Namespace(FiniteStateMachine);
-    ns.Namespace(FileSystem);
-    ns.Namespace(StarTrek);
-    ns.Namespace(StarGate)
-})(MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
     var Storage = function(storage, prefix) {
@@ -109,8 +102,8 @@ if (typeof StarGate !== "object") {
     };
     ns.LocalStorage = new Storage(window.localStorage, "dim.fs");
     ns.SessionStorage = new Storage(window.sessionStorage, "dim.mem");
-    ns.register("LocalStorage");
-    ns.register("SessionStorage")
+    ns.registers("LocalStorage");
+    ns.registers("SessionStorage")
 })(FileSystem, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -122,7 +115,7 @@ if (typeof StarGate !== "object") {
     };
     sys.Class(Notification, obj, null);
     ns.Notification = Notification;
-    ns.register("Notification")
+    ns.registers("Notification")
 })(LocalNotificationService, MONKEY);
 (function(ns, sys) {
     var Observer = function() {};
@@ -131,7 +124,7 @@ if (typeof StarGate !== "object") {
         console.assert(false, "implement me!")
     };
     ns.Observer = Observer;
-    ns.register("Observer")
+    ns.registers("Observer")
 })(LocalNotificationService, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -196,7 +189,7 @@ if (typeof StarGate !== "object") {
         return s_notification_center
     };
     ns.NotificationCenter = Center;
-    ns.register("NotificationCenter")
+    ns.registers("NotificationCenter")
 })(LocalNotificationService, MONKEY);
 (function(ns, sys) {
     var Delegate = function() {};
@@ -210,7 +203,7 @@ if (typeof StarGate !== "object") {
     Delegate.prototype.pauseState = function(state, machine) {};
     Delegate.prototype.resumeState = function(state, machine) {};
     ns.Delegate = Delegate;
-    ns.register("Delegate")
+    ns.registers("Delegate")
 })(FiniteStateMachine, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -224,7 +217,7 @@ if (typeof StarGate !== "object") {
         return false
     };
     ns.Transition = Transition;
-    ns.register("Transition")
+    ns.registers("Transition")
 })(FiniteStateMachine, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -259,7 +252,7 @@ if (typeof StarGate !== "object") {
     State.prototype.onPause = function(machine) {};
     State.prototype.onResume = function(machine) {};
     ns.State = State;
-    ns.register("State")
+    ns.registers("State")
 })(FiniteStateMachine, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -354,7 +347,7 @@ if (typeof StarGate !== "object") {
         }
     };
     ns.Machine = Machine;
-    ns.register("Machine")
+    ns.registers("Machine")
 })(FiniteStateMachine, MONKEY);
 (function(ns, sys) {
     var Runnable = sys.threading.Runnable;
@@ -395,7 +388,7 @@ if (typeof StarGate !== "object") {
         return this.getCurrentState() != null
     };
     ns.AutoMachine = AutoMachine;
-    ns.register("AutoMachine")
+    ns.registers("AutoMachine")
 })(FiniteStateMachine, MONKEY);
 (function(ns, sys) {
     var Ship = function() {};
@@ -419,7 +412,7 @@ if (typeof StarGate !== "object") {
     };
     Ship.Delegate = ShipDelegate;
     ns.Ship = Ship;
-    ns.register("Ship")
+    ns.registers("Ship")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -455,7 +448,7 @@ if (typeof StarGate !== "object") {
         this.__retries += 1
     };
     ns.StarShip = StarShip;
-    ns.register("StarShip")
+    ns.registers("StarShip")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -560,7 +553,7 @@ if (typeof StarGate !== "object") {
         return null
     };
     ns.Dock = Dock;
-    ns.register("Dock")
+    ns.registers("Dock")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var Handler = sys.threading.Handler;
@@ -572,7 +565,7 @@ if (typeof StarGate !== "object") {
         return null
     };
     ns.Docker = Docker;
-    ns.register("Docker")
+    ns.registers("Docker")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
@@ -662,7 +655,7 @@ if (typeof StarGate !== "object") {
         return null
     };
     ns.StarDocker = StarDocker;
-    ns.register("StarDocker")
+    ns.registers("StarDocker")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var Gate = function() {};
@@ -725,7 +718,7 @@ if (typeof StarGate !== "object") {
     Gate.Status = GateStatus;
     Gate.Delegate = GateDelegate;
     ns.Gate = Gate;
-    ns.register("Gate")
+    ns.registers("Gate")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
@@ -819,7 +812,7 @@ if (typeof StarGate !== "object") {
         }
     };
     ns.StarGate = StarGate;
-    ns.register("StarGate")
+    ns.registers("StarGate")
 })(StarTrek, MONKEY);
 (function(ns, sys) {
     var CachePool = function() {};
@@ -841,7 +834,7 @@ if (typeof StarGate !== "object") {
         return 0
     };
     ns.CachePool = CachePool;
-    ns.register("CachePool")
+    ns.registers("CachePool")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -884,7 +877,7 @@ if (typeof StarGate !== "object") {
         return this.__occupied
     };
     ns.MemoryCache = MemoryCache;
-    ns.register("MemoryCache")
+    ns.registers("MemoryCache")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var connect = function(url, proxy) {
@@ -1003,7 +996,7 @@ if (typeof StarGate !== "object") {
         }
     };
     ns.Socket = Socket;
-    ns.register("Socket")
+    ns.registers("Socket")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var Connection = function() {};
@@ -1064,7 +1057,7 @@ if (typeof StarGate !== "object") {
     Connection.Status = ConnectionStatus;
     Connection.Delegate = ConnectionDelegate;
     ns.Connection = Connection;
-    ns.register("Connection")
+    ns.registers("Connection")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
@@ -1286,7 +1279,7 @@ if (typeof StarGate !== "object") {
         }
     };
     ns.BaseConnection = BaseConnection;
-    ns.register("BaseConnection")
+    ns.registers("BaseConnection")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
@@ -1361,7 +1354,7 @@ if (typeof StarGate !== "object") {
         return res
     };
     ns.ActiveConnection = ActiveConnection;
-    ns.register("ActiveConnection")
+    ns.registers("ActiveConnection")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var obj = sys.type.Object;
@@ -1403,7 +1396,7 @@ if (typeof StarGate !== "object") {
         return array
     };
     ns.Host = Host;
-    ns.register("Host")
+    ns.registers("Host")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var Host = ns.Host;
@@ -1450,7 +1443,7 @@ if (typeof StarGate !== "object") {
         return new IPv4(ip, port)
     };
     ns.IPv4 = IPv4;
-    ns.register("IPv4")
+    ns.registers("IPv4")
 })(StarGate, MONKEY);
 (function(ns, sys) {
     var Host = ns.Host;
@@ -1565,7 +1558,7 @@ if (typeof StarGate !== "object") {
         return new IPv6(ip, port)
     };
     ns.IPv6 = IPv6;
-    ns.register("IPv6")
+    ns.registers("IPv6")
 })(StarGate, MONKEY);
 (function(ns, base, sys) {
     var StarShip = base.StarShip;
@@ -1584,7 +1577,7 @@ if (typeof StarGate !== "object") {
         return this.__pack
     };
     ns.WSShip = WSShip;
-    ns.register("WSShip")
+    ns.registers("WSShip")
 })(StarGate, StarTrek, MONKEY);
 (function(ns, base, sys) {
     var StarDocker = base.StarDocker;
@@ -1646,7 +1639,7 @@ if (typeof StarGate !== "object") {
     var NOOP = sys.format.UTF8.encode("NOOP");
     var OK = sys.format.UTF8.encode("OK");
     ns.WSDocker = WSDocker;
-    ns.register("WSDocker")
+    ns.registers("WSDocker")
 })(StarGate, StarTrek, MONKEY);
 (function(ns, base, sys) {
     var Gate = base.Gate;
@@ -1723,5 +1716,5 @@ if (typeof StarGate !== "object") {
     };
     WSGate.prototype.onConnectionReceivedData = function(connection, data) {};
     ns.WSGate = WSGate;
-    ns.register("WSGate")
+    ns.registers("WSGate")
 })(StarGate, StarTrek, MONKEY);
