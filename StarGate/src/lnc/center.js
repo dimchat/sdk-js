@@ -104,7 +104,7 @@
         if (typeof notification === 'string') {
             notification = new Notification(notification, sender, userInfo);
         }
-        var observers = this.observerMap[notification.name];
+        var observers = this.__observers[notification.name];
         if (!observers) {
             return;
         }
@@ -112,7 +112,7 @@
         var obs;
         for (var i = 0; i < observers.length; ++i) {
             obs = observers[i];
-            if (ns.Interface.conforms(obs, Observer)) {
+            if (sys.Interface.conforms(obs, Observer)) {
                 obs.onReceiveNotification(notification);
             } else if (typeof obs === 'function') {
                 obs.call(notification);

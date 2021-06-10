@@ -36,7 +36,6 @@
 (function (ns) {
     'use strict';
 
-    var ContentType = ns.protocol.ContentType;
     var TextContent = ns.protocol.TextContent;
     var Command = ns.protocol.Command;
     var GroupCommand = ns.protocol.GroupCommand;

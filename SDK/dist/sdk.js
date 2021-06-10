@@ -510,7 +510,6 @@ if (typeof DIMSDK !== "object") {
     ns.cpu.registers("ContentProcessor")
 })(DIMSDK);
 (function(ns) {
-    var ContentType = ns.protocol.ContentType;
     var TextContent = ns.protocol.TextContent;
     var Command = ns.protocol.Command;
     var GroupCommand = ns.protocol.GroupCommand;
@@ -1522,6 +1521,7 @@ if (typeof DIMSDK !== "object") {
     MessageCallbackHandler.prototype.onFailed = function(error) {
         this.callback.onFinished(this.message, error)
     };
+    MessageTransmitter.CompletionHandler = MessageCallbackHandler;
     ns.MessageTransmitter = MessageTransmitter;
     ns.registers("MessageTransmitter")
 })(DIMSDK);

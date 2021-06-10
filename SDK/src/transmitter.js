@@ -182,6 +182,8 @@
         this.callback.onFinished(this.message, error);
     };
 
+    MessageTransmitter.CompletionHandler = MessageCallbackHandler;
+
     //-------- namespace --------
     ns.MessageTransmitter = MessageTransmitter;
 
