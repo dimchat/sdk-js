@@ -98,12 +98,21 @@
     'use strict';
 
     var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var PlainKey = function (key) {
         Dictionary.call(this, key);
     };
     ns.Class(PlainKey, Dictionary, [SymmetricKey]);
+
+    PlainKey.prototype.getAlgorithm = function () {
+        return CryptographyKey.getAlgorithm(this.getMap());
+    };
+
+    PlainKey.prototype.getData = function () {
+        return null;
+    };
 
     PlainKey.prototype.encrypt = function (data) {
         return data;

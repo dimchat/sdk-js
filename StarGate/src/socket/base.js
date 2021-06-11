@@ -212,11 +212,13 @@
 
     BaseConnection.prototype.setup = function () {
         this.setStatus(Connection.Status.CONNECTING);
+        return false;
     };
 
     BaseConnection.prototype.finish = function () {
         close.call(this);
         this.setStatus(Connection.Status.DEFAULT);
+        return false;
     };
 
     /**

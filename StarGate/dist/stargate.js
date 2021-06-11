@@ -562,7 +562,6 @@ if (typeof StarGate !== "object") {
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
-    var Gate = ns.Gate;
     var StarDocker = function(gate) {
         Runner.call(this);
         this.__gate = gate;
@@ -584,7 +583,7 @@ if (typeof StarGate !== "object") {
         }
         var delegate;
         var outgo = null;
-        if (Gate.Status.CONNECTED.equals(gate.getStatus())) {
+        if (ns.Gate.Status.CONNECTED.equals(gate.getStatus())) {
             outgo = this.getOutgoShip()
         }
         if (outgo) {
@@ -1193,11 +1192,13 @@ if (typeof StarGate !== "object") {
         Runner.prototype.stop.call(this)
     };
     BaseConnection.prototype.setup = function() {
-        this.setStatus(Connection.Status.CONNECTING)
+        this.setStatus(Connection.Status.CONNECTING);
+        return false
     };
     BaseConnection.prototype.finish = function() {
         close.call(this);
-        this.setStatus(Connection.Status.DEFAULT)
+        this.setStatus(Connection.Status.DEFAULT);
+        return false
     };
     BaseConnection.prototype.process = function() {
         var count = this.__cache.length();
@@ -1634,10 +1635,11 @@ if (typeof StarGate !== "object") {
         var gate = this.getGate();
         var delegate = gate.getDelegate();
         var res = delegate.onGateReceived(gate, income);
-        if (!res) {
-            res = OK
+        if (res) {
+            return new WSShip(res, StarShip.NORMAL, null)
+        } else {
+            return null
         }
-        return new WSShip(res, StarShip.NORMAL, null)
     };
     WSDocker.prototype.getHeartbeat = function() {
         return new WSShip(PING, StarShip.SLOWER, null)
@@ -1707,8 +1709,12 @@ if (typeof StarGate !== "object") {
     };
     WSGate.prototype.receive = function(length, remove) {
         var available = this.connection.available();
-        if (available < length) {
+        if (available === 0) {
             return null
+        } else {
+            if (available < length) {
+                length = available
+            }
         }
         return this.connection.receive(length)
     };

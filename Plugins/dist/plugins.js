@@ -298,6 +298,7 @@
     var PEM = ns.format.PEM;
     var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
     var EncryptKey = ns.crypto.EncryptKey;
@@ -305,6 +306,9 @@
         Dictionary.call(this, key)
     };
     ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
+    RSAPublicKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -373,7 +377,6 @@
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
     var CryptographyKey = ns.crypto.CryptographyKey;
-    var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
     var PublicKey = ns.crypto.PublicKey;
@@ -381,6 +384,9 @@
         Dictionary.call(this, key)
     };
     ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
+    RSAPrivateKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -484,6 +490,9 @@
         Dictionary.call(this, key)
     };
     ns.Class(AESKey, Dictionary, [SymmetricKey]);
+    AESKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     AESKey.prototype.getSize = function() {
         var size = this.getValue("keySize");
         if (size) {
@@ -600,11 +609,18 @@
 })(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PlainKey = function(key) {
         Dictionary.call(this, key)
     };
     ns.Class(PlainKey, Dictionary, [SymmetricKey]);
+    PlainKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
+    PlainKey.prototype.getData = function() {
+        return null
+    };
     PlainKey.prototype.encrypt = function(data) {
         return data
     };

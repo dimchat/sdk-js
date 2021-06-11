@@ -81,7 +81,7 @@
             }
         }
         if (cpu) {
-            cpu.setMessage(this.getMessenger());
+            cpu.setMessenger(this.getMessenger());
         } else {
             cpu = this;
         }

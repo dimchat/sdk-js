@@ -85,10 +85,11 @@
         var gate = this.getGate();
         var delegate = gate.getDelegate();
         var res = delegate.onGateReceived(gate, income);
-        if (!res) {
-            res = OK;
+        if (res) {
+            return new WSShip(res, StarShip.NORMAL, null);
+        } else {
+            return null;
         }
-        return new WSShip(res, StarShip.NORMAL, null);
     };
 
     WSDocker.prototype.getHeartbeat = function () {

@@ -100,8 +100,10 @@
 
     WSGate.prototype.receive = function (length, remove) {
         var available = this.connection.available();
-        if (available < length) {
+        if (available === 0) {
             return null;
+        } else if (available < length) {
+            length = available;
         }
         return this.connection.receive(length);
     };

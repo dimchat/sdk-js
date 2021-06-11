@@ -1242,8 +1242,8 @@ if (typeof MONKEY !== "object") {
         this.__running = true;
         var thread = this;
         this.__thread_id = setInterval(function() {
-            var running = thread.isRunning() && thread.run();
-            if (!running) {
+            var ran = thread.isRunning() && thread.run();
+            if (!ran) {
                 stop(thread)
             }
         }, this.getInterval())
@@ -6526,6 +6526,7 @@ if (typeof DIMP !== "object") {
     var PEM = ns.format.PEM;
     var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
     var EncryptKey = ns.crypto.EncryptKey;
@@ -6533,6 +6534,9 @@ if (typeof DIMP !== "object") {
         Dictionary.call(this, key)
     };
     ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
+    RSAPublicKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -6601,7 +6605,6 @@ if (typeof DIMP !== "object") {
     var Base64 = ns.format.Base64;
     var PEM = ns.format.PEM;
     var CryptographyKey = ns.crypto.CryptographyKey;
-    var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
     var PublicKey = ns.crypto.PublicKey;
@@ -6609,6 +6612,9 @@ if (typeof DIMP !== "object") {
         Dictionary.call(this, key)
     };
     ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
+    RSAPrivateKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
@@ -6712,6 +6718,9 @@ if (typeof DIMP !== "object") {
         Dictionary.call(this, key)
     };
     ns.Class(AESKey, Dictionary, [SymmetricKey]);
+    AESKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
     AESKey.prototype.getSize = function() {
         var size = this.getValue("keySize");
         if (size) {
@@ -6828,11 +6837,18 @@ if (typeof DIMP !== "object") {
 })(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PlainKey = function(key) {
         Dictionary.call(this, key)
     };
     ns.Class(PlainKey, Dictionary, [SymmetricKey]);
+    PlainKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
+    PlainKey.prototype.getData = function() {
+        return null
+    };
     PlainKey.prototype.encrypt = function(data) {
         return data
     };
@@ -7704,7 +7720,7 @@ if (typeof DIMSDK !== "object") {
             }
         }
         if (cpu) {
-            cpu.setMessage(this.getMessenger())
+            cpu.setMessenger(this.getMessenger())
         } else {
             cpu = this
         }
@@ -9399,7 +9415,6 @@ if (typeof StarGate !== "object") {
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
-    var Gate = ns.Gate;
     var StarDocker = function(gate) {
         Runner.call(this);
         this.__gate = gate;
@@ -9421,7 +9436,7 @@ if (typeof StarGate !== "object") {
         }
         var delegate;
         var outgo = null;
-        if (Gate.Status.CONNECTED.equals(gate.getStatus())) {
+        if (ns.Gate.Status.CONNECTED.equals(gate.getStatus())) {
             outgo = this.getOutgoShip()
         }
         if (outgo) {
@@ -10030,11 +10045,13 @@ if (typeof StarGate !== "object") {
         Runner.prototype.stop.call(this)
     };
     BaseConnection.prototype.setup = function() {
-        this.setStatus(Connection.Status.CONNECTING)
+        this.setStatus(Connection.Status.CONNECTING);
+        return false
     };
     BaseConnection.prototype.finish = function() {
         close.call(this);
-        this.setStatus(Connection.Status.DEFAULT)
+        this.setStatus(Connection.Status.DEFAULT);
+        return false
     };
     BaseConnection.prototype.process = function() {
         var count = this.__cache.length();
@@ -10471,10 +10488,11 @@ if (typeof StarGate !== "object") {
         var gate = this.getGate();
         var delegate = gate.getDelegate();
         var res = delegate.onGateReceived(gate, income);
-        if (!res) {
-            res = OK
+        if (res) {
+            return new WSShip(res, StarShip.NORMAL, null)
+        } else {
+            return null
         }
-        return new WSShip(res, StarShip.NORMAL, null)
     };
     WSDocker.prototype.getHeartbeat = function() {
         return new WSShip(PING, StarShip.SLOWER, null)
@@ -10544,8 +10562,12 @@ if (typeof StarGate !== "object") {
     };
     WSGate.prototype.receive = function(length, remove) {
         var available = this.connection.available();
-        if (available < length) {
+        if (available === 0) {
             return null
+        } else {
+            if (available < length) {
+                length = available
+            }
         }
         return this.connection.receive(length)
     };
