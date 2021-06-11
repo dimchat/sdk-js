@@ -112,15 +112,11 @@
     //
 
     StarGate.prototype.parkShip = function (outgo) {
-        return this.dock.put(outgo);
+        return this.dock.park(outgo);
     };
 
     StarGate.prototype.pullShip = function (sn) {
-        if (sn === '*') {
-            return this.dock.pop();
-        } else {
-            return this.dock.get(sn);
-        }
+        return this.dock.pull(sn);
     };
 
     StarGate.prototype.anyShip = function () {

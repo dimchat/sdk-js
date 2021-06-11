@@ -46,6 +46,7 @@
 
     var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
+    var Gate = ns.Gate;
 
     var StarDocker = function (gate) {
         Runner.call(this);
@@ -76,7 +77,10 @@
         }
         // 2. process outgo
         var delegate;
-        var outgo = this.getOutgoShip();
+        var outgo = null;
+        if (Gate.Status.CONNECTED.equals(gate.getStatus())) {
+            outgo = this.getOutgoShip();
+        }
         if (outgo) {
             if (outgo.isExpired()) {
                 // outgo ship expired, callback

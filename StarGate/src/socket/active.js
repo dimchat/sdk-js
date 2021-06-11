@@ -102,6 +102,7 @@
     };
 
     ActiveConnection.prototype.isRunning = function () {
+        // return this.__running;
         return Runner.prototype.isRunning.call(this);
     };
 

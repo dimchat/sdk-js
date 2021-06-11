@@ -59,7 +59,7 @@
      * @param {StarShip} task - outgo ship
      * @return {boolean} false on duplicated
      */
-    Dock.prototype.put = function (task) {
+    Dock.prototype.park = function (task) {
         // 1. choose an array with priority
         var prior = task.priority;
         var fleet = this.__fleets[prior];
@@ -89,60 +89,59 @@
     };
 
     /**
-     *  Get next new ship, remove it from the park
+     *  Pull out a waiting ship, remove it from the Dock
+     *  1. when sn is '*', get a new ship and update time and retries;
+     *  2. or, get ship with ID (which is sn).
      *
+     * @param {Uint8Array|String} sn - ship ID
      * @return {StarShip} outgo ship
      */
-    Dock.prototype.pop = function () {
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
+    Dock.prototype.pull = function (sn) {
+        if (sn === '*') {
+            // Get next new ship(time == 0), remove it from the Dock
+            return seek(this, function (ship) {
+                if (ship.getTimestamp() === 0) {
+                    // update time and retires
+                    ship.update();
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+        } else {
+            // Get ship with ID, remove it from the Dock
+            return seek(this, function (ship) {
+                var sn1 = ship.getSN();
+                if (sn1.length !== sn.length) {
+                    return 0;
+                }
+                for (var i = 0; i < sn1.length; ++i) {
+                    if (sn1[i] !== sn[i]) {
+                        return 0;
+                    }
+                }
+                return -1;
+            });
+        }
+    };
+
+    var seek = function (dock, checking) {
+        var fleet, ship, flag;
+        var i, j;
+        for (i = 0; i < dock.__priorities.length; ++i) {
+            fleet = dock.__fleets[dock.__priorities[i]];
             if (!fleet) {
                 continue;
             }
-            for (var j = 0; j < fleet.length; ++j) {
+            for (j = 0; j < fleet.length; ++j) {
                 ship = fleet[j];
-                if (ship.getTimestamp() === 0) {
-                    // update time and try
-                    ship.update();
+                flag = checking(ship);
+                if (flag === -1) {
+                    // remove and return it
                     fleet.splice(j, 1);
                     return ship;
-                }
-            }
-        }
-        return null;
-    };
-
-    var match_sn = function (sn1, sn2) {
-        if (sn1.length !== sn2.length) {
-            return false;
-        }
-        for (var i = 0; i < sn1.length; ++i) {
-            if (sn1[i] !== sn2[i]) {
-                return false;
-            }
-        }
-        return true;
-    };
-
-    /**
-     *  Get ship with ID, remove it from the park
-     *
-     * @param {Uint8Array} sn - ship ID
-     * @return {StarShip} outgo ship
-     */
-    Dock.prototype.get = function (sn) {
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
-            if (!fleet) {
-                continue;
-            }
-            for (var j = 0; j < fleet.length; ++j) {
-                ship = fleet[j];
-                if (match_sn(ship.getSN(), sn)) {
-                    // just remove it
-                    fleet.splice(j, 1);
+                } else if (flag === 1) {
+                    // just return
                     return ship;
                 }
             }
@@ -159,32 +158,22 @@
      */
     Dock.prototype.any = function () {
         var expired = (new Date()).getTime() - StarShip.EXPIRES;
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
-            if (!fleet) {
-                continue;
+        return seek(this, function (ship) {
+            if (ship.getTimestamp() > expired) {
+                // not expired yet
+                return 0;
             }
-            for (var j = 0; j < fleet.length; ++j) {
-                ship = fleet[j];
-                if (ship.getTimestamp() > expired) {
-                    // not expired yet
-                    continue;
-                }
-                if (ship.getRetries() < StarShip.RETRIES) {
-                    // update time and retry
-                    ship.update();
-                    return ship;
-                }
-                // retried too many times
-                if (ship.isExpired()) {
-                    // task expired, remove it and don't retry
-                    fleet.splice(j, 1);
-                    return ship;
-                }
+            if (ship.getRetries() < StarShip.RETRIES) {
+                // update time and retries
+                ship.update();
+                return 1;
             }
-        }
-        return null;
+            // retried too many times
+            if (ship.isExpired()) {
+                // task expired, remove it and don't retry
+                return -1;
+            }
+        });
     };
 
     //-------- namespace --------

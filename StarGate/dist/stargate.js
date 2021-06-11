@@ -459,7 +459,7 @@ if (typeof StarGate !== "object") {
         this.__fleets = {}
     };
     sys.Class(Dock, obj, null);
-    Dock.prototype.put = function(task) {
+    Dock.prototype.park = function(task) {
         var prior = task.priority;
         var fleet = this.__fleets[prior];
         if (!fleet) {
@@ -481,47 +481,49 @@ if (typeof StarGate !== "object") {
         fleet.push(task);
         return true
     };
-    Dock.prototype.pop = function() {
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
-            if (!fleet) {
-                continue
-            }
-            for (var j = 0; j < fleet.length; ++j) {
-                ship = fleet[j];
+    Dock.prototype.pull = function(sn) {
+        if (sn === "*") {
+            return seek(this, function(ship) {
                 if (ship.getTimestamp() === 0) {
                     ship.update();
-                    fleet.splice(j, 1);
-                    return ship
+                    return -1
+                } else {
+                    return 0
                 }
-            }
+            })
+        } else {
+            return seek(this, function(ship) {
+                var sn1 = ship.getSN();
+                if (sn1.length !== sn.length) {
+                    return 0
+                }
+                for (var i = 0; i < sn1.length; ++i) {
+                    if (sn1[i] !== sn[i]) {
+                        return 0
+                    }
+                }
+                return -1
+            })
         }
-        return null
     };
-    var match_sn = function(sn1, sn2) {
-        if (sn1.length !== sn2.length) {
-            return false
-        }
-        for (var i = 0; i < sn1.length; ++i) {
-            if (sn1[i] !== sn2[i]) {
-                return false
-            }
-        }
-        return true
-    };
-    Dock.prototype.get = function(sn) {
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
+    var seek = function(dock, checking) {
+        var fleet, ship, flag;
+        var i, j;
+        for (i = 0; i < dock.__priorities.length; ++i) {
+            fleet = dock.__fleets[dock.__priorities[i]];
             if (!fleet) {
                 continue
             }
-            for (var j = 0; j < fleet.length; ++j) {
+            for (j = 0; j < fleet.length; ++j) {
                 ship = fleet[j];
-                if (match_sn(ship.getSN(), sn)) {
+                flag = checking(ship);
+                if (flag === -1) {
                     fleet.splice(j, 1);
                     return ship
+                } else {
+                    if (flag === 1) {
+                        return ship
+                    }
                 }
             }
         }
@@ -529,28 +531,18 @@ if (typeof StarGate !== "object") {
     };
     Dock.prototype.any = function() {
         var expired = (new Date()).getTime() - StarShip.EXPIRES;
-        var fleet, ship;
-        for (var i = 0; i < this.__priorities.length; ++i) {
-            fleet = this.__fleets[this.__priorities[i]];
-            if (!fleet) {
-                continue
+        return seek(this, function(ship) {
+            if (ship.getTimestamp() > expired) {
+                return 0
             }
-            for (var j = 0; j < fleet.length; ++j) {
-                ship = fleet[j];
-                if (ship.getTimestamp() > expired) {
-                    continue
-                }
-                if (ship.getRetries() < StarShip.RETRIES) {
-                    ship.update();
-                    return ship
-                }
-                if (ship.isExpired()) {
-                    fleet.splice(j, 1);
-                    return ship
-                }
+            if (ship.getRetries() < StarShip.RETRIES) {
+                ship.update();
+                return 1
             }
-        }
-        return null
+            if (ship.isExpired()) {
+                return -1
+            }
+        })
     };
     ns.Dock = Dock;
     ns.registers("Dock")
@@ -570,6 +562,7 @@ if (typeof StarGate !== "object") {
 (function(ns, sys) {
     var Runner = sys.threading.Runner;
     var Docker = ns.Docker;
+    var Gate = ns.Gate;
     var StarDocker = function(gate) {
         Runner.call(this);
         this.__gate = gate;
@@ -590,7 +583,10 @@ if (typeof StarGate !== "object") {
             }
         }
         var delegate;
-        var outgo = this.getOutgoShip();
+        var outgo = null;
+        if (Gate.Status.CONNECTED.equals(gate.getStatus())) {
+            outgo = this.getOutgoShip()
+        }
         if (outgo) {
             if (outgo.isExpired()) {
                 delegate = outgo.getDelegate();
@@ -775,14 +771,10 @@ if (typeof StarGate !== "object") {
         }
     };
     StarGate.prototype.parkShip = function(outgo) {
-        return this.dock.put(outgo)
+        return this.dock.park(outgo)
     };
     StarGate.prototype.pullShip = function(sn) {
-        if (sn === "*") {
-            return this.dock.pop()
-        } else {
-            return this.dock.get(sn)
-        }
+        return this.dock.pull(sn)
     };
     StarGate.prototype.anyShip = function() {
         return this.dock.any()
@@ -943,6 +935,7 @@ if (typeof StarGate !== "object") {
         obj.call(this);
         this.__packages = [];
         this.__connected = false;
+        this.__closed = false;
         if (url) {
             var info = parse_url(url);
             this.__host = info["host"];
@@ -970,16 +963,18 @@ if (typeof StarGate !== "object") {
             this.__ws.close();
             this.__ws = null
         }
-        this.__connected = false
     };
     Socket.prototype.isConnected = function() {
         return this.__connected
+    };
+    Socket.prototype.isClosed = function() {
+        return this.__closed
     };
     Socket.prototype.onConnected = function() {
         this.__connected = true
     };
     Socket.prototype.onClosed = function() {
-        this.__connected = false
+        this.__closed = true
     };
     Socket.prototype.onError = function(error) {};
     Socket.prototype.onReceived = function(data) {
@@ -1107,7 +1102,11 @@ if (typeof StarGate !== "object") {
     };
     BaseConnection.prototype.isRunning = function() {
         var sock = this._socket;
-        return sock && sock.isConnected()
+        if (!sock || sock.isClosed()) {
+            return false
+        } else {
+            return sock.isConnected()
+        }
     };
     var write = function(data) {
         var sock = this.getSocket();
@@ -1131,10 +1130,13 @@ if (typeof StarGate !== "object") {
     };
     var close = function() {
         var sock = this._socket;
-        if (sock && sock.isConnected()) {
-            sock.close()
+        try {
+            if (sock && !sock.isClosed()) {
+                sock.close()
+            }
+        } finally {
+            this._socket = null
         }
-        this._socket = null
     };
     BaseConnection.prototype._receive = function() {
         try {
@@ -1198,6 +1200,10 @@ if (typeof StarGate !== "object") {
     BaseConnection.prototype.process = function() {
         var count = this.__cache.length();
         if (count >= Connection.MAX_CACHE_LENGTH) {
+            return false
+        }
+        var status = this.getStatus();
+        if (Connection.Status.CONNECTED.equals(status) || Connection.Status.MAINTAINING.equals(status) || Connection.Status.EXPIRED.equals(status)) {} else {
             return false
         }
         var data = this._receive();

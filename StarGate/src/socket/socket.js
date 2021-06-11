@@ -105,6 +105,7 @@
         obj.call(this);
         this.__packages = [];
         this.__connected = false;
+        this.__closed = false;
         if (url) {
             var info = parse_url(url);
             this.__host = info['host'];
@@ -134,21 +135,22 @@
             this.__ws.close();
             this.__ws = null;
         }
-        this.__connected = false;
     };
 
     Socket.prototype.isConnected = function () {
         return this.__connected;
+    };
+    Socket.prototype.isClosed = function () {
+        return this.__closed;
     };
 
     Socket.prototype.onConnected = function () {
         this.__connected = true;
     };
     Socket.prototype.onClosed = function () {
-        this.__connected = false;
+        this.__closed = true;
     };
     Socket.prototype.onError = function (error) {
-        // this.__connected = false;
     };
     Socket.prototype.onReceived = function (data) {
         this.__packages.push(data);

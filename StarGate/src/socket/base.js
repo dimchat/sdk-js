@@ -97,7 +97,11 @@
 
     BaseConnection.prototype.isRunning = function () {
         var sock = this._socket;
-        return sock && sock.isConnected();
+        if (!sock || sock.isClosed()) {
+            return false;
+        } else {
+            return sock.isConnected();
+        }
     };
 
     var write = function (data) {
@@ -123,10 +127,13 @@
 
     var close = function () {
         var sock = this._socket;
-        if (sock && sock.isConnected()) {
-            sock.close();
+        try {
+            if (sock && sock.isConnected() && !sock.isClosed()) {
+                sock.close();
+            }
+        } finally {
+            this._socket = null;
         }
-        this._socket = null;
     };
 
     BaseConnection.prototype._receive = function () {
@@ -196,7 +203,7 @@
     //
 
     BaseConnection.prototype.stop = function () {
-        close.call(this);
+        close.call(this);  // shutdown socket
         Runner.prototype.stop.call(this);
     };
 
@@ -218,6 +225,15 @@
         var count = this.__cache.length();
         if (count >= Connection.MAX_CACHE_LENGTH) {
             // not enough spaces
+            return false;
+        }
+        // check connection status
+        var status = this.getStatus();
+        if (Connection.Status.CONNECTED.equals(status) ||
+            Connection.Status.MAINTAINING.equals(status) ||
+            Connection.Status.EXPIRED.equals(status)) {
+            // socket connected
+        } else {
             return false;
         }
         // 1. try to read bytes
