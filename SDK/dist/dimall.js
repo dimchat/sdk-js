@@ -9937,13 +9937,15 @@ if (typeof StarGate !== "object") {
             return 0
         }
     };
-    BaseConnection.prototype.isRunning = function() {
-        var sock = this._socket;
+    var is_available = function(sock) {
         if (!sock || sock.isClosed()) {
             return false
         } else {
             return sock.isConnected()
         }
+    };
+    BaseConnection.prototype.isRunning = function() {
+        return is_available(this._socket)
     };
     var write = function(data) {
         var sock = this.getSocket();
@@ -9968,7 +9970,7 @@ if (typeof StarGate !== "object") {
     var close = function() {
         var sock = this._socket;
         try {
-            if (sock && sock.isConnected() && !sock.isClosed()) {
+            if (is_available(sock)) {
                 sock.close()
             }
         } finally {
@@ -10072,13 +10074,13 @@ if (typeof StarGate !== "object") {
         if (!this.isRunning()) {
             this.setStatus(Connection.Status.DEFAULT)
         } else {
-            if (this.getSocket() != null) {
+            if (is_available(this.getSocket())) {
                 this.setStatus(Connection.Status.CONNECTED)
             }
         }
     };
     evaluations[Connection.Status.CONNECTED] = function(now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + Connection.EXPIRES) {
@@ -10087,7 +10089,7 @@ if (typeof StarGate !== "object") {
         }
     };
     evaluations[Connection.Status.EXPIRED] = function(now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             this.setStatus(Connection.Status.ERROR)
         } else {
             if (now < this.__lastSentTime + Connection.EXPIRES) {
@@ -10096,7 +10098,7 @@ if (typeof StarGate !== "object") {
         }
     };
     evaluations[Connection.Status.MAINTAINING] = function(now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             this.setStatus(Connection.Status.ERROR)
         } else {
             if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
@@ -10116,7 +10118,7 @@ if (typeof StarGate !== "object") {
         if (!this.isRunning()) {
             this.setStatus(Connection.Status.DEFAULT)
         } else {
-            if (this.getSocket() != null) {
+            if (is_available(this.getSocket())) {
                 this.setStatus(Connection.Status.CONNECTED)
             }
         }

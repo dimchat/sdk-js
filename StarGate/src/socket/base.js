@@ -95,13 +95,16 @@
         }
     };
 
-    BaseConnection.prototype.isRunning = function () {
-        var sock = this._socket;
+    var is_available = function (sock) {
         if (!sock || sock.isClosed()) {
             return false;
         } else {
             return sock.isConnected();
         }
+    };
+
+    BaseConnection.prototype.isRunning = function () {
+        return is_available(this._socket);
     };
 
     var write = function (data) {
@@ -128,7 +131,7 @@
     var close = function () {
         var sock = this._socket;
         try {
-            if (sock && sock.isConnected() && !sock.isClosed()) {
+            if (is_available(sock)) {
                 sock.close();
             }
         } finally {
@@ -279,14 +282,14 @@
         if (!this.isRunning()) {
             // connection stopped, change status to 'not_connect'
             this.setStatus(Connection.Status.DEFAULT);
-        } else if (this.getSocket() != null) {
+        } else if (is_available(this.getSocket())) {
             // connection connected, change status to 'connected'
             this.setStatus(Connection.Status.CONNECTED);
         }
     };
     // Normal status of connection
     evaluations[Connection.Status.CONNECTED] = function (now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             // connection lost, change status to 'error'
             this.setStatus(Connection.Status.ERROR);
         } else if (now > this.__lastReceivedTime + Connection.EXPIRES) {
@@ -296,7 +299,7 @@
     };
     // Long time no response, need maintaining
     evaluations[Connection.Status.EXPIRED] = function (now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             // connection lost, change status to 'error'
             this.setStatus(Connection.Status.ERROR);
         } else if (now < this.__lastSentTime + Connection.EXPIRES) {
@@ -306,7 +309,7 @@
     };
     // Heartbeat sent, waiting response
     evaluations[Connection.Status.MAINTAINING] = function (now) {
-        if (this.getSocket() == null) {
+        if (!is_available(this.getSocket())) {
             // connection lost, change status to 'error'
             this.setStatus(Connection.Status.ERROR);
         } else if (now > this.__lastReceivedTime + (Connection.EXPIRES << 4)) {
@@ -325,7 +328,7 @@
         if (!this.isRunning()) {
             // connection stopped, change status to 'not_connect'
             this.setStatus(Connection.Status.DEFAULT);
-        } else if (this.getSocket() != null) {
+        } else if (is_available(this.getSocket())) {
             // connection reconnected, change status to 'connected'
             this.setStatus(Connection.Status.CONNECTED);
         }
