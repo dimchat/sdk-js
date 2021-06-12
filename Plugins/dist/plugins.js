@@ -768,6 +768,9 @@
     };
     ns.Class(GeneralAddressFactory, AddressFactory, null);
     GeneralAddressFactory.prototype.createAddress = function(address) {
+        if (address.length === 42) {
+            throw new TypeError("ETH address not support yet")
+        }
         return BTCAddress.parse(address)
     };
     Address.setFactory(new GeneralAddressFactory())

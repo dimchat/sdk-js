@@ -53,7 +53,18 @@
             proxy.onError(error);
         };
         ws.onmessage = function (ev) {
-            proxy.onReceived(ev.data);
+            var data = ev.data;
+            if (!data || data.length === 0) {
+                return;
+            } else if (typeof data === 'string') {
+                data = sys.format.UTF8.encode(data);
+            } else if (data instanceof Uint8Array) {
+                // do nothing
+            } else {
+                // convert ArrayLike<number> to Uint8Array
+                data = new Uint8Array(data);
+            }
+            proxy.onReceived(data);
         };
         return ws;
     };

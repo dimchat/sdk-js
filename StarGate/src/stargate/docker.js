@@ -66,18 +66,18 @@
             // error
             return null;
         } else if (data.length === 2) {
-            if (sys.format.Arrays.equals(data, OK)) {
+            if (sys.type.Arrays.equals(data, OK)) {
                 // just ignore
                 return null;
             }
         } else if (data.length === 4) {
-            if (sys.format.Arrays.equals(data, NOOP)) {
+            if (sys.type.Arrays.equals(data, NOOP)) {
                 // just ignore
                 return null;
-            } else if (sys.format.Arrays.equals(data, PONG)) {
+            } else if (sys.type.Arrays.equals(data, PONG)) {
                 // just ignore
                 return null;
-            } else if (sys.format.Arrays.equals(data, PING)) {
+            } else if (sys.type.Arrays.equals(data, PING)) {
                 // 'PING' -> 'PONG'
                 return new WSShip(PONG, StarShip.SLOWER, null);
             }

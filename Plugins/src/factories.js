@@ -49,7 +49,10 @@
     ns.Class(GeneralAddressFactory, AddressFactory, null);
 
     GeneralAddressFactory.prototype.createAddress = function(address) {
-        // TODO: check for ETH address
+        if (address.length === 42) {
+            // TODO: check for ETH address
+            throw new TypeError('ETH address not support yet');
+        }
         return BTCAddress.parse(address);
     };
 
