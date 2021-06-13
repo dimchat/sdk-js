@@ -477,18 +477,13 @@
     var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PublicKey = ns.crypto.PublicKey;
-    var mem_set = function(buf, ch, len) {
-        for (var i = 0; i < len; ++i) {
-            buf[i] = ch
-        }
-    };
     var mem_cpy = function(dst, dst_offset, src, src_offset, src_len) {
         for (var i = 0; i < src_len; ++i) {
             dst[dst_offset + i] = src[src_offset + i]
         }
     };
-    var trim_to_32_bytes = function(src, src_len, dst) {
-        var pos = 0;
+    var trim_to_32_bytes = function(src, src_offset, src_len, dst) {
+        var pos = src_offset;
         while (src[pos] === 0 && src_len > 0) {
             ++pos;
             --src_len
@@ -497,18 +492,13 @@
             return false
         }
         var dst_offset = 32 - src_len;
-        mem_set(dst, 0, dst_offset);
         mem_cpy(dst, dst_offset, src, pos, src_len);
         return true
     };
     var ecc_der_to_sig = function(der, der_len) {
         var seq_len;
-        var r_bytes = new Uint8Array(32);
-        var s_bytes = new Uint8Array(32);
         var r_len;
         var s_len;
-        mem_set(r_bytes, 0, 32);
-        mem_set(s_bytes, 0, 32);
         if (der_len < 8 || der[0] !== 48 || der[2] !== 2) {
             return null
         }
@@ -526,7 +516,7 @@
         }
         var sig_r = new Uint8Array(32);
         var sig_s = new Uint8Array(32);
-        if (trim_to_32_bytes(der.subarray(4), r_len, sig_r) || trim_to_32_bytes(der.subarray(6 + r_len), s_len, sig_s)) {
+        if (trim_to_32_bytes(der, 4, r_len, sig_r) && trim_to_32_bytes(der, 6 + r_len, s_len, sig_s)) {
             return {
                 r: sig_r,
                 s: sig_s
@@ -563,7 +553,7 @@
         var x, y;
         if (data.length === 33) {
             if (data[0] === 4) {
-                x = Secp256k1.uint256(data.subarray(1));
+                x = Secp256k1.uint256(data.subarray(1, 33), 16);
                 y = Secp256k1.decompressKey(x, 0)
             } else {
                 throw new EvalError("key data head error: " + data)
@@ -571,8 +561,8 @@
         } else {
             if (data.length === 65) {
                 if (data[0] === 4) {
-                    x = Secp256k1.uint256(data.subarray(1, 33));
-                    y = Secp256k1.uint256(data.subarray(33, 65))
+                    x = Secp256k1.uint256(data.subarray(1, 33), 16);
+                    y = Secp256k1.uint256(data.subarray(33, 65), 16)
                 } else {
                     throw new EvalError("key data head error: " + data)
                 }
@@ -586,13 +576,14 @@
         }
     };
     ECCPublicKey.prototype.verify = function(data, signature) {
-        var z = ns.digest.SHA256.digest(data);
+        var hash = ns.digest.SHA256.digest(data);
+        var z = Secp256k1.uint256(hash, 16);
         var sig = ecc_der_to_sig(signature, signature.length);
         if (!sig) {
             throw new EvalError("signature error: " + signature)
         }
-        var sig_r = Secp256k1.uint256(sig.r);
-        var sig_s = Secp256k1.uint256(sig.s);
+        var sig_r = Secp256k1.uint256(sig.r, 16);
+        var sig_s = Secp256k1.uint256(sig.s, 16);
         var pub = parse_key.call(this);
         return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z)
     };
@@ -710,7 +701,7 @@
             return null
         } else {
             if (data.length === 32) {
-                return Secp256k1.uint256(data)
+                return Secp256k1.uint256(data, 16)
             } else {
                 throw new EvalError("key data length error: " + data)
             }
@@ -718,7 +709,7 @@
     };
     ECCPrivateKey.prototype.getPublicKey = function() {
         var pub = this.__publicKey;
-        var data = "04" + pub.x;
+        var data = "04" + pub.x + pub.y;
         var info = {
             "algorithm": this.getValue("algorithm"),
             "data": data,
@@ -728,10 +719,13 @@
         return PublicKey.parse(info)
     };
     ECCPrivateKey.prototype.sign = function(data) {
-        var z = ns.digest.SHA256.digest(data);
+        var hash = ns.digest.SHA256.digest(data);
+        var z = Secp256k1.uint256(hash, 16);
         var sig = Secp256k1.ecsign(this.__privateKey, z);
+        var sig_r = ns.format.Hex.decode(sig.r);
+        var sig_s = ns.format.Hex.decode(sig.s);
         var der = new Uint8Array(72);
-        var sig_len = ecc_sig_to_der(sig.r, sig.s, der);
+        var sig_len = ecc_sig_to_der(sig_r, sig_s, der);
         if (sig_len === der.length) {
             return der
         } else {

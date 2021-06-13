@@ -80,6 +80,48 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
+    var PublicKey = ns.crypto.PublicKey;
+    var PrivateKey = ns.crypto.PrivateKey;
+
+    var moky = ns.format.UTF8.encode('moky');
+
+    var test_keys = function (pri, pub) {
+        var pub_key = {
+            'algorithm': 'ECC',
+            'data': pub
+        };
+        var pri_key = {
+            'algorithm': 'ECC',
+            'data': pri
+        };
+
+        pub_key = PublicKey.parse(pub_key);
+        pri_key = PrivateKey.parse(pri_key);
+        console.log(pub_key, pri_key);
+
+        var pk = pri_key.getPublicKey();
+        console.log('generate public key from private key', pk);
+
+        var signature = pri_key.sign(moky);
+        console.log('signature(moky) = ', signature);
+
+        var ok1 = pk.verify(moky, signature);
+        var ok2 = pub_key.verify(moky, signature);
+        assert(ok1 && ok2, 'ECC error');
+
+    };
+
+    var test_ecc = function () {
+        test_keys('de97fdbdb823a197603e1f2cb8b1bded3824147e88ebd47367ba82d4b5600d73',
+            '047c91259636a5a16538e0603636f06c532dd6f2bb42f8dd33fa0cdb39546cf449612f3eaf15db9443b7e0668ef22187de9059633eb23112643a38771c630db911');
+    };
+    plugins_tests.push(test_ecc);
+
+}(MONKEY);
+
+!function (ns) {
+    'use strict';
+
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Meta = ns.protocol.Meta;
