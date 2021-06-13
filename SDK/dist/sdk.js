@@ -1281,7 +1281,7 @@ if (typeof DIMSDK !== "object") {
         } else {
             meta = this.getMeta(identifier)
         }
-        return meta && doc.verify(meta.key)
+        return meta && doc.verify(meta.getKey())
     };
     Facebook.prototype.isFounder = function(member, group) {
         var gMeta = this.getMeta(group);

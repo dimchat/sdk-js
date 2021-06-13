@@ -38,11 +38,6 @@
     var str = ns.type.String;
     var Data = ns.type.Data;
 
-    var SHA256 = ns.digest.SHA256;
-    var RIPEMD160 = ns.digest.RIPEMD160;
-
-    var Base58 = ns.format.Base58;
-
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
@@ -92,7 +87,7 @@
             network = network.valueOf();
         }
         // 1. digest = ripemd160(sha256(fingerprint))
-        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
+        var digest = ns.digest.RIPEMD160.digest(ns.digest.SHA256.digest(fingerprint));
         // 2. head = network + digest
         var head = new Data(21);
         head.setByte(0, network);
@@ -103,7 +98,7 @@
         var data = new Data(25);
         data.append(head);
         data.append(cc);
-        return new BTCAddress(Base58.encode(data.getBytes(false)), network);
+        return new BTCAddress(ns.format.Base58.encode(data.getBytes(false)), network);
     };
 
     /**
@@ -118,7 +113,7 @@
             return null;
         }
         // decode
-        var data = Base58.decode(string);
+        var data = ns.format.Base58.decode(string);
         if (data.length !== 25) {
             throw new RangeError('address length error: ' + string);
         }
@@ -134,7 +129,7 @@
     };
 
     var check_code = function (data) {
-        var sha256d = SHA256.digest(SHA256.digest(data));
+        var sha256d = ns.digest.SHA256.digest(ns.digest.SHA256.digest(data));
         return sha256d.subarray(0, 4);
     };
 

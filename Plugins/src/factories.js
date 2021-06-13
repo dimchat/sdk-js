@@ -38,6 +38,7 @@
     var Address = ns.protocol.Address;
     var AddressFactory = ns.mkm.AddressFactory;
     var BTCAddress = ns.mkm.BTCAddress;
+    var ETHAddress = ns.mkm.ETHAddress;
 
     /**
      *  Address factory
@@ -50,8 +51,7 @@
 
     GeneralAddressFactory.prototype.createAddress = function(address) {
         if (address.length === 42) {
-            // TODO: check for ETH address
-            throw new TypeError('ETH address not support yet');
+            return ETHAddress.parse(address);
         }
         return BTCAddress.parse(address);
     };
@@ -73,6 +73,7 @@
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.mkm.DefaultMeta;
     var BTCMeta = ns.mkm.BTCMeta;
+    var ETHMeta = ns.mkm.ETHMeta;
 
     /**
      *  Meta factory
@@ -90,10 +91,16 @@
             return new DefaultMeta(this.__type, key, seed, fingerprint);
         } else if (MetaType.BTC.equals(this.__type)) {
             // BTC
-            return new BTCMeta(this.__type, key, seed, fingerprint);
+            return new BTCMeta(this.__type, key);
         } else if (MetaType.ExBTC.equals(this.__type)) {
             // ExBTC
             return new BTCMeta(this.__type, key, seed, fingerprint);
+        } else if (MetaType.ETH.equals(this.__type)) {
+            // ETH
+            return new ETHMeta(this.__type, key);
+        } else if (MetaType.ExETH.equals(this.__type)) {
+            // ExETH
+            return new ETHMeta(this.__type, key, seed, fingerprint);
         } else {
             // unknown type
             return null;
@@ -117,8 +124,14 @@
             // BTC
             return new BTCMeta(meta);
         } else if (MetaType.ExBTC.equals(type)) {
-            // BTC
+            // ExBTC
             return new BTCMeta(meta);
+        } else if (MetaType.ETH.equals(type)) {
+            // ETH
+            return new ETHMeta(meta);
+        } else if (MetaType.ExETH.equals(type)) {
+            // ExETH
+            return new ETHMeta(meta);
         } else {
             // unknown type
             return null
@@ -130,6 +143,10 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
+    Meta.register(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
+    Meta.register(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
+    Meta.register(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
+    Meta.register(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
 
 })(MingKeMing);
 

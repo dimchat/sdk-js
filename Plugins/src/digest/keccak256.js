@@ -45,7 +45,8 @@
     };
     ns.Class(hash, obj, [Hash]);
     hash.prototype.digest = function (data) {
-        return keccak256.update(data).digest()
+        var array = keccak256.update(data).digest();
+        return new Uint8Array(array);
     };
 
     //-------- namespace --------

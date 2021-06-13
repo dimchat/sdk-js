@@ -213,7 +213,8 @@
     };
     ns.Class(hash, obj, [Hash]);
     hash.prototype.digest = function(data) {
-        return keccak256.update(data).digest()
+        var array = keccak256.update(data).digest();
+        return new Uint8Array(array)
     };
     ns.digest.KECCAK256.hash = new hash()
 })(MONKEY);
@@ -548,21 +549,20 @@
             return this.getData().length / 8
         }
     };
-    var parse_key = function() {
-        var data = this.getData();
+    var decode_points = function(data) {
         var x, y;
-        if (data.length === 33) {
+        if (data.length === 65) {
             if (data[0] === 4) {
                 x = Secp256k1.uint256(data.subarray(1, 33), 16);
-                y = Secp256k1.decompressKey(x, 0)
+                y = Secp256k1.uint256(data.subarray(33, 65), 16)
             } else {
                 throw new EvalError("key data head error: " + data)
             }
         } else {
-            if (data.length === 65) {
+            if (data.length === 33) {
                 if (data[0] === 4) {
                     x = Secp256k1.uint256(data.subarray(1, 33), 16);
-                    y = Secp256k1.uint256(data.subarray(33, 65), 16)
+                    y = Secp256k1.decompressKey(x, 0)
                 } else {
                     throw new EvalError("key data head error: " + data)
                 }
@@ -574,6 +574,30 @@
             x: x,
             y: y
         }
+    };
+    var parse_key = function() {
+        var data = this.getData();
+        if (data.length === 33) {
+            return decode_points(data)
+        } else {
+            if (data.length === 65) {
+                return decode_points(data)
+            } else {
+                var pem = this.getValue("data");
+                var pos1 = pem.indexOf("-----BEGIN PUBLIC KEY-----");
+                if (pos1 >= 0) {
+                    pos1 += "-----BEGIN PUBLIC KEY-----".length;
+                    var pos2 = pem.indexOf("-----END PUBLIC KEY-----", pos1);
+                    if (pos2 > 0) {
+                        var base64 = pem.substr(pos1, pos2 - pos1);
+                        data = ns.format.Base64.decode(base64);
+                        data = data.subarray(data.length - 65);
+                        return decode_points(data)
+                    }
+                }
+            }
+        }
+        throw new EvalError("key data error: " + pem)
     };
     ECCPublicKey.prototype.verify = function(data, signature) {
         var hash = ns.digest.SHA256.digest(data);
@@ -915,9 +939,6 @@
 (function(ns) {
     var str = ns.type.String;
     var Data = ns.type.Data;
-    var SHA256 = ns.digest.SHA256;
-    var RIPEMD160 = ns.digest.RIPEMD160;
-    var Base58 = ns.format.Base58;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
     var BTCAddress = function(string, network) {
@@ -941,7 +962,7 @@
         if (network instanceof NetworkType) {
             network = network.valueOf()
         }
-        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
+        var digest = ns.digest.RIPEMD160.digest(ns.digest.SHA256.digest(fingerprint));
         var head = new Data(21);
         head.setByte(0, network);
         head.append(digest);
@@ -949,14 +970,14 @@
         var data = new Data(25);
         data.append(head);
         data.append(cc);
-        return new BTCAddress(Base58.encode(data.getBytes(false)), network)
+        return new BTCAddress(ns.format.Base58.encode(data.getBytes(false)), network)
     };
     BTCAddress.parse = function(string) {
         var len = string.length;
         if (len < 26) {
             return null
         }
-        var data = Base58.decode(string);
+        var data = ns.format.Base58.decode(string);
         if (data.length !== 25) {
             throw new RangeError("address length error: " + string)
         }
@@ -970,11 +991,107 @@
         }
     };
     var check_code = function(data) {
-        var sha256d = SHA256.digest(SHA256.digest(data));
+        var sha256d = ns.digest.SHA256.digest(ns.digest.SHA256.digest(data));
         return sha256d.subarray(0, 4)
     };
     ns.mkm.BTCAddress = BTCAddress;
     ns.mkm.registers("BTCAddress")
+})(MingKeMing);
+(function(ns) {
+    var str = ns.type.String;
+    var NetworkType = ns.protocol.NetworkType;
+    var Address = ns.protocol.Address;
+    var eip55 = function(hex) {
+        var sb = new Uint8Array(40);
+        var hash = ns.digest.KECCAK256.digest(ns.format.UTF8.encode(hex));
+        var ch;
+        var _9 = "9".charCodeAt(0);
+        for (var i = 0; i < 40; ++i) {
+            ch = hex.charCodeAt(i);
+            if (ch > _9) {
+                ch -= (hash[i >> 1] << (i << 2 & 4) & 128) >> 2
+            }
+            sb[i] = ch
+        }
+        return ns.format.UTF8.decode(sb)
+    };
+    var is_eth = function(address) {
+        if (address.length !== 42) {
+            return false
+        } else {
+            if (address.charAt(0) !== "0" || address.charAt(1) !== "x") {
+                return false
+            }
+        }
+        var _0 = "0".charCodeAt(0);
+        var _9 = "9".charCodeAt(0);
+        var _A = "A".charCodeAt(0);
+        var _Z = "Z".charCodeAt(0);
+        var _a = "a".charCodeAt(0);
+        var _z = "z".charCodeAt(0);
+        var ch;
+        for (var i = 2; i < 42; ++i) {
+            ch = address.charCodeAt(i);
+            if (ch >= _0 && ch <= _9) {
+                continue
+            }
+            if (ch >= _A && ch <= _Z) {
+                continue
+            }
+            if (ch >= _a && ch <= _z) {
+                continue
+            }
+            return false
+        }
+        return true
+    };
+    var ETHAddress = function(string) {
+        str.call(this, string)
+    };
+    ns.Class(ETHAddress, str, [Address]);
+    ETHAddress.prototype.getNetwork = function() {
+        return NetworkType.MAIN.valueOf()
+    };
+    ETHAddress.prototype.isBroadcast = function() {
+        return false
+    };
+    ETHAddress.prototype.isUser = function() {
+        return true
+    };
+    ETHAddress.prototype.isGroup = function() {
+        return false
+    };
+    ETHAddress.getValidateAddress = function(address) {
+        if (is_eth(address)) {
+            var lower = address.substr(2).toLowerCase();
+            return "0x" + eip55(lower)
+        }
+        return null
+    };
+    ETHAddress.isValidate = function(address) {
+        return address === this.getValidateAddress(address)
+    };
+    ETHAddress.generate = function(fingerprint) {
+        if (fingerprint.length === 65) {
+            fingerprint = fingerprint.subarray(1)
+        } else {
+            if (fingerprint.length !== 64) {
+                throw new TypeError("ECC key data error: " + fingerprint)
+            }
+        }
+        var digest = ns.digest.KECCAK256.digest(fingerprint);
+        var tail = digest.subarray(digest.length - 20);
+        var address = ns.format.Hex.encode(tail);
+        return new ETHAddress("0x" + eip55(address))
+    };
+    ETHAddress.parse = function(address) {
+        if (is_eth(address)) {
+            return new ETHAddress(address)
+        }
+        return null
+    };
+    ns.mkm.ETHAddress = ETHAddress;
+    ns.mkm.registers("ETHAddress")
 })(MingKeMing);
 (function(ns) {
     var NetworkType = ns.protocol.NetworkType;
@@ -986,6 +1103,8 @@
         } else {
             if (arguments.length === 4) {
                 BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
+            } else {
+                throw new SyntaxError("Default meta arguments error: " + arguments)
             }
         }
         this.__addresses = {}
@@ -1013,8 +1132,14 @@
         if (arguments.length === 1) {
             BaseMeta.call(this, arguments[0])
         } else {
-            if (arguments.length === 4) {
-                BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
+            if (arguments.length === 2) {
+                BaseMeta.call(this, arguments[0], arguments[1])
+            } else {
+                if (arguments.length === 4) {
+                    BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
+                } else {
+                    throw new SyntaxError("BTC meta arguments error: " + arguments)
+                }
             }
         }
         this.__address = null
@@ -1031,16 +1156,47 @@
     ns.mkm.registers("BTCMeta")
 })(MingKeMing);
 (function(ns) {
+    var ETHAddress = ns.mkm.ETHAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
+    var ETHMeta = function() {
+        if (arguments.length === 1) {
+            BaseMeta.call(this, arguments[0])
+        } else {
+            if (arguments.length === 2) {
+                BaseMeta.call(this, arguments[0], arguments[1])
+            } else {
+                if (arguments.length === 4) {
+                    BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3])
+                } else {
+                    throw new SyntaxError("ETH meta arguments error: " + arguments)
+                }
+            }
+        }
+        this.__address = null
+    };
+    ns.Class(ETHMeta, BaseMeta, null);
+    ETHMeta.prototype.generateAddress = function(network) {
+        if (!this.__address && this.isValid()) {
+            var fingerprint = this.getKey().getData();
+            this.__address = ETHAddress.generate(fingerprint)
+        }
+        return this.__address
+    };
+    ns.mkm.ETHMeta = ETHMeta;
+    ns.mkm.registers("ETHMeta")
+})(MingKeMing);
+(function(ns) {
     var Address = ns.protocol.Address;
     var AddressFactory = ns.mkm.AddressFactory;
     var BTCAddress = ns.mkm.BTCAddress;
+    var ETHAddress = ns.mkm.ETHAddress;
     var GeneralAddressFactory = function() {
         AddressFactory.call(this)
     };
     ns.Class(GeneralAddressFactory, AddressFactory, null);
     GeneralAddressFactory.prototype.createAddress = function(address) {
         if (address.length === 42) {
-            throw new TypeError("ETH address not support yet")
+            return ETHAddress.parse(address)
         }
         return BTCAddress.parse(address)
     };
@@ -1052,6 +1208,7 @@
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.mkm.DefaultMeta;
     var BTCMeta = ns.mkm.BTCMeta;
+    var ETHMeta = ns.mkm.ETHMeta;
     var GeneralMetaFactory = function(type) {
         obj.call(this);
         this.__type = type
@@ -1062,12 +1219,20 @@
             return new DefaultMeta(this.__type, key, seed, fingerprint)
         } else {
             if (MetaType.BTC.equals(this.__type)) {
-                return new BTCMeta(this.__type, key, seed, fingerprint)
+                return new BTCMeta(this.__type, key)
             } else {
                 if (MetaType.ExBTC.equals(this.__type)) {
                     return new BTCMeta(this.__type, key, seed, fingerprint)
                 } else {
-                    return null
+                    if (MetaType.ETH.equals(this.__type)) {
+                        return new ETHMeta(this.__type, key)
+                    } else {
+                        if (MetaType.ExETH.equals(this.__type)) {
+                            return new ETHMeta(this.__type, key, seed, fingerprint)
+                        } else {
+                            return null
+                        }
+                    }
                 }
             }
         }
@@ -1090,12 +1255,24 @@
                 if (MetaType.ExBTC.equals(type)) {
                     return new BTCMeta(meta)
                 } else {
-                    return null
+                    if (MetaType.ETH.equals(type)) {
+                        return new ETHMeta(meta)
+                    } else {
+                        if (MetaType.ExETH.equals(type)) {
+                            return new ETHMeta(meta)
+                        } else {
+                            return null
+                        }
+                    }
                 }
             }
         }
     };
-    Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM))
+    Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
+    Meta.register(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
+    Meta.register(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
+    Meta.register(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
+    Meta.register(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH))
 })(MingKeMing);
 (function(ns) {
     var obj = ns.type.Object;

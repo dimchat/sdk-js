@@ -145,7 +145,7 @@
         } else {
             meta = this.getMeta(identifier);
         }
-        return meta && doc.verify(meta.key);
+        return meta && doc.verify(meta.getKey());
     };
 
     //-------- group membership

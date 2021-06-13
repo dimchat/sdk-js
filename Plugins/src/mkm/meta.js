@@ -70,6 +70,8 @@
         } else if (arguments.length === 4) {
             // new DefaultMeta(type, key, seed, fingerprint);
             BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
+        } else {
+            throw new SyntaxError('Default meta arguments error: ' + arguments);
         }
         // memory cache
         this.__addresses = {};  // uint -> Address
@@ -124,15 +126,21 @@
      *
      *  Usages:
      *      1. new BTCMeta(map);
-     *      2. new BTCMeta(type, key, seed, fingerprint);
+     *      2. new BTCMeta(type, key);
+     *      3. new BTCMeta(type, key, seed, fingerprint);
      */
     var BTCMeta = function () {
         if (arguments.length === 1) {
             // new BTCMeta(map);
             BaseMeta.call(this, arguments[0]);
+        } else if (arguments.length === 2) {
+            // new BTCMeta(type, key);
+            BaseMeta.call(this, arguments[0], arguments[1]);
         } else if (arguments.length === 4) {
             // new BTCMeta(type, key, seed, fingerprint);
             BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
+        } else {
+            throw new SyntaxError('BTC meta arguments error: ' + arguments);
         }
         // memory cache
         this.__address = null;  // cached address
@@ -153,5 +161,67 @@
     ns.mkm.BTCMeta = BTCMeta;
 
     ns.mkm.registers('BTCMeta');
+
+})(MingKeMing);
+
+/**
+ *  Meta to build ETH address for ID
+ *
+ *  version:
+ *      0x04 - ETH
+ *      0x05 - ExETH
+ *
+ *  algorithm:
+ *      CT      = key.data;  // without prefix byte
+ *      digest  = keccak256(CT);
+ *      address = hex_encode(digest.suffix(20));
+ */
+
+(function (ns) {
+    'use strict';
+
+    var ETHAddress = ns.mkm.ETHAddress;
+    var BaseMeta = ns.mkm.BaseMeta;
+
+    /**
+     *  Create meta for ETH address
+     *
+     *  Usages:
+     *      1. new ETHMeta(map);
+     *      2. new BTCMeta(type, key);
+     *      3. new BTCMeta(type, key, seed, fingerprint);
+     */
+    var ETHMeta = function () {
+        if (arguments.length === 1) {
+            // new ETHMeta(map);
+            BaseMeta.call(this, arguments[0]);
+        } else if (arguments.length === 2) {
+            // new ETHMeta(type, key);
+            BaseMeta.call(this, arguments[0], arguments[1]);
+        } else if (arguments.length === 4) {
+            // new ETHMeta(type, key, seed, fingerprint);
+            BaseMeta.call(this, arguments[0], arguments[1], arguments[2], arguments[3]);
+        } else {
+            throw new SyntaxError('ETH meta arguments error: ' + arguments);
+        }
+        // memory cache
+        this.__address = null;  // cached address
+    };
+    ns.Class(ETHMeta, BaseMeta, null);
+
+    ETHMeta.prototype.generateAddress = function (network) {
+        // check cache
+        if (!this.__address && this.isValid()) {
+            // generate and cache it
+            var fingerprint = this.getKey().getData();
+            this.__address = ETHAddress.generate(fingerprint);
+        }
+        return this.__address;
+    };
+
+    //-------- namespace --------
+    ns.mkm.ETHMeta = ETHMeta;
+
+    ns.mkm.registers('ETHMeta');
 
 })(MingKeMing);

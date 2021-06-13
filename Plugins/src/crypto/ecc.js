@@ -180,27 +180,52 @@
         }
     };
 
-    var parse_key = function () {
-        var data = this.getData();
+    var decode_points = function (data) {
         var x, y;
-        if (data.length === 33) {
-            if (data[0] === 4) {
-                x = Secp256k1.uint256(data.subarray(1, 33), 16);
-                y = Secp256k1.decompressKey(x, 0);
-            } else {
-                throw new EvalError('key data head error: ' + data);
-            }
-        } else if (data.length === 65) {
+        if (data.length === 65) {
             if (data[0] === 4) {
                 x = Secp256k1.uint256(data.subarray(1, 33), 16);
                 y = Secp256k1.uint256(data.subarray(33, 65), 16);
             } else {
+                // TODO: compressed key?
+                throw new EvalError('key data head error: ' + data);
+            }
+        } else if (data.length === 33) {
+            if (data[0] === 4) {
+                x = Secp256k1.uint256(data.subarray(1, 33), 16);
+                y = Secp256k1.decompressKey(x, 0);
+            } else {
+                // TODO: compressed key?
                 throw new EvalError('key data head error: ' + data);
             }
         } else {
             throw new EvalError('key data length error: ' + data);
         }
         return {x: x, y: y};
+    };
+
+    var parse_key = function () {
+        var data = this.getData();
+        if (data.length === 33) {
+            return decode_points(data);
+        } else if (data.length === 65) {
+            return decode_points(data);
+        } else {
+            var pem = this.getValue('data');
+            var pos1 = pem.indexOf('-----BEGIN PUBLIC KEY-----');
+            if (pos1 >= 0) {
+                pos1 += '-----BEGIN PUBLIC KEY-----'.length;
+                var pos2 = pem.indexOf('-----END PUBLIC KEY-----', pos1);
+                if (pos2 > 0) {
+                    var base64 = pem.substr(pos1, pos2-pos1);
+                    data = ns.format.Base64.decode(base64);
+                    // TODO: parse ASN.1 or X.509
+                    data = data.subarray(data.length - 65);
+                    return decode_points(data);
+                }
+            }
+        }
+        throw new EvalError('key data error: ' + pem);
     };
 
     ECCPublicKey.prototype.verify = function (data, signature) {
