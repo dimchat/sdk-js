@@ -25,8 +25,7 @@
 // =============================================================================
 //
 
-//! require <crypto-js/core.js> (https://github.com/brix/crypto-js)
-//! require <crypto-js/ripemd160.js>
+//! require <sha3.js> (https://github.com/emn178/js-sha3)
 
 //! require <crypto.js>
 
@@ -36,23 +35,20 @@
     var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
 
+    var keccak256 = window.keccak256;
+
     //
-    //  RIPEMD160
+    //  KECCAK256
     //
     var hash = function () {
         obj.call(this);
     };
     ns.Class(hash, obj, [Hash]);
     hash.prototype.digest = function (data) {
-        // bytes2words
-        var hex = ns.format.Hex.encode(data);
-        var array = CryptoJS.enc.Hex.parse(hex);
-        var result = CryptoJS.RIPEMD160(array);
-        // words2bytes
-        return ns.format.Hex.decode(result.toString());
+        return keccak256.update(data).digest()
     };
 
     //-------- namespace --------
-    ns.digest.RIPEMD160.hash = new hash();
+    ns.digest.KECCAK256.hash = new hash();
 
 })(MONKEY);

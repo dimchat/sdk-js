@@ -12,13 +12,17 @@
     <script src="../libs/3rd/crypto-js/sha256.js"></script>
     <script src="../libs/3rd/crypto-js/ripemd160.js"></script>
     <script src="../libs/3rd/jsencrypt.js"></script>
+    <script src="../libs/3rd/sha3.js"></script>
+    <script src="../libs/3rd/ecc/bn.js"></script>
+    <script src="../libs/3rd/ecc/secp256k1.js"></script>
 
     <link href="/Crypto/tests/test.css" type="text/css" rel="stylesheet" />
     <script src="/Crypto/libs/loader.js"></script>
     <script src="/Crypto/libs/runner.js"></script>
     <script src="/Crypto/libs/utils.js"></script>
 
-    <script src="/DIMP/dist/dimp.js"></script>
+    <script src="/Crypto/dist/crypto.js"></script>
+    <script src="/MingKeMing/dist/mkm.js"></script>
 
     <script>
         !function (ns) {
@@ -28,6 +32,7 @@
                 'src/digest/md5.js',
                 'src/digest/sha256.js',
                 'src/digest/ripemd160.js',
+                'src/digest/keccak256.js',
 
                 'src/crypto/pem.js',
                 'src/crypto/rsa.js',

@@ -39,11 +39,11 @@
     //
     //  MD5
     //
-    var md5 = function () {
+    var hash = function () {
         obj.call(this);
     };
-    ns.Class(md5, obj, [Hash]);
-    md5.prototype.digest = function (data) {
+    ns.Class(hash, obj, [Hash]);
+    hash.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -53,6 +53,6 @@
     };
 
     //-------- namespace --------
-    ns.digest.MD5.hash = new md5();
+    ns.digest.MD5.hash = new hash();
 
 })(MONKEY);

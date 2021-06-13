@@ -162,47 +162,60 @@
 (function(ns) {
     var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var md5 = function() {
+    var hash = function() {
         obj.call(this)
     };
-    ns.Class(md5, obj, [Hash]);
-    md5.prototype.digest = function(data) {
+    ns.Class(hash, obj, [Hash]);
+    hash.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
         var result = CryptoJS.MD5(array);
         return ns.format.Hex.decode(result.toString())
     };
-    ns.digest.MD5.hash = new md5()
+    ns.digest.MD5.hash = new hash()
 })(MONKEY);
 (function(ns) {
     var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var sha256 = function() {
+    var hash = function() {
         obj.call(this)
     };
-    ns.Class(sha256, obj, [Hash]);
-    sha256.prototype.digest = function(data) {
+    ns.Class(hash, obj, [Hash]);
+    hash.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
         var result = CryptoJS.SHA256(array);
         return ns.format.Hex.decode(result.toString())
     };
-    ns.digest.SHA256.hash = new sha256()
+    ns.digest.SHA256.hash = new hash()
 })(MONKEY);
 (function(ns) {
     var obj = ns.type.Object;
     var Hash = ns.digest.Hash;
-    var ripemd160 = function() {
+    var hash = function() {
         obj.call(this)
     };
-    ns.Class(ripemd160, obj, [Hash]);
-    ripemd160.prototype.digest = function(data) {
+    ns.Class(hash, obj, [Hash]);
+    hash.prototype.digest = function(data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
         var result = CryptoJS.RIPEMD160(array);
         return ns.format.Hex.decode(result.toString())
     };
-    ns.digest.RIPEMD160.hash = new ripemd160()
+    ns.digest.RIPEMD160.hash = new hash()
+})(MONKEY);
+(function(ns) {
+    var obj = ns.type.Object;
+    var Hash = ns.digest.Hash;
+    var keccak256 = window.keccak256;
+    var hash = function() {
+        obj.call(this)
+    };
+    ns.Class(hash, obj, [Hash]);
+    hash.prototype.digest = function(data) {
+        return keccak256.update(data).digest()
+    };
+    ns.digest.KECCAK256.hash = new hash()
 })(MONKEY);
 (function(ns) {
     var MIME_LINE_MAX_LEN = 76;
