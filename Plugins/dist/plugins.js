@@ -293,9 +293,6 @@
     ns.format.registers("PEM")
 })(MONKEY);
 (function(ns) {
-    var Hex = ns.format.Hex;
-    var Base64 = ns.format.Base64;
-    var PEM = ns.format.PEM;
     var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -312,7 +309,7 @@
     RSAPublicKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
-            return PEM.decodePublicKey(data)
+            return ns.format.PEM.decodePublicKey(data)
         } else {
             throw new Error("public key data not found")
         }
@@ -329,19 +326,19 @@
     x509_header = new Data(x509_header);
     var parse_key = function() {
         var der = this.getData();
-        var key = Base64.encode(der);
+        var key = ns.format.Base64.encode(der);
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);
         if (cipher.key.e === 0 || cipher.key.n === null) {
             der = x509_header.concat(der).getBytes();
-            key = Base64.encode(der);
+            key = ns.format.Base64.encode(der);
             cipher.setPublicKey(key)
         }
         return cipher
     };
     RSAPublicKey.prototype.verify = function(data, signature) {
-        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
-        signature = Base64.encode(signature);
+        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
+        signature = ns.format.Base64.encode(signature);
         var cipher = parse_key.call(this);
         return cipher.verify(data, signature, CryptoJS.SHA256)
     };
@@ -353,13 +350,13 @@
         var cipher = parse_key.call(this);
         var base64 = cipher.encrypt(plaintext);
         if (base64) {
-            var res = Base64.decode(base64);
+            var res = ns.format.Base64.decode(base64);
             if (res.length === this.getSize()) {
                 return res
             }
             var hex = cipher.getKey().encrypt(plaintext);
             if (hex) {
-                res = Hex.decode(hex);
+                res = ns.format.Hex.decode(hex);
                 if (res.length === this.getSize()) {
                     return res
                 }
@@ -373,9 +370,6 @@
 })(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
-    var Hex = ns.format.Hex;
-    var Base64 = ns.format.Base64;
-    var PEM = ns.format.PEM;
     var CryptographyKey = ns.crypto.CryptographyKey;
     var PrivateKey = ns.crypto.PrivateKey;
     var DecryptKey = ns.crypto.DecryptKey;
@@ -390,11 +384,11 @@
     RSAPrivateKey.prototype.getData = function() {
         var data = this.getValue("data");
         if (data) {
-            return PEM.decodePrivateKey(data)
+            return ns.format.PEM.decodePrivateKey(data)
         } else {
             var bits = this.getSize() * 8;
             var pem = generate.call(this, bits);
-            return PEM.decodePrivateKey(pem)
+            return ns.format.PEM.decodePrivateKey(pem)
         }
     };
     var generate = function(bits) {
@@ -418,38 +412,38 @@
         }
     };
     RSAPrivateKey.prototype.getPublicKey = function() {
-        var key = Base64.encode(this.getData());
+        var key = ns.format.Base64.encode(this.getData());
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         var pem = cipher.getPublicKey();
         var info = {
-            algorithm: this.getValue("algorithm"),
-            data: pem,
-            mode: "ECB",
-            padding: "PKCS1",
-            digest: "SHA256"
+            "algorithm": this.getValue("algorithm"),
+            "data": pem,
+            "mode": "ECB",
+            "padding": "PKCS1",
+            "digest": "SHA256"
         };
         return PublicKey.parse(info)
     };
     var parse_key = function() {
         var der = this.getData();
-        var key = Base64.encode(der);
+        var key = ns.format.Base64.encode(der);
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         return cipher
     };
     RSAPrivateKey.prototype.sign = function(data) {
-        data = CryptoJS.enc.Hex.parse(Hex.encode(data));
+        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
         var cipher = parse_key.call(this);
         var base64 = cipher.sign(data, CryptoJS.SHA256, "sha256");
         if (base64) {
-            return Base64.decode(base64)
+            return ns.format.Base64.decode(base64)
         } else {
             throw new Error("RSA sign error: " + data)
         }
     };
     RSAPrivateKey.prototype.decrypt = function(data) {
-        data = Base64.encode(data);
+        data = ns.format.Base64.encode(data);
         var cipher = parse_key.call(this);
         var string = cipher.decrypt(data);
         if (string) {
@@ -463,6 +457,276 @@
     };
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
     ns.crypto.registers("RSAPrivateKey")
+})(MONKEY);
+(function(ns) {
+    var Secp256k1 = window.Secp256k1;
+    var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
+    var AsymmetricKey = ns.crypto.AsymmetricKey;
+    var PublicKey = ns.crypto.PublicKey;
+    var mem_set = function(buf, ch, len) {
+        for (var i = 0; i < len; ++i) {
+            buf[i] = ch
+        }
+    };
+    var mem_cpy = function(dst, dst_offset, src, src_offset, src_len) {
+        for (var i = 0; i < src_len; ++i) {
+            dst[dst_offset + i] = src[src_offset + i]
+        }
+    };
+    var trim_to_32_bytes = function(src, src_len, dst) {
+        var pos = 0;
+        while (src[pos] === 0 && src_len > 0) {
+            ++pos;
+            --src_len
+        }
+        if (src_len > 32 || src_len < 1) {
+            return false
+        }
+        var dst_offset = 32 - src_len;
+        mem_set(dst, 0, dst_offset);
+        mem_cpy(dst, dst_offset, src, pos, src_len);
+        return true
+    };
+    var ecc_der_to_sig = function(der, der_len) {
+        var seq_len;
+        var r_bytes = new Uint8Array(32);
+        var s_bytes = new Uint8Array(32);
+        var r_len;
+        var s_len;
+        mem_set(r_bytes, 0, 32);
+        mem_set(s_bytes, 0, 32);
+        if (der_len < 8 || der[0] !== 48 || der[2] !== 2) {
+            return null
+        }
+        seq_len = der[1];
+        if ((seq_len <= 0) || (seq_len + 2 !== der_len)) {
+            return null
+        }
+        r_len = der[3];
+        if ((r_len < 1) || (r_len > seq_len - 5) || (der[4 + r_len] !== 2)) {
+            return null
+        }
+        s_len = der[5 + r_len];
+        if ((s_len < 1) || (s_len !== seq_len - 4 - r_len)) {
+            return null
+        }
+        var sig_r = new Uint8Array(32);
+        var sig_s = new Uint8Array(32);
+        if (trim_to_32_bytes(der.subarray(4), r_len, sig_r) || trim_to_32_bytes(der.subarray(6 + r_len), s_len, sig_s)) {
+            return {
+                r: sig_r,
+                s: sig_s
+            }
+        } else {
+            return null
+        }
+    };
+    var ECCPublicKey = function(key) {
+        Dictionary.call(this, key)
+    };
+    ns.Class(ECCPublicKey, Dictionary, [PublicKey]);
+    ECCPublicKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
+    ECCPublicKey.prototype.getData = function() {
+        var data = this.getValue("data");
+        if (data && data.length > 0) {
+            return ns.format.Hex.decode(data)
+        } else {
+            throw new Error("ECC public key data not found")
+        }
+    };
+    ECCPublicKey.prototype.getSize = function() {
+        var size = this.getValue("keySize");
+        if (size) {
+            return Number(size)
+        } else {
+            return this.getData().length / 8
+        }
+    };
+    var parse_key = function() {
+        var data = this.getData();
+        var x, y;
+        if (data.length === 33) {
+            if (data[0] === 4) {
+                x = Secp256k1.uint256(data.subarray(1));
+                y = Secp256k1.decompressKey(x, 0)
+            } else {
+                throw new EvalError("key data head error: " + data)
+            }
+        } else {
+            if (data.length === 65) {
+                if (data[0] === 4) {
+                    x = Secp256k1.uint256(data.subarray(1, 33));
+                    y = Secp256k1.uint256(data.subarray(33, 65))
+                } else {
+                    throw new EvalError("key data head error: " + data)
+                }
+            } else {
+                throw new EvalError("key data length error: " + data)
+            }
+        }
+        return {
+            x: x,
+            y: y
+        }
+    };
+    ECCPublicKey.prototype.verify = function(data, signature) {
+        var z = ns.digest.SHA256.digest(data);
+        var sig = ecc_der_to_sig(signature, signature.length);
+        if (!sig) {
+            throw new EvalError("signature error: " + signature)
+        }
+        var sig_r = Secp256k1.uint256(sig.r);
+        var sig_s = Secp256k1.uint256(sig.s);
+        var pub = parse_key.call(this);
+        return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z)
+    };
+    ECCPublicKey.prototype.matches = function(sKey) {
+        return AsymmetricKey.matches(sKey, this)
+    };
+    ns.crypto.ECCPublicKey = ECCPublicKey;
+    ns.crypto.registers("ECCPublicKey")
+})(MONKEY);
+(function(ns) {
+    var Dictionary = ns.type.Dictionary;
+    var CryptographyKey = ns.crypto.CryptographyKey;
+    var PrivateKey = ns.crypto.PrivateKey;
+    var PublicKey = ns.crypto.PublicKey;
+    var ecc_sig_to_der = function(sig_r, sig_s, der) {
+        var i;
+        var p = 0,
+            len, len1, len2;
+        der[p] = 48;
+        p++;
+        der[p] = 0;
+        len = p;
+        p++;
+        der[p] = 2;
+        p++;
+        der[p] = 0;
+        len1 = p;
+        p++;
+        i = 0;
+        while (sig_r[i] === 0 && i < 32) {
+            i++
+        }
+        if (sig_r[i] >= 128) {
+            der[p] = 0;
+            p++;
+            der[len1] = der[len1] + 1
+        }
+        while (i < 32) {
+            der[p] = sig_r[i];
+            p++;
+            der[len1] = der[len1] + 1;
+            i++
+        }
+        der[p] = 2;
+        p++;
+        der[p] = 0;
+        len2 = p;
+        p++;
+        i = 0;
+        while (sig_s[i] === 0 && i < 32) {
+            i++
+        }
+        if (sig_s[i] >= 128) {
+            der[p] = 0;
+            p++;
+            der[len2] = der[len2] + 1
+        }
+        while (i < 32) {
+            der[p] = sig_s[i];
+            p++;
+            der[len2] = der[len2] + 1;
+            i++
+        }
+        der[len] = der[len1] + der[len2] + 4;
+        return der[len] + 2
+    };
+    var ECCPrivateKey = function(key) {
+        Dictionary.call(this, key);
+        var keyPair = get_key_pair.call(this);
+        this.__privateKey = keyPair.privateKey;
+        this.__publicKey = keyPair.publicKey
+    };
+    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey]);
+    ECCPrivateKey.prototype.getAlgorithm = function() {
+        return CryptographyKey.getAlgorithm(this.getMap())
+    };
+    ECCPrivateKey.prototype.getData = function() {
+        var data = this.getValue("data");
+        if (data && data.length > 0) {
+            return ns.format.Hex.decode(data)
+        } else {
+            throw new Error("ECC private key data not found")
+        }
+    };
+    ECCPrivateKey.prototype.getSize = function() {
+        var size = this.getValue("keySize");
+        if (size) {
+            return Number(size)
+        } else {
+            return this.getData().length / 8
+        }
+    };
+    var get_key_pair = function() {
+        var sKey = parse_key.call(this);
+        if (!sKey) {
+            sKey = generatePrivateKey.call(this, 256)
+        }
+        var pKey = Secp256k1.generatePublicKeyFromPrivateKeyData(sKey);
+        return {
+            privateKey: sKey,
+            publicKey: pKey
+        }
+    };
+    var generatePrivateKey = function(bits) {
+        var key = window.crypto.getRandomValues(new Uint8Array(bits / 8));
+        var hex = ns.format.Hex.encode(key);
+        this.setValue("data", hex);
+        this.setValue("curve", "secp256k1");
+        this.setValue("digest", "SHA256");
+        return key
+    };
+    var parse_key = function() {
+        var data = this.getData();
+        if (!data || data.length === 0) {
+            return null
+        } else {
+            if (data.length === 32) {
+                return Secp256k1.uint256(data)
+            } else {
+                throw new EvalError("key data length error: " + data)
+            }
+        }
+    };
+    ECCPrivateKey.prototype.getPublicKey = function() {
+        var pub = this.__publicKey;
+        var data = "04" + pub.x;
+        var info = {
+            "algorithm": this.getValue("algorithm"),
+            "data": data,
+            "curve": "secp256k1",
+            "digest": "SHA256"
+        };
+        return PublicKey.parse(info)
+    };
+    ECCPrivateKey.prototype.sign = function(data) {
+        var z = ns.digest.SHA256.digest(data);
+        var sig = Secp256k1.ecsign(this.__privateKey, z);
+        var der = new Uint8Array(72);
+        var sig_len = ecc_sig_to_der(sig.r, sig.s, der);
+        if (sig_len === der.length) {
+            return der
+        } else {
+            return der.subarray(0, sig_len)
+        }
+    };
+    ns.crypto.ECCPrivateKey = ECCPrivateKey;
+    ns.crypto.registers("ECCPrivateKey")
 })(MONKEY);
 (function(ns) {
     var Dictionary = ns.type.Dictionary;
@@ -904,7 +1168,6 @@
     var obj = ns.type.Object;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var AESKey = ns.crypto.AESKey;
-    var PlainKey = ns.crypto.PlainKey;
     var AESKeyFactory = function() {
         obj.call(this)
     };
@@ -917,6 +1180,15 @@
     AESKeyFactory.prototype.parseSymmetricKey = function(key) {
         return new AESKey(key)
     };
+    var aes = new AESKeyFactory();
+    SymmetricKey.register(SymmetricKey.AES, aes);
+    SymmetricKey.register("AES/CBC/PKCS7Padding", aes)
+})(MONKEY);
+(function(ns) {
+    var obj = ns.type.Object;
+    var CryptographyKey = ns.crypto.CryptographyKey;
+    var SymmetricKey = ns.crypto.SymmetricKey;
+    var PlainKey = ns.crypto.PlainKey;
     var PlainKeyFactory = function() {
         obj.call(this)
     };
@@ -925,11 +1197,11 @@
         return PlainKey.getInstance()
     };
     PlainKeyFactory.prototype.parseSymmetricKey = function(key) {
+        if (CryptographyKey.getAlgorithm(key) !== PlainKey.PLAIN) {
+            throw new TypeError("plain key error: " + key)
+        }
         return PlainKey.getInstance()
     };
-    var aes = new AESKeyFactory();
-    SymmetricKey.register(SymmetricKey.AES, aes);
-    SymmetricKey.register("AES/CBC/PKCS7Padding", aes);
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory())
 })(MONKEY);
 (function(ns) {
@@ -966,4 +1238,37 @@
     PublicKey.register(AsymmetricKey.RSA, rsa_pub);
     PublicKey.register("SHA256withRSA", rsa_pub);
     PublicKey.register("RSA/ECB/PKCS1Padding", rsa_pub)
+})(MONKEY);
+(function(ns) {
+    var obj = ns.type.Object;
+    var AsymmetricKey = ns.crypto.AsymmetricKey;
+    var PrivateKey = ns.crypto.PrivateKey;
+    var PublicKey = ns.crypto.PublicKey;
+    var ECCPrivateKey = ns.crypto.ECCPrivateKey;
+    var ECCPublicKey = ns.crypto.ECCPublicKey;
+    var ECCPrivateKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(ECCPrivateKeyFactory, obj, [PrivateKey.Factory]);
+    ECCPrivateKeyFactory.prototype.generatePrivateKey = function() {
+        return new ECCPrivateKey({
+            "algorithm": AsymmetricKey.ECC
+        })
+    };
+    ECCPrivateKeyFactory.prototype.parsePrivateKey = function(key) {
+        return new ECCPrivateKey(key)
+    };
+    var ECCPublicKeyFactory = function() {
+        obj.call(this)
+    };
+    ns.Class(ECCPublicKeyFactory, obj, [PublicKey.Factory]);
+    ECCPublicKeyFactory.prototype.parsePublicKey = function(key) {
+        return new ECCPublicKey(key)
+    };
+    var ecc_pri = new ECCPrivateKeyFactory();
+    PrivateKey.register(AsymmetricKey.ECC, ecc_pri);
+    PrivateKey.register("SHA256withECC", ecc_pri);
+    var ecc_pub = new ECCPublicKeyFactory();
+    PublicKey.register(AsymmetricKey.ECC, ecc_pub);
+    PublicKey.register("SHA256withECC", ecc_pub)
 })(MONKEY);

@@ -225,7 +225,6 @@
 
     var SymmetricKey = ns.crypto.SymmetricKey;
     var AESKey = ns.crypto.AESKey;
-    var PlainKey = ns.crypto.PlainKey;
 
     /**
      *  AES key factory
@@ -247,6 +246,25 @@
     };
 
     /**
+     *  Register symmetric key parsers
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var aes = new AESKeyFactory();
+    SymmetricKey.register(SymmetricKey.AES, aes);
+    SymmetricKey.register('AES/CBC/PKCS7Padding', aes);
+
+})(MONKEY);
+
+(function (ns) {
+    'use strict';
+
+    var obj = ns.type.Object;
+
+    var CryptographyKey = ns.crypto.CryptographyKey;
+    var SymmetricKey = ns.crypto.SymmetricKey;
+    var PlainKey = ns.crypto.PlainKey;
+
+    /**
      *  Plain key factory
      *  ~~~~~~~~~~~~~~~~~
      */
@@ -260,6 +278,9 @@
     };
 
     PlainKeyFactory.prototype.parseSymmetricKey = function(key) {
+        if (CryptographyKey.getAlgorithm(key) !== PlainKey.PLAIN) {
+            throw new TypeError('plain key error: ' + key);
+        }
         return PlainKey.getInstance();
     };
 
@@ -267,10 +288,6 @@
      *  Register symmetric key parsers
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var aes = new AESKeyFactory();
-    SymmetricKey.register(SymmetricKey.AES, aes);
-    SymmetricKey.register('AES/CBC/PKCS7Padding', aes);
-
     SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory());
 
 })(MONKEY);
@@ -331,5 +348,62 @@
     PublicKey.register(AsymmetricKey.RSA, rsa_pub);
     PublicKey.register('SHA256withRSA', rsa_pub);
     PublicKey.register('RSA/ECB/PKCS1Padding', rsa_pub);
+
+})(MONKEY);
+
+(function (ns) {
+    'use strict';
+
+    var obj = ns.type.Object;
+
+    var AsymmetricKey = ns.crypto.AsymmetricKey;
+    var PrivateKey = ns.crypto.PrivateKey;
+    var PublicKey = ns.crypto.PublicKey;
+    var ECCPrivateKey = ns.crypto.ECCPrivateKey;
+    var ECCPublicKey = ns.crypto.ECCPublicKey;
+
+    /**
+     *  ECC private key factory
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var ECCPrivateKeyFactory = function () {
+        obj.call(this);
+    };
+    ns.Class(ECCPrivateKeyFactory, obj, [PrivateKey.Factory]);
+
+    ECCPrivateKeyFactory.prototype.generatePrivateKey = function() {
+        return new ECCPrivateKey({
+            'algorithm': AsymmetricKey.ECC
+        });
+    };
+
+    ECCPrivateKeyFactory.prototype.parsePrivateKey = function(key) {
+        return new ECCPrivateKey(key);
+    };
+
+    /**
+     *  ECC public key factory
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var ECCPublicKeyFactory = function () {
+        obj.call(this);
+    };
+    ns.Class(ECCPublicKeyFactory, obj, [PublicKey.Factory]);
+
+    ECCPublicKeyFactory.prototype.parsePublicKey = function(key) {
+        return new ECCPublicKey(key);
+    };
+
+    /**
+     *  Register asymmetric key parsers
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var ecc_pri = new ECCPrivateKeyFactory();
+    PrivateKey.register(AsymmetricKey.ECC, ecc_pri);
+    PrivateKey.register('SHA256withECC', ecc_pri);
+
+    var ecc_pub = new ECCPublicKeyFactory();
+    PublicKey.register(AsymmetricKey.ECC, ecc_pub);
+    PublicKey.register('SHA256withECC', ecc_pub);
 
 })(MONKEY);
