@@ -88,6 +88,11 @@
         var data = decode_key(pem,
             '-----BEGIN PUBLIC KEY-----',
             '-----END PUBLIC KEY-----');
+        if (!data) {
+            data = decode_key(pem,
+                "-----BEGIN RSA PUBLIC KEY-----",
+                "-----END RSA PUBLIC KEY-----");
+        }
         if (data) {
             // // FIXME: PKCS#1 -> X.509
             // var header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
