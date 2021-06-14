@@ -143,7 +143,7 @@
         try {
             return read.call(this);
         } catch (e) {
-            // [TCP] failed to receive data
+            console.error('[WebSocket] failed to receive data', this, e);
             close.call(this);
             this.setStatus(Connection.Status.ERROR);
             return null;
@@ -153,7 +153,7 @@
         try {
             return write.call(this, data);
         } catch (e) {
-            // [TCP] failed to send data
+            console.error('[WebSocket] failed to send data', this, e, data);
             close.call(this);
             this.setStatus(Connection.Status.ERROR);
             return null;

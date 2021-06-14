@@ -1155,6 +1155,7 @@ if (typeof StarGate !== "object") {
         try {
             return read.call(this)
         } catch (e) {
+            console.error("[WebSocket] failed to receive data", this, e);
             close.call(this);
             this.setStatus(Connection.Status.ERROR);
             return null
@@ -1164,6 +1165,7 @@ if (typeof StarGate !== "object") {
         try {
             return write.call(this, data)
         } catch (e) {
+            console.error("[WebSocket] failed to send data", this, e, data);
             close.call(this);
             this.setStatus(Connection.Status.ERROR);
             return null
@@ -1323,6 +1325,7 @@ if (typeof StarGate !== "object") {
             this.setStatus(Connection.Status.CONNECTED);
             return true
         } catch (e) {
+            console.error("[WebSocket] failed to connect", this, e);
             this.setStatus(Connection.Status.ERROR);
             return false
         }

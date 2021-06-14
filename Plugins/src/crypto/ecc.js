@@ -163,12 +163,30 @@
     };
 
     ECCPublicKey.prototype.getData = function () {
-        var data = this.getValue('data');
-        if (data && data.length > 0) {
-            return ns.format.Hex.decode(data);
-        } else {
+        var pem = this.getValue('data');
+        if (!pem || pem.length === 0) {
             throw new Error('ECC public key data not found');
+        } else if (pem.length === 66) {
+            // compressed key data
+            return ns.format.Hex.decode(pem);
+        } else if (pem.length === 130) {
+            // uncompressed key data
+            return ns.format.Hex.decode(pem);
+        } else {
+            // ANS.1 or X.509
+            var pos1 = pem.indexOf('-----BEGIN PUBLIC KEY-----');
+            if (pos1 >= 0) {
+                pos1 += '-----BEGIN PUBLIC KEY-----'.length;
+                var pos2 = pem.indexOf('-----END PUBLIC KEY-----', pos1);
+                if (pos2 > 0) {
+                    var base64 = pem.substr(pos1, pos2-pos1);
+                    var data = ns.format.Base64.decode(base64);
+                    // TODO: parse ASN.1 or X.509
+                    return data.subarray(data.length - 65);
+                }
+            }
         }
+        throw new EvalError('key data error: ' + pem);
     };
 
     ECCPublicKey.prototype.getSize = function () {
@@ -204,30 +222,6 @@
         return {x: x, y: y};
     };
 
-    var parse_key = function () {
-        var data = this.getData();
-        if (data.length === 33) {
-            return decode_points(data);
-        } else if (data.length === 65) {
-            return decode_points(data);
-        } else {
-            var pem = this.getValue('data');
-            var pos1 = pem.indexOf('-----BEGIN PUBLIC KEY-----');
-            if (pos1 >= 0) {
-                pos1 += '-----BEGIN PUBLIC KEY-----'.length;
-                var pos2 = pem.indexOf('-----END PUBLIC KEY-----', pos1);
-                if (pos2 > 0) {
-                    var base64 = pem.substr(pos1, pos2-pos1);
-                    data = ns.format.Base64.decode(base64);
-                    // TODO: parse ASN.1 or X.509
-                    data = data.subarray(data.length - 65);
-                    return decode_points(data);
-                }
-            }
-        }
-        throw new EvalError('key data error: ' + pem);
-    };
-
     ECCPublicKey.prototype.verify = function (data, signature) {
         var hash = ns.digest.SHA256.digest(data);
         var z = Secp256k1.uint256(hash, 16);
@@ -237,7 +231,7 @@
         }
         var sig_r = Secp256k1.uint256(sig.r, 16);
         var sig_s = Secp256k1.uint256(sig.s, 16);
-        var pub = parse_key.call(this);
+        var pub = decode_points(this.getData());
         return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
     };
 
@@ -365,9 +359,16 @@
     };
 
     var get_key_pair = function () {
-        var sKey = parse_key.call(this);
-        if (!sKey) {
+        var sKey;
+        var data = this.getData();
+        if (!data || data.length === 0) {
+            // generate
             sKey = generatePrivateKey.call(this, 256);
+        } else if (data.length === 32) {
+            // parse from Hex encoded
+            sKey = Secp256k1.uint256(data, 16);
+        } else {
+            throw new EvalError('key data length error: ' + data);
         }
         var pKey = Secp256k1.generatePublicKeyFromPrivateKeyData(sKey);
         return {privateKey: sKey, publicKey: pKey}
@@ -380,16 +381,6 @@
         this.setValue('curve', 'secp256k1');
         this.setValue('digest', 'SHA256');
         return key;
-    };
-    var parse_key = function () {
-        var data = this.getData();
-        if (!data || data.length === 0) {
-            return null;
-        } else if (data.length === 32) {
-            return Secp256k1.uint256(data, 16);
-        } else {
-            throw new EvalError('key data length error: ' + data);
-        }
     };
 
     ECCPrivateKey.prototype.getPublicKey = function () {

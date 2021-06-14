@@ -183,7 +183,6 @@ if (typeof DIMSDK !== "object") {
     var map = ns.type.Map;
     var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
-    var Station = ns.Station;
     var LoginCommand = function(info) {
         if (ns.Interface.conforms(info, ID)) {
             Command.call(this, Command.LOGIN);
@@ -213,7 +212,7 @@ if (typeof DIMSDK !== "object") {
     };
     LoginCommand.prototype.setStation = function(station) {
         var info;
-        if (station instanceof Station) {
+        if (station instanceof ns.Station) {
             info = {
                 "host": station.getHost(),
                 "port": station.getPort(),

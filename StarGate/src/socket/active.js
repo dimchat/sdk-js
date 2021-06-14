@@ -63,6 +63,7 @@
             this.setStatus(Connection.Status.CONNECTED);
             return true;
         } catch (e) {
+            console.error('[WebSocket] failed to connect', this, e);
             this.setStatus(Connection.Status.ERROR);
             return false;
         }
