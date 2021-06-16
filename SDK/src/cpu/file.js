@@ -87,7 +87,7 @@
      */
     FileContentProcessor.prototype.downloadFileContent = function (content, pwd, sMsg) {
         var url = content.getURL();
-        if (!url || !url.indexOf('://') < 3) {
+        if (!url || url.indexOf('://') < 3) {
             // download URL error
             return false;
         }
