@@ -37,13 +37,23 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var QuitCommandProcessor = function () {
-        GroupCommandProcessor.call(this);
+    var GROUP_EMPTY = 'Group empty.';
+    var OWNER_CANNOT_QUIT = 'Sorry, owner cannot quit group.';
+    var ASSISTANT_CANNOT_QUIT = 'Sorry, assistant cannot quit group.';
+
+    var QuitCommandProcessor = function (facebook, messenger) {
+        GroupCommandProcessor.call(this, facebook, messenger);
     };
     ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
 
-    // @Override
-    QuitCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // protected
+    QuitCommandProcessor.prototype.removeAssistant = function (cmd, rMsg) {
+        // NOTICE: group assistant should be retired by the owner
+        return this.respondText(ASSISTANT_CANNOT_QUIT, cmd.getGroup());
+    };
+
+    // Override
+    QuitCommandProcessor.prototype.process = function (cmd, rMsg) {
         var facebook = this.getFacebook();
 
         // 0. check group
@@ -51,17 +61,17 @@
         var owner = facebook.getOwner(group);
         var members = facebook.getMembers(group);
         if (!owner || !members || members.length === 0) {
-            throw new EvalError('group not ready: ' + group.toString());
+            return this.respondText(GROUP_EMPTY, group);
         }
 
         // 1. check permission
         var sender = rMsg.getSender();
         if (owner.equals(sender)) {
-            throw new EvalError('owner cannot quit: ' + sender.toString() + ' -> ' + group.toString());
+            return this.respondText(OWNER_CANNOT_QUIT, group);
         }
         var assistants = facebook.getAssistants(group);
         if (assistants && assistants.indexOf(sender) >= 0) {
-            throw new EvalError('assistant cannot quit: ' + sender.toString() + ' -> ' + group.toString());
+            return this.removeAssistant(cmd, rMsg);
         }
 
         // 2. remove the sender from group members

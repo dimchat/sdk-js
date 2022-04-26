@@ -30,58 +30,65 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-//! require 'command.js'
+//! require 'base.js'
 
 (function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
     var MetaCommand = ns.protocol.MetaCommand;
-    var ReceiptCommand = ns.protocol.ReceiptCommand;
+    var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
 
-    var CommandProcessor = ns.cpu.CommandProcessor;
-
-    var MetaCommandProcessor = function () {
-        CommandProcessor.call(this);
+    var MetaCommandProcessor = function (facebook, messenger) {
+        BaseCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(MetaCommandProcessor, CommandProcessor, null);
+    ns.Class(MetaCommandProcessor, BaseCommandProcessor, null);
 
     // query meta for ID
-    var get_meta = function (identifier, facebook) {
+    var get_meta = function (identifier) {
+        var facebook = this.getFacebook();
         var meta = facebook.getMeta(identifier);
-        if (!meta) {
+        if (meta) {
+            // response
+            var res = MetaCommand.response(identifier, meta);
+            return this.respondContent(res);
+        } else {
             // meta not found
             var text = 'Sorry, meta not found for ID: ' + identifier;
-            return new TextContent(text);
+            return this.respondText(text, null);
         }
-        // response
-        return MetaCommand.response(identifier, meta);
     };
 
     // received a meta for ID
-    var put_meta = function (identifier, meta, facebook) {
-        if (!facebook.saveMeta(meta, identifier)) {
+    var put_meta = function (identifier, meta) {
+        var text;
+        var facebook = this.getFacebook();
+        if (facebook.saveMeta(meta, identifier)) {
+            // response receipt
+            text = 'Meta received: ' + identifier;
+            return this.respondReceipt(text);
+        } else {
             // save meta failed
-            return new TextContent('Meta not accept: ' + identifier);
+            text = 'Meta not accept: ' + identifier;
+            return this.respondText(text, null);
         }
-        // response receipt
-        return new ReceiptCommand('Meta received: ' + identifier);
     };
 
     // @Override
-    MetaCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    MetaCommandProcessor.prototype.process = function (cmd, rMsg) {
         var identifier = cmd.getIdentifier();
         if (identifier) {
             var meta = cmd.getMeta();
             if (meta) {
-                return put_meta.call(this, identifier, meta, this.getFacebook());
+                // received a meta for ID
+                return put_meta.call(this, identifier, meta);
             } else {
-                return get_meta.call(this, identifier, this.getFacebook());
+                // query meta for ID
+                return get_meta.call(this, identifier);
             }
         }
-        // command error
-        return null;
+        // error
+        var text = 'Meta command error.';
+        return this.respondText(text, null);
     };
 
     //-------- namespace --------

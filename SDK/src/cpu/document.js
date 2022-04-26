@@ -30,72 +30,81 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-//! require 'command.js'
+//! require 'meta.js'
 
 (function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
     var DocumentCommand = ns.protocol.DocumentCommand;
-    var ReceiptCommand = ns.protocol.ReceiptCommand;
-
     var MetaCommandProcessor = ns.cpu.MetaCommandProcessor;
 
-    var DocumentCommandProcessor = function () {
-        MetaCommandProcessor.call(this);
+    var DocumentCommandProcessor = function (facebook, messenger) {
+        MetaCommandProcessor.call(this, facebook, messenger);
     };
     ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null);
 
     // query document for ID
-    var get_doc = function (identifier, type, facebook) {
+    var get_doc = function (identifier, type) {
+        var facebook = this.getFacebook();
         var doc = facebook.getDocument(identifier, type);
-        if (!doc) {
+        if (doc) {
+            // response
+            var meta = facebook.getMeta(identifier);
+            var res = DocumentCommand.response(identifier, meta, doc);
+            return this.respondContent(res);
+        } else {
             // document not found
             var text = 'Sorry, document not found for ID: ' + identifier;
-            return new TextContent(text);
+            return this.respondText(text, null);
         }
-        // response
-        var meta = facebook.getMeta(identifier);
-        return DocumentCommand.response(identifier, meta, doc);
     };
 
     // received a document with ID
-    var put_doc = function (identifier, meta, doc, facebook) {
+    var put_doc = function (identifier, meta, doc) {
+        var text;
+        var facebook = this.getFacebook();
         if (meta) {
             // received a meta for ID
             if (!facebook.saveMeta(meta, identifier)) {
                 // save meta failed
-                return new TextContent('Meta not accept: ' + identifier);
+                text = 'Meta not accept: ' + identifier;
+                return this.respondText(text, null);
             }
         }
         // received a document wit ID
-        if (!facebook.saveDocument(doc)) {
+        if (facebook.saveDocument(doc)) {
+            // response receipt
+            text = 'Document received: ' + identifier;
+            return this.respondReceipt(text);
+        } else {
             // save profile failed
-            return new TextContent('Document not accept: ' + identifier);
+            text = 'Document not accept: ' + identifier;
+            return this.respondText(text, null);
         }
-        // response receipt
-        return new ReceiptCommand('Document received: ' + identifier);
     };
 
     // @Override
-    DocumentCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    DocumentCommandProcessor.prototype.process = function (cmd, rMsg) {
         var identifier = cmd.getIdentifier();
         if (identifier) {
             var doc = cmd.getDocument();
             if (!doc) {
+                // query document for ID
                 var type = cmd.getValue('doc_type');
                 if (!type) {
                     type = '*';  // ANY
                 }
-                return get_doc(identifier, type, this.getFacebook());
-            } else if (identifier.equals(doc.getIdentifier())) {
+                return get_doc.call(this, identifier, type);
+            }
+            // received a document for ID
+            if (identifier.equals(doc.getIdentifier())) {
                 var meta = cmd.getMeta();
-                return put_doc(identifier, meta, doc, this.getFacebook());
+                return put_doc.call(this, identifier, meta, doc);
             }
         }
-        // command error
-        return null;
+        // error
+        var text = 'Document command error.';
+        return this.respondText(text, null);
     };
 
     //-------- namespace --------

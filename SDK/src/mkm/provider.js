@@ -35,43 +35,20 @@
 (function (ns) {
     'use strict';
 
-    var Group = ns.Group;
+    var BaseGroup = ns.mkm.BaseGroup;
 
-    /**
-     *  Big group with admins
-     */
-    var Chatroom = function (identifier) {
-        Group.call(this, identifier);
+    var ServiceProvider = function (identifier) {
+        BaseGroup.call(this, identifier);
     };
-    ns.Class(Chatroom, Group, null);
+    ns.Class(ServiceProvider, BaseGroup, null);
 
-    Chatroom.prototype.getAdmins = function () {
-        return this.getDataSource().getAdmins(this.identifier);
+    ServiceProvider.prototype.getStations = function () {
+        return this.getMembers();
     };
-
-    /**
-     *  This interface is for getting information for chatroom
-     *  Chatroom admins should be set complying with the consensus algorithm
-     */
-    var ChatroomDataSource = function () {
-    };
-    ns.Interface(ChatroomDataSource, [Group.DataSource]);
-
-    /**
-     *  Get all admins in the chatroom
-     *
-     * @returns {ID[]}
-     */
-    ChatroomDataSource.prototype.getAdmins = function () {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    Chatroom.DataSource = ChatroomDataSource;
 
     //-------- namespace --------
-    ns.Chatroom = Chatroom;
+    ns.mkm.ServiceProvider = ServiceProvider;
 
-    ns.registers('Chatroom');
+    ns.mkm.registers('ServiceProvider');
 
 })(DIMSDK);

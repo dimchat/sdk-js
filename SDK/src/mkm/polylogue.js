@@ -35,47 +35,28 @@
 (function (ns) {
     'use strict';
 
-    var User = ns.User;
+    var BaseGroup = ns.mkm.BaseGroup;
 
     /**
-     *  Station for DIM network
+     *  Simple group chat
      */
-    var Station = function (identifier, host, port) {
-        User.call(this, identifier);
-        this.host = host;
-        this.port = port;
+    var Polylogue = function (identifier) {
+        BaseGroup.call(this, identifier);
     };
-    ns.Class(Station, User, null);
+    ns.Class(Polylogue, BaseGroup, null);
 
-    Station.prototype.getHost = function () {
-        if (!this.host) {
-            var doc = this.getDocument('*');
-            if (doc) {
-                this.host = doc.getProperty('host');
-            }
-            if (!this.host) {
-                this.host = '0.0.0.0';
-            }
+    Polylogue.prototype.getOwner = function () {
+        var owner = BaseGroup.prototype.getOwner.call(this);
+        if (owner) {
+            return owner;
         }
-        return this.host;
-    };
-
-    Station.prototype.getPort = function () {
-        if (!this.port) {
-            var doc = this.getDocument('*');
-            if (doc) {
-                this.port = doc.getProperty('port');
-            }
-            if (!this.port) {
-                this.port = 9394;
-            }
-        }
-        return this.port;
+        // polylogue's owner is its founder
+        return this.getFounder();
     };
 
     //-------- namespace --------
-    ns.Station = Station;
+    ns.mkm.Polylogue = Polylogue;
 
-    ns.registers('Station');
+    ns.mkm.registers('Polylogue');
 
 })(DIMSDK);

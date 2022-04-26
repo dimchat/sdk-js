@@ -30,56 +30,39 @@
 // =============================================================================
 //
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "login",
- *      time    : 0,
- *      //---- client info ----
- *      ID       : "{UserID}",
- *      device   : "DeviceID",  // (optional)
- *      agent    : "UserAgent", // (optional)
- *      //---- server info ----
- *      station  : {
- *          ID   : "{StationID}",
- *          host : "{IP}",
- *          port : 9394
- *      },
- *      provider : {
- *          ID   : "{SP_ID}"
- *      }
- *  }
- */
 
-//! require 'command.js'
+//! require <dimp.js>
 
 (function (ns) {
     'use strict';
 
-    var map = ns.type.Map;
     var ID = ns.protocol.ID;
     var Command = ns.protocol.Command;
 
     /**
-     *  Create login command
+     *  Command message: {
+     *      type : 0x88,
+     *      sn   : 123,
      *
-     *  Usages:
-     *      1. new LoginCommand(map);
-     *      2. new LoginCommand(identifier);
+     *      command : "login",
+     *      time    : 0,
+     *      //---- client info ----
+     *      ID       : "{UserID}",
+     *      device   : "DeviceID",  // (optional)
+     *      agent    : "UserAgent", // (optional)
+     *      //---- server info ----
+     *      station  : {
+     *          ID   : "{StationID}",
+     *          host : "{IP}",
+     *          port : 9394
+     *      },
+     *      provider : {
+     *          ID   : "{SP_ID}"
+     *      }
+     *  }
      */
-    var LoginCommand = function (info) {
-        if (ns.Interface.conforms(info, ID)) {
-            // new LoginCommand(identifier);
-            Command.call(this, Command.LOGIN);
-            this.setValue('ID', info.toString());
-        } else {
-            // new LoginCommand(map);
-            Command.call(this, info);
-        }
-    };
-    ns.Class(LoginCommand, Command, null);
+    var LoginCommand = function (info) {};
+    ns.Interface(LoginCommand, [Command]);
 
     //-------- client info --------
 
@@ -89,7 +72,8 @@
      * @returns {ID}
      */
     LoginCommand.prototype.getIdentifier = function () {
-        return ID.parse(this.getValue('ID'));
+        console.assert(false, 'implement me!');
+        return null;
     };
 
     /**
@@ -98,7 +82,8 @@
      * @returns {String}
      */
     LoginCommand.prototype.getDevice = function () {
-        return this.getValue('device');
+        console.assert(false, 'implement me!');
+        return null;
     };
     /**
      *  Set device ID
@@ -106,7 +91,7 @@
      * @param {String} device
      */
     LoginCommand.prototype.setDevice = function (device) {
-        this.setValue('device', device);
+        console.assert(false, 'implement me!');
     };
 
     /**
@@ -115,7 +100,8 @@
      * @returns {String}
      */
     LoginCommand.prototype.getAgent = function () {
-        return this.getValue('agent');
+        console.assert(false, 'implement me!');
+        return null;
     };
     /**
      *  Set user agent
@@ -123,7 +109,7 @@
      * @param {String} UA
      */
     LoginCommand.prototype.setAgent = function (UA) {
-        this.setValue('agent', UA);
+        console.assert(false, 'implement me!');
     };
 
     //-------- server info --------
@@ -134,63 +120,141 @@
      * @returns {{String:Object}}
      */
     LoginCommand.prototype.getStation = function () {
-        return this.getValue('station');
+        console.assert(false, 'implement me!');
+        return null;
     };
     /**
      *  Set station info
      *
-     * @param {{String:Object}} station
+     * @param {{}} station
      */
     LoginCommand.prototype.setStation = function (station) {
-        var info;
-        if (station instanceof ns.Station) {
-            info = {
-                'host': station.getHost(),
-                'port': station.getPort(),
-                'ID': station.identifier.toString()
-            }
-        } else if (ns.Interface.conforms(station, map)) {
-            info = station.getMap();
-        } else {
-            info = station;
-        }
-        this.setValue('station', info);
+        console.assert(false, 'implement me!');
     };
 
     /**
      *  Get provider info
      *
-     * @returns {{String:Object}}
+     * @returns {{}}
      */
     LoginCommand.prototype.getProvider = function () {
-        return this.getValue('provider');
+        console.assert(false, 'implement me!');
+        return null;
     };
     /**
      *  Set provider info
      *
-     * @param {{String:Object}} provider
+     * @param {{}} provider
      */
     LoginCommand.prototype.setProvider = function (provider) {
-        var info;
-        if (provider instanceof ns.ServiceProvider) {
-            info = {
-                'ID': provider.identifier.toString()
-            }
-        } else if (ns.Interface.conforms(provider, ID)) {
-            info = {
-                'ID': provider.toString()
-            }
-        } else if (ns.Interface.conforms(provider, map)) {
-            info = provider.getMap();
-        } else {
-            info = provider;
-        }
-        this.setValue('provider', info);
+        console.assert(false, 'implement me!');
     };
 
     //-------- namespace --------
     ns.protocol.LoginCommand = LoginCommand;
 
     ns.protocol.registers('LoginCommand');
+
+})(DIMSDK);
+
+(function (ns) {
+    'use strict';
+
+    var Wrapper = ns.type.Wrapper;
+    var ID = ns.protocol.ID;
+    var Command = ns.protocol.Command;
+    var LoginCommand = ns.protocol.LoginCommand;
+    var BaseCommand = ns.dkd.BaseCommand;
+
+    /**
+     *  Create login command
+     *
+     *  Usages:
+     *      1. new BaseLoginCommand(map);
+     *      2. new BaseLoginCommand(identifier);
+     */
+    var BaseLoginCommand = function (info) {
+        if (ns.Interface.conforms(info, ID)) {
+            // new BaseLoginCommand(identifier);
+            BaseCommand.call(this, Command.LOGIN);
+            this.setValue('ID', info.toString());
+        } else {
+            // new BaseLoginCommand(map);
+            BaseCommand.call(this, info);
+        }
+    };
+    ns.Class(BaseLoginCommand, BaseCommand, [LoginCommand]);
+
+    // Override
+    BaseLoginCommand.prototype.getIdentifier = function () {
+        return ID.parse(this.getValue('ID'));
+    };
+
+    // Override
+    BaseLoginCommand.prototype.getDevice = function () {
+        return this.getValue('device');
+    };
+
+    // Override
+    BaseLoginCommand.prototype.setDevice = function (device) {
+        this.setValue('device', device);
+    };
+
+    // Override
+    BaseLoginCommand.prototype.getAgent = function () {
+        return this.getValue('agent');
+    };
+
+    // Override
+    BaseLoginCommand.prototype.setAgent = function (UA) {
+        this.setValue('agent', UA);
+    };
+
+    // Override
+    BaseLoginCommand.prototype.getStation = function () {
+        return this.getValue('station');
+    };
+
+    // Override
+    BaseLoginCommand.prototype.setStation = function (station) {
+        var info;
+        if (station instanceof ns.Station) {
+            info = {
+                'host': station.getHost(),
+                'port': station.getPort(),
+                'ID': station.getIdentifier().toString()
+            }
+        } else {
+            info = Wrapper.fetchMap(station);
+        }
+        this.setValue('station', info);
+    };
+
+    // Override
+    BaseLoginCommand.prototype.getProvider = function () {
+        return this.getValue('provider');
+    };
+
+    // Override
+    BaseLoginCommand.prototype.setProvider = function (provider) {
+        var info;
+        if (provider instanceof ns.ServiceProvider) {
+            info = {
+                'ID': provider.getIdentifier().toString()
+            }
+        } else if (ns.Interface.conforms(provider, ID)) {
+            info = {
+                'ID': provider.toString()
+            }
+        } else {
+            info = Wrapper.fetchMap(provider);
+        }
+        this.setValue('provider', info);
+    };
+
+    //-------- namespace --------
+    ns.dkd.BaseLoginCommand = BaseLoginCommand;
+
+    ns.dkd.registers('BaseLoginCommand');
 
 })(DIMSDK);

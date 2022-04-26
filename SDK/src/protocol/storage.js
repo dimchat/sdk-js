@@ -30,47 +30,136 @@
 // =============================================================================
 //
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "storage",
- *      title   : "key name",  // "contacts", "private_key", ...
- *
- *      data    : "...",       // base64_encode(symmetric)
- *      key     : "...",       // base64_encode(asymmetric)
- *
- *      // -- extra info
- *      //...
- *  }
- */
-
 //! require <dimp.js>
+
+(function (ns) {
+    'use strict';
+
+    var ID = ns.protocol.ID;
+    var Command = ns.protocol.Command;
+
+    /**
+     *  Command message: {
+     *      type : 0x88,
+     *      sn   : 123,
+     *
+     *      command : "storage",
+     *      title   : "key name",  // "contacts", "private_key", ...
+     *
+     *      data    : "...",       // base64_encode(symmetric)
+     *      key     : "...",       // base64_encode(asymmetric)
+     *
+     *      // -- extra info
+     *      //...
+     *  }
+     */
+    var StorageCommand = function (info) {};
+    ns.Interface(StorageCommand, [Command]);
+
+    StorageCommand.STORAGE = 'storage';
+    // storage titles (should be encrypted)
+    StorageCommand.CONTACTS = 'contacts';
+    StorageCommand.PRIVATE_KEY = 'private_key';
+
+    /**
+     *  Set storage title
+     *
+     * @param {String} title
+     */
+    StorageCommand.prototype.setTitle = function (title) {
+        console.assert(false, 'implement me!');
+    };
+    StorageCommand.prototype.getTitle = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Set user ID
+     *
+     * @param {ID} identifier
+     */
+    StorageCommand.prototype.setIdentifier = function (identifier) {
+        console.assert(false, 'implement me!');
+    };
+    StorageCommand.prototype.getIdentifier = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Set encrypted data
+     *      (encrypted by a random password before upload)
+     *
+     * @param {Uint8Array} data
+     */
+    StorageCommand.prototype.setData = function (data) {
+        console.assert(false, 'implement me!');
+    };
+    StorageCommand.prototype.getData = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Set password (symmetric key) for decrypting data
+     *      encrypted by user's public key before upload,
+     *      this should be empty when the storage data is "private_key".
+     *
+     * @param {Uint8Array} data
+     */
+    StorageCommand.prototype.setKey = function (data) {
+        console.assert(false, 'implement me!');
+    };
+    StorageCommand.prototype.getKey = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    //
+    //  Decryption
+    //
+    StorageCommand.prototype.decryptData = function (key) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+    StorageCommand.prototype.decryptKey = function (privateKey) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    //-------- namespace --------
+    ns.protocol.StorageCommand = StorageCommand;
+
+    ns.protocol.registers('StorageCommand');
+
+})(DIMSDK);
 
 (function (ns) {
     'use strict';
 
     var SymmetricKey = ns.crypto.SymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
+    var Base64 = ns.format.Base64;
     var ID = ns.protocol.ID;
-    var Command = ns.protocol.Command;
+    var StorageCommand = ns.protocol.StorageCommand;
+    var BaseCommand = ns.dkd.BaseCommand;
 
     /**
      *  Create storage command
      *
      *  Usages:
-     *      1. new StorageCommand(map);
-     *      2. new StorageCommand(title);
+     *      1. new BaseStorageCommand(map);
+     *      2. new BaseStorageCommand(title);
      */
-    var StorageCommand = function (info) {
+    var BaseStorageCommand = function (info) {
         if (typeof info === 'string') {
-            // new StorageCommand(title);
-            Command.call(this, StorageCommand.STORAGE);
+            // new BaseStorageCommand(title);
+            BaseCommand.call(this, StorageCommand.STORAGE);
             this.setTitle(info);
         } else {
-            // new StorageCommand(map);
-            Command.call(this, info);
+            // new BaseStorageCommand(map);
+            BaseCommand.call(this, info);
         }
         // private properties
         this.__data = null;      // encrypted data
@@ -78,11 +167,15 @@
         this.__key = null;       // encrypted symmetric key data
         this.__password = null;  // symmetric key for data
     };
-    ns.Class(StorageCommand, Command, null);
+    ns.Class(BaseStorageCommand, BaseCommand, [StorageCommand]);
 
-    //-------- setter/getter --------
+    // Override
+    BaseStorageCommand.prototype.setTitle = function (title) {
+        this.setValue('title', title);
+    };
 
-    StorageCommand.prototype.getTitle = function () {
+    // Override
+    BaseStorageCommand.prototype.getTitle = function () {
         var title = this.getValue('title');
         if (title && title.length > 0) {
             return title;
@@ -96,73 +189,67 @@
             return this.getCommand();
         }
     };
-    StorageCommand.prototype.setTitle = function (title) {
-        this.setValue('title', title);
-    };
 
-    StorageCommand.prototype.getIdentifier = function () {
-        return ID.parse(this.getValue('ID'));
-    };
-    StorageCommand.prototype.setIdentifier = function (identifier) {
-        if (ns.Interface.conforms(identifier, ID)) {
+    // Override
+    BaseStorageCommand.prototype.setIdentifier = function (identifier) {
+        if (identifier && ns.Interface.conforms(identifier, ID)) {
             this.setValue('ID', identifier.toString());
         } else {
             this.setValue('ID', null);
         }
     };
 
-    //
-    //  Encrypted data
-    //      encrypted by a random password before upload
-    //
-    StorageCommand.prototype.getData = function () {
-        if (!this.__data) {
-            var base64 = this.getValue('data');
-            if (base64) {
-                this.__data = ns.format.Base64.decode(base64);
-            }
-        }
-        return this.__data;
+    // Override
+    BaseStorageCommand.prototype.getIdentifier = function () {
+        return ID.parse(this.getValue('ID'));
     };
-    StorageCommand.prototype.setData = function (data) {
+
+    // Override
+    BaseStorageCommand.prototype.setData = function (data) {
         var base64 = null;
         if (data) {
-            base64 = ns.format.Base64.encode(data);
+            base64 = Base64.encode(data);
         }
         this.setValue('data', base64);
         this.__data = data;
         this.__plaintext = null;
     };
 
-    //
-    //  Symmetric key
-    //      password to decrypt data
-    //      encrypted by user's public key before upload.
-    //      this should be empty when the storage data is "private_key".
-    //
-    StorageCommand.prototype.getKey = function () {
-        if (!this.__key) {
-            var base64 = this.getValue('key');
+    // Override
+    BaseStorageCommand.prototype.getData = function () {
+        if (!this.__data) {
+            var base64 = this.getValue('data');
             if (base64) {
-                this.__key = ns.format.Base64.decode(base64);
+                this.__data = Base64.decode(base64);
             }
         }
-        return this.__key;
+        return this.__data;
     };
-    StorageCommand.prototype.setKey = function (data) {
+
+    // Override
+    BaseStorageCommand.prototype.setKey = function (data) {
         var base64 = null;
         if (data) {
-            base64 = ns.format.Base64.encode(data);
+            base64 = Base64.encode(data);
         }
         this.setValue('key', base64);
         this.__key = data;
         this.__password = null;
     };
 
-    //
-    //  Decryption
-    //
-    StorageCommand.prototype.decrypt = function (key) {
+    // Override
+    BaseStorageCommand.prototype.getKey = function () {
+        if (!this.__key) {
+            var base64 = this.getValue('key');
+            if (base64) {
+                this.__key = Base64.decode(base64);
+            }
+        }
+        return this.__key;
+    };
+
+    // Override
+    BaseStorageCommand.prototype.decryptData = function (key) {
         if (!this.__plaintext) {
             // 1. get password for decrypting data
             var pwd = null;
@@ -183,26 +270,22 @@
         }
         return this.__plaintext;
     };
-    StorageCommand.prototype.decryptKey = function (privateKey) {
+
+    // Override
+    BaseStorageCommand.prototype.decryptKey = function (privateKey) {
         if (!this.__password) {
             var key = this.getKey();
-            key = privateKey.decrypt(key);
-            var dict = ns.format.JSON.decode(key);
+            var data = privateKey.decrypt(key);
+            var json = ns.format.UTF8.decode(data);
+            var dict = ns.format.JSON.decode(json);
             this.__password = SymmetricKey.parse(dict);
         }
         return this.__password;
     };
 
-    //-------- storage command names --------
-    StorageCommand.STORAGE = 'storage';
-
-    // storage titles (should be encrypted)
-    StorageCommand.CONTACTS = 'contacts';
-    StorageCommand.PRIVATE_KEY = 'private_key';
-
     //-------- namespace --------
-    ns.protocol.StorageCommand = StorageCommand;
+    ns.dkd.BaseStorageCommand = BaseStorageCommand;
 
-    ns.protocol.registers('StorageCommand');
+    ns.dkd.registers('BaseStorageCommand');
 
 })(DIMSDK);

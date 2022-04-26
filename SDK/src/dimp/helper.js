@@ -3,12 +3,12 @@
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2022 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2022 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,43 +30,27 @@
 // =============================================================================
 //
 
-//! require 'base.js'
-
 (function (ns) {
     'use strict';
 
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-
-    var ForwardContentProcessor = function (facebook, messenger) {
-        BaseContentProcessor.call(this, facebook, messenger);
+    var TwinsHelper = function (facebook, messenger) {
+        Object.call(this);
+        this.__facebook = facebook;
+        this.__messenger = messenger;
     };
-    ns.Class(ForwardContentProcessor, BaseContentProcessor, null);
+    ns.Class(TwinsHelper, Object, null);
 
-    // Override
-    ForwardContentProcessor.prototype.process = function (content, rMsg) {
-        var secret = content.getMessage();
-        // call messenger to process it
-        var messenger = this.getMessenger();
-        // 1. verify message
-        var sMsg = messenger.verifyMessage(secret);
-        if (!sMsg) {
-            // waiting for sender's meta if not exists
-            return null;
-        }
-        // 2. decrypt message
-        var iMsg = messenger.decryptMessage(sMsg);
-        if (!iMsg) {
-            // NOTICE: decrypt failed, not for you?
-            //         it means you are asked to re-pack and forward this message
-            return null;
-        }
-        // 3. process message content
-        return messenger.processContent(iMsg.getContent(), secret);
-    };
+    TwinsHelper.prototype.getFacebook = function () {
+        return this.__facebook;
+    }
+
+    TwinsHelper.prototype.getMessenger = function () {
+        return this.__messenger;
+    }
 
     //-------- namespace --------
-    ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
+    ns.TwinsHelper = TwinsHelper;
 
-    ns.cpu.registers('ForwardContentProcessor');
+    ns.registers('TwinsHelper');
 
 })(DIMSDK);

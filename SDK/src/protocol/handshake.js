@@ -30,18 +30,7 @@
 // =============================================================================
 //
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "handshake",    // command name
- *      message : "Hello world!",
- *      session : "{SESSION_KEY}" // session key
- *  }
- */
-
-//! require 'command.js'
+//! require <dimp.js>
 
 (function (ns) {
     'use strict';
@@ -53,6 +42,68 @@
         RESTART: 3, // C -> S, with new session key
         SUCCESS: 4  // S -> C, handshake accepted
     });
+
+    var Command = ns.protocol.Command;
+
+    /**
+     *  Command message: {
+     *      type : 0x88,
+     *      sn   : 123,
+     *
+     *      command : "handshake",    // command name
+     *      message : "Hello world!",
+     *      session : "{SESSION_KEY}" // session key
+     *  }
+     */
+    var HandshakeCommand = function () {};
+    ns.Interface(HandshakeCommand, [Command]);
+
+    /**
+     *  Get text
+     *
+     * @returns {String}
+     */
+    HandshakeCommand.prototype.getMessage = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Get session key
+     *
+     * @returns {String}
+     */
+    HandshakeCommand.prototype.getSessionKey = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Get handshake state
+     *
+     * @return {HandshakeState}
+     */
+    HandshakeCommand.prototype.getState = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    //-------- namespace --------
+    ns.protocol.HandshakeCommand = HandshakeCommand;
+    ns.protocol.HandshakeState = HandshakeState;
+
+    ns.protocol.registers('HandshakeCommand');
+    ns.protocol.registers('HandshakeState');
+
+})(DIMSDK);
+
+(function (ns) {
+    'use strict';
+
+    var Command = ns.protocol.Command;
+    var HandshakeCommand = ns.protocol.HandshakeCommand;
+    var HandshakeState = ns.protocol.HandshakeState;
+    var BaseCommand = ns.dkd.BaseCommand;
 
     var START_MESSAGE = 'Hello world!';
     var AGAIN_MESSAGE = 'DIM?';
@@ -73,22 +124,20 @@
         }
     };
 
-    var Command = ns.protocol.Command;
-
     /**
      *  Create handshake command
      *
      *  Usages:
-     *      1. new HandshakeCommand(map);
-     *      2. new HandshakeCommand(text, session);
+     *      1. new BaseHandshakeCommand(map);
+     *      2. new BaseHandshakeCommand(text, session);
      */
-    var HandshakeCommand = function () {
+    var BaseHandshakeCommand = function () {
         if (arguments.length === 1) {
-            // new HandshakeCommand(map);
-            Command.call(this, arguments[0]);
+            // new BaseHandshakeCommand(map);
+            BaseCommand.call(this, arguments[0]);
         } else if (arguments.length === 2) {
-            // new HandshakeCommand(text, session);
-            Command.call(this, Command.HANDSHAKE);
+            // new BaseHandshakeCommand(text, session);
+            BaseCommand.call(this, Command.HANDSHAKE);
             // message text
             var text = arguments[0];
             if (text) {
@@ -103,57 +152,43 @@
             }
         }
     };
-    ns.Class(HandshakeCommand, Command, null);
+    ns.Class(BaseHandshakeCommand, BaseCommand, [HandshakeCommand]);
 
-    //-------- setter/getter --------
-
-    /**
-     *  Get text
-     *
-     * @returns {String}
-     */
-    HandshakeCommand.prototype.getMessage = function () {
+    // Override
+    BaseHandshakeCommand.prototype.getMessage = function () {
         return this.getValue('message');
     };
 
-    /**
-     *  Get session key
-     *
-     * @returns {String}
-     */
-    HandshakeCommand.prototype.getSessionKey = function () {
+    // Override
+    BaseHandshakeCommand.prototype.getSessionKey = function () {
         return this.getValue('session');
     };
 
-    /**
-     *  Get handshake state
-     *
-     * @return {HandshakeState}
-     */
-    HandshakeCommand.prototype.getState = function () {
+    // Override
+    BaseHandshakeCommand.prototype.getState = function () {
         return get_state(this.getMessage(), this.getSessionKey());
     };
 
-    //-------- factories --------
+    //
+    //  Factories
+    //
 
     HandshakeCommand.start = function () {
-        return new HandshakeCommand(null, null);
+        return new BaseHandshakeCommand(null, null);
     };
     HandshakeCommand.restart = function (session) {
-        return new HandshakeCommand(null, session);
+        return new BaseHandshakeCommand(null, session);
     };
     HandshakeCommand.again = function (session) {
-        return new HandshakeCommand(AGAIN_MESSAGE, session);
+        return new BaseHandshakeCommand(AGAIN_MESSAGE, session);
     };
     HandshakeCommand.success = function () {
-        return new HandshakeCommand(SUCCESS_MESSAGE, null);
+        return new BaseHandshakeCommand(SUCCESS_MESSAGE, null);
     };
 
     //-------- namespace --------
-    ns.protocol.HandshakeCommand = HandshakeCommand;
-    ns.protocol.HandshakeState = HandshakeState;
+    ns.dkd.BaseHandshakeCommand = BaseHandshakeCommand;
 
-    ns.protocol.registers('HandshakeCommand');
-    ns.protocol.registers('HandshakeState');
+    ns.dkd.registers('BaseHandshakeCommand');
 
 })(DIMSDK);

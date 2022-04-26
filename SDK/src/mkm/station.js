@@ -31,48 +31,51 @@
 //
 
 //! require <dimp.js>
-//! require 'cpu/content.js'
 
 (function (ns) {
     'use strict';
 
-    var Processor = ns.core.Processor;
+    var BaseUser = ns.mkm.BaseUser;
 
-    var MessageProcessor = function (messenger) {
-        Processor.call(this, messenger);
+    /**
+     *  Station for DIM network
+     */
+    var Station = function (identifier, host, port) {
+        BaseUser.call(this, identifier);
+        this.host = host;
+        this.port = port;
     };
-    ns.Class(MessageProcessor, Processor, null);
+    ns.Class(Station, BaseUser, null);
 
-    MessageProcessor.prototype.getMessenger = function () {
-        return this.getTransceiver();
-    };
-
-    // TODO: override to check broadcast message before calling it
-    // TODO: override to deliver to the receiver when catch exception "receiver error ..."
-    MessageProcessor.prototype.processInstantMessage = function (iMsg, rMsg) {
-        var res = Processor.prototype.processInstantMessage.call(this, iMsg, rMsg);
-        if (this.getMessenger().saveMessage(iMsg)) {
-            return res;
-        } else {
-            // error
-            return null;
+    Station.prototype.getHost = function () {
+        if (!this.host) {
+            var doc = this.getDocument('*');
+            if (doc) {
+                this.host = doc.getProperty('host');
+            }
+            if (!this.host) {
+                this.host = '0.0.0.0';
+            }
         }
+        return this.host;
     };
 
-    MessageProcessor.prototype.processContent = function (content, rMsg) {
-        // TODO: override to check group
-        var cpu = ns.cpu.ContentProcessor.getProcessor(content);
-        if (cpu == null) {
-            cpu = ns.cpu.ContentProcessor.getProcessor(0);  // unknown
+    Station.prototype.getPort = function () {
+        if (!this.port) {
+            var doc = this.getDocument('*');
+            if (doc) {
+                this.port = doc.getProperty('port');
+            }
+            if (!this.port) {
+                this.port = 9394;
+            }
         }
-        cpu.setMessenger(this.getMessenger());
-        return cpu.process(content, rMsg);
-        // TODO: override to filter the response
+        return this.port;
     };
 
     //-------- namespace --------
-    ns.MessageProcessor = MessageProcessor;
+    ns.mkm.Station = Station;
 
-    ns.registers('MessageProcessor');
+    ns.mkm.registers('Station');
 
 })(DIMSDK);

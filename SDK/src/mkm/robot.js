@@ -35,20 +35,19 @@
 (function (ns) {
     'use strict';
 
-    var Group = ns.Group;
+    var BaseUser = ns.mkm.BaseUser;
 
-    var ServiceProvider = function (identifier) {
-        Group.call(this, identifier);
+    /**
+     *  Robot User
+     */
+    var Robot = function (identifier) {
+        BaseUser.call(this, identifier);
     };
-    ns.Class(ServiceProvider, Group, null);
-
-    ServiceProvider.prototype.getStations = function () {
-        return this.getMembers();
-    };
+    ns.Class(Robot, BaseUser, null);
 
     //-------- namespace --------
-    ns.ServiceProvider = ServiceProvider;
+    ns.mkm.Robot = Robot;
 
-    ns.registers('ServiceProvider');
+    ns.mkm.registers('Robot');
 
 })(DIMSDK);

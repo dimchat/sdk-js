@@ -30,24 +30,50 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+//! require 'history.js'
 
 (function (ns) {
     'use strict';
 
-    var User = ns.User;
+    var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
 
     /**
-     *  Robot User
+     *  Group Command Processor
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
+     *
+     * @param {Facebook} facebook
+     * @param {Messenger} messenger
      */
-    var Robot = function (identifier) {
-        User.call(this, identifier);
+    var GroupCommandProcessor = function (facebook, messenger) {
+        HistoryCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(Robot, User, null);
+    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
+
+    // protected
+    GroupCommandProcessor.prototype.getMembers = function (cmd) {
+        // get from 'members'
+        var members = cmd.getMembers();
+        if (members) {
+            return members;
+        }
+        // get from 'member'
+        var member = cmd.getMember();
+        if (member) {
+            return [member];
+        } else {
+            return [];
+        }
+    };
+
+    // Override
+    GroupCommandProcessor.prototype.process = function (cmd, rMsg) {
+        var text = 'Group command (name: ' + cmd.getCommand() + ') not support yet!';
+        return this.respondText(text, cmd.getGroup());
+    };
 
     //-------- namespace --------
-    ns.Robot = Robot;
+    ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
 
-    ns.registers('Robot');
+    ns.cpu.registers('GroupCommandProcessor');
 
 })(DIMSDK);

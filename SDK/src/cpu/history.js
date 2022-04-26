@@ -30,31 +30,22 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-//! require 'command.js'
+//! require 'base.js'
 
 (function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
+    var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
 
-    var CommandProcessor = ns.cpu.CommandProcessor;
-
-    var HistoryCommandProcessor = function () {
-        CommandProcessor.call(this);
+    var HistoryCommandProcessor = function (facebook, messenger) {
+        BaseCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(HistoryCommandProcessor, CommandProcessor, null);
+    ns.Class(HistoryCommandProcessor, BaseCommandProcessor, null);
 
-    // @Override
-    HistoryCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // Override
+    HistoryCommandProcessor.prototype.process = function (cmd, rMsg) {
         var text = 'History command (name: ' + cmd.getCommand() + ') not support yet!';
-        var res = new TextContent(text)
-        // check group
-        var group = cmd.getGroup();
-        if (group) {
-            res.setGroup(group);
-        }
-        return res;
+        return this.respondText(text, cmd.getGroup());
     };
 
     //-------- namespace --------

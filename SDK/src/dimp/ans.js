@@ -70,11 +70,63 @@
         "root", "supervisor"
     ];
 
-    var obj = ns.type.Object;
-    var ID = ns.protocol.ID;
+    var AddressNameService = function() {};
+    ns.Interface(AddressNameService, null);
 
-    var AddressNameService = function() {
-        obj.call(this);
+    AddressNameService.KEYWORDS = KEYWORDS;
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get ID by short name
+     *
+     * @param {String} name - short name
+     * @returns {ID}
+     */
+    AddressNameService.prototype.getIdentifier = function (name) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get all short names with the same ID
+     *
+     * @param {ID} identifier
+     * @returns {String[]}
+     */
+    AddressNameService.prototype.getNames = function (identifier) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Save ANS record
+     *
+     * @param {String} name - short name
+     * @param {ID} identifier
+     * @returns {boolean}
+     */
+    AddressNameService.prototype.save = function (name, identifier) {
+        console.assert(false, 'implement me!');
+        return false;
+    };
+
+    //-------- namespace --------
+    ns.AddressNameService = AddressNameService;
+
+    ns.registers('AddressNameService');
+
+})(DIMSDK);
+
+(function (ns) {
+    'use strict';
+
+    var ID = ns.protocol.ID;
+    var AddressNameService = ns.AddressNameService;
+
+    var AddressNameServer = function() {
+        Object.call(this);
         // constant ANS records
         var caches = {
             'all':      ID.EVERYONE,
@@ -90,74 +142,68 @@
             reserved[keywords[i]] = true;
         }
         // init
-        this.__reserved = reserved;
-        this.__caches = caches;
+        this.__reserved = reserved;  // String => Boolean
+        this.__caches = caches;      // String => ID
+        this.__tables = {}           // String(ID) => String[], name list
     };
-    ns.Class(AddressNameService, obj, null);
+    ns.Class(AddressNameServer, Object, [AddressNameService]);
 
-    AddressNameService.KEYWORDS = KEYWORDS;
-
-    AddressNameService.prototype.isReserved = function (name) {
+    // protected
+    AddressNameServer.prototype.isReserved = function (name) {
         return this.__reserved[name] === true;
     };
 
-    AddressNameService.prototype.cache = function (name, identifier) {
+    // protected
+    AddressNameServer.prototype.cache = function (name, identifier) {
         if (this.isReserved(name)) {
             // this name is reserved, cannot register
             return false;
         }
         if (identifier) {
             this.__caches[name] = identifier;
+            // names changed, remove the table of names for this ID
+            delete this.__tables[identifier.toString()]
         } else {
             delete this.__caches[name];
+            // TODO: only remove one table?
+            this.__tables = {}
         }
         return true;
     };
 
-    /**
-     *  Get ID by short name
-     *
-     * @param {String} name - short name
-     * @returns {ID}
-     */
-    AddressNameService.prototype.getIdentifier = function (name) {
+    // Override
+    AddressNameServer.prototype.getIdentifier = function (name) {
         return this.__caches[name];
     };
 
-    /**
-     *  Get all short names with the same ID
-     *
-     * @param {ID} identifier
-     * @returns {String[]}
-     */
-    AddressNameService.prototype.getNames = function (identifier) {
-        var array = [];
-        var keys = Object.keys(this.__caches);
-        var name;
-        for (var i = 0; i < keys.length; ++i) {
-            name = keys[i];
-            if (this.__caches[name] === identifier) {
-                array.push(name);
+    // Override
+    AddressNameServer.prototype.getNames = function (identifier) {
+        var array = this.__tables[identifier.toString()];
+        if (array === null) {
+            array = [];
+            // TODO: update all tables?
+            var keys = Object.keys(this.__caches);
+            var name;
+            for (var i = 0; i < keys.length; ++i) {
+                name = keys[i];
+                if (this.__caches[name] === identifier) {
+                    array.push(name);
+                }
             }
+            this.__tables[identifier.toString()] = array;
         }
         return array;
     };
 
-    /**
-     *  Save ANS record
-     *
-     * @param {String} name - short name
-     * @param {ID} identifier
-     * @returns {boolean}
-     */
-    AddressNameService.prototype.save = function (name, identifier) {
+    // Override
+    AddressNameServer.prototype.save = function (name, identifier) {
         return this.cache(name, identifier);
         // TODO: override to save this record
     };
 
     //-------- namespace --------
-    ns.AddressNameService = AddressNameService;
+    ns.AddressNameServer = AddressNameServer;
 
-    ns.registers('AddressNameService');
+    ns.registers('AddressNameServer');
 
 })(DIMSDK);

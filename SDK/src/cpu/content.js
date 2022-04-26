@@ -3,12 +3,12 @@
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2022 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2022 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,32 +35,12 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
-
-    var ContentType = ns.protocol.ContentType;
-    var Content = ns.protocol.Content;
-    var TextContent = ns.protocol.TextContent;
-
     /**
      *  Content Processing Unit
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var ContentProcessor = function () {
-        obj.call(this);
-        this.__messenger = null;
-    };
-    ns.Class(ContentProcessor, obj, null);
-
-    ContentProcessor.prototype.getMessenger = function () {
-        return this.__messenger;
-    };
-    ContentProcessor.prototype.setMessenger = function (messenger) {
-        this.__messenger = messenger;
-    };
-
-    ContentProcessor.prototype.getFacebook = function () {
-        return this.getMessenger().getFacebook();
-    };
+    var ContentProcessor = function () {};
+    ns.Interface(ContentProcessor, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -68,53 +48,91 @@
      *
      * @param {Content} content      - content received
      * @param {ReliableMessage} rMsg - reliable message
-     * @returns {Content} response to sender
+     * @returns {Content[]} responses to sender
      */
     ContentProcessor.prototype.process = function (content, rMsg) {
-        var text = 'Content (type: ' + content.getType() + ') not support yet!';
-        var res = new TextContent(text)
-        // check group
-        var group = content.getGroup();
-        if (group) {
-            res.setGroup(group);
-        }
-        return res;
-    };
-
-    //
-    //  CPU factories
-    //
-    var contentProcessors = {};  // uint(ContentType) -> ContentProcessor
-
-    /**
-     *  Get content processor with content type
-     *
-     * @param {Content|ContentType|uint} info
-     * @returns {ContentProcessor}
-     */
-    ContentProcessor.getProcessor = function (info) {
-        if (ns.Interface.conforms(info, Content)) {
-            return contentProcessors[info.getType()];
-        } else if (info instanceof ContentType) {
-            return contentProcessors[info.valueOf()];
-        } else {
-            return contentProcessors[info];
-        }
+        console.assert(false, 'implement me!');
+        return null;
     };
 
     /**
-     *  Register content processor class with content type
-     *
-     * @param {ContentType|uint} type
-     * @param {ContentProcessor} cpu
+     *  CPU Creator
+     *  ~~~~~~~~~~~
      */
-    ContentProcessor.register = function (type, cpu) {
-        if (type instanceof ContentType) {
-            contentProcessors[type.valueOf()] = cpu;
-        } else {
-            contentProcessors[type] = cpu;
-        }
+    var Creator = function () {};
+    ns.Interface(Creator, null);
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Create content processor with type
+     *
+     * @param {uint} type      - content type
+     * @return {ContentProcessor}
+     */
+    Creator.prototype.createContentProcessor = function (type) {
+        console.assert(false, 'implement me!');
+        return null;
     };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Create command processor with type & name
+     *
+     * @param {uint} type      - content type
+     * @param {String} command - command name
+     * @return {ContentProcessor}
+     */
+    Creator.prototype.createCommandProcessor = function (type, command) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  CPU Factory
+     *  ~~~~~~~~~~~
+     */
+    var Factory = function () {};
+    ns.Interface(Factory, null);
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get content processor with message content
+     *
+     * @param {Content} content - message content
+     * @return {ContentProcessor}
+     */
+    Factory.prototype.getProcessor = function (content) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get content processor with type
+     *
+     * @param {ContentType|uint} type - content type
+     * @return {ContentProcessor}
+     */
+    Factory.prototype.getContentProcessor = function (type) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get command processor with type & name
+     *
+     * @param {ContentType|uint} type - content type
+     * @param {String} command        - command name
+     * @return {ContentProcessor}
+     */
+    Factory.prototype.getCommandProcessor = function (type, command) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    ContentProcessor.Creator = Creator;
+    ContentProcessor.Factory = Factory;
 
     //-------- namespace --------
     ns.cpu.ContentProcessor = ContentProcessor;

@@ -30,16 +30,6 @@
 // =============================================================================
 //
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "block",
- *      list    : []      // block-list
- *  }
- */
-
 //! require <dimp.js>
 
 (function (ns) {
@@ -49,64 +39,105 @@
     var Command = ns.protocol.Command;
 
     /**
-     *  Create block command
+     *  Command message: {
+     *      type : 0x88,
+     *      sn   : 123,
      *
-     *  Usages:
-     *      1. new BlockCommand();
-     *      2. new BlockCommand(list);
-     *      3. new BlockCommand(map);
+     *      command : "block",
+     *      list    : []      // block-list
+     *  }
      */
-    var BlockCommand = function () {
-        if (arguments.length === 0) {
-            // new BlockCommand();
-            Command.call(this, BlockCommand.BLOCK)
-            this.__list = null;
-        } else if (arguments[0] instanceof Array) {
-            // new BlockCommand(list);
-            Command.call(this, BlockCommand.BLOCK)
-            this.setBlockCList(arguments[0]);
-        } else {
-            // new BlockCommand(map);
-            Command.call(this, arguments[0]);
-            this.__list = null;
-        }
-    };
-    ns.Class(BlockCommand, Command, null);
+    var BlockCommand = function () {};
+    ns.Interface(BlockCommand, [Command]);
 
+    // Command.BLOCK = 'block';
     BlockCommand.BLOCK = 'block';
 
-    BlockCommand.getBlockList = function (cmd) {
-        var list = cmd['list'];
-        if (list && list.length > 0) {
-            return ID.convert(list);
-        } else {
-            return list;
-        }
+    /**
+     *  Set blocking list
+     *
+     * @param {ID[]} list
+     */
+    BlockCommand.prototype.setBlockCList = function (list) {
+        console.assert(false, 'implement me!');
+    };
+    BlockCommand.prototype.getBlockCList = function () {
+        console.assert(false, 'implement me!');
+        return null;
     };
     BlockCommand.setBlockList = function (list, cmd) {
-        if (list && list.length > 0) {
+        if (list/* && list.length > 0*/) {
             cmd['list'] = ID.revert(list);
         } else {
             delete cmd['list'];
         }
     };
-
-    //-------- setter/getter --------
-
-    BlockCommand.prototype.getBlockCList = function () {
-        if (!this.__list) {
-            this.__list = BlockCommand.getBlockList(this.getMap());
+    BlockCommand.getBlockList = function (cmd) {
+        var list = cmd['list'];
+        if (list/* && list.length > 0*/) {
+            return ID.convert(list);
+        } else {
+            return list;
         }
-        return this.__list;
-    };
-    BlockCommand.prototype.setBlockCList = function (list) {
-        BlockCommand.setBlockList(list, this.getMap());
-        this.__list = list;
     };
 
     //-------- namespace --------
     ns.protocol.BlockCommand = BlockCommand;
 
     ns.protocol.registers('BlockCommand');
+
+})(DIMSDK);
+
+(function (ns) {
+    'use strict';
+
+    var BlockCommand = ns.protocol.BlockCommand;
+    var BaseCommand = ns.dkd.BaseCommand;
+
+    /**
+     *  Create block command
+     *
+     *  Usages:
+     *      1. new BaseBlockCommand();
+     *      2. new BaseBlockCommand(list);
+     *      3. new BaseBlockCommand(map);
+     */
+    var BaseBlockCommand = function () {
+        if (arguments.length === 0) {
+            // new BaseBlockCommand();
+            BaseCommand.call(this, BlockCommand.BLOCK)
+            this.__list = null;
+        } else if (arguments[0] instanceof Array) {
+            // new BaseBlockCommand(list);
+            BaseCommand.call(this, BlockCommand.BLOCK)
+            this.setBlockCList(arguments[0]);
+        } else {
+            // new BaseBlockCommand(map);
+            BaseCommand.call(this, arguments[0]);
+            this.__list = null;
+        }
+    };
+    ns.Class(BaseBlockCommand, BaseCommand, [BlockCommand]);
+
+    // Override
+    BaseBlockCommand.prototype.getBlockCList = function () {
+        if (!this.__list) {
+            var dict = this.toMap();
+            this.__list = BlockCommand.getBlockList(dict);
+        }
+        return this.__list;
+    };
+
+    // Override
+    BaseBlockCommand.prototype.setBlockCList = function (list) {
+        var dict = this.toMap();
+        BlockCommand.setBlockList(list, dict);
+        this.__list = list;
+    };
+
+    //-------- namespace --------
+    ns.dkd.BaseBlockCommand = BaseBlockCommand;
+
+    ns.dkd.registers('BaseBlockCommand');
 
 })(DIMSDK);

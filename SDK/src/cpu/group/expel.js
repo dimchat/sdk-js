@@ -37,13 +37,18 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var ExpelCommandProcessor = function () {
-        GroupCommandProcessor.call(this);
+    var GROUP_EMPTY = 'Group empty.';
+    var EXPEL_CMD_ERROR = 'Expel command error.';
+    var EXPEL_NOT_ALLOWED = 'Sorry, you are not allowed to expel member from this group.';
+    var CANNOT_EXPEL_OWNER = 'Group owner cannot be expelled.';
+
+    var ExpelCommandProcessor = function (facebook, messenger) {
+        GroupCommandProcessor.call(this, facebook, messenger);
     };
     ns.Class(ExpelCommandProcessor, GroupCommandProcessor, null);
 
-    // @Override
-    ExpelCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // Override
+    ExpelCommandProcessor.prototype.process = function (cmd, rMsg) {
         var facebook = this.getFacebook();
 
         // 0. check group
@@ -51,7 +56,7 @@
         var owner = facebook.getOwner(group);
         var members = facebook.getMembers(group);
         if (!owner || !members || members.length === 0) {
-            throw new EvalError('group not ready: ' + group.toString());
+            return this.respondText(GROUP_EMPTY, group);
         }
 
         // 1. check permission
@@ -60,19 +65,18 @@
             // not the owner? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw new EvalError(sender.toString() + ' is not the owner/assistant of group '
-                    + group.toString() + ', cannot expel member.');
+                return this.respondText(EXPEL_NOT_ALLOWED, group);
             }
         }
 
         // 2. expelling members
         var expels = this.getMembers(cmd);
         if (expels.length === 0) {
-            throw new EvalError('expel command error: ' + cmd.getMap());
+            return this.respondText(EXPEL_CMD_ERROR, group);
         }
         // 2.1. check owner
-        if (expels.indexOf(owner)) {
-            throw new EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
+        if (expels.indexOf(owner) >= 0) {
+            return this.respondText(CANNOT_EXPEL_OWNER, group);
         }
         // 2.2. build expel list
         var removes = [];

@@ -39,41 +39,57 @@
 
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var ResetCommandProcessor = function () {
-        GroupCommandProcessor.call(this);
+    var RESET_CMD_ERROR = 'Reset command error.';
+    var RESET_NOT_ALLOWED = 'Sorry, you are not allowed to reset this group.';
+
+    var ResetCommandProcessor = function (facebook, messenger) {
+        GroupCommandProcessor.call(this, facebook, messenger);
     };
     ns.Class(ResetCommandProcessor, GroupCommandProcessor, null);
 
-    // temporary save
-    var save = function (cmd, sender) {
+    // protected
+    ResetCommandProcessor.prototype.queryOwner = function (owner, group) {
+        // TODO: send QueryCommand to the group owner
+    };
+
+    // protected
+    ResetCommandProcessor.prototype.temporarySave = function (cmd, sender) {
         var facebook = this.getFacebook();
         var group = cmd.getGroup();
         // check whether the owner contained in the new members
         var newMembers = this.getMembers(cmd);
+        if (newMembers.length === 0) {
+            return this.respondText(RESET_CMD_ERROR, group);
+        }
         var item;
         for (var i = 0; i < newMembers.length; ++i) {
             item = newMembers[i];
-            if (facebook.isOwner(item, group)) {
-                // it's a full list, save it now
-                if (facebook.saveMembers(newMembers, group)) {
-                    if (!item.equals(sender)) {
-                        // NOTICE: to prevent counterfeit,
-                        //         query the owner for newest member-list
-                        cmd = GroupCommand.query(group);
-                        this.getMessenger().sendContent(null, item, cmd, null, 1);
-                    }
-                }
-                // response (no need to respond this group command)
-                return null;
+            if (!facebook.getMeta(item)) {
+                // TODO: waiting for member's meta?
+                continue;
+            } else if (!facebook.isOwner(item, group)) {
+                // not owner, skip it
+                continue;
             }
+            // it's a full list, save it now
+            if (facebook.saveMembers(newMembers, group)) {
+                if (!item.equals(sender)) {
+                    // NOTICE: to prevent counterfeit,
+                    //         query the owner for newest member-list
+                    this.queryOwner(item, group);
+                }
+            }
+            // response (no need to respond this group command)
+            return null;
         }
         // NOTICE: this is a partial member-list
         //         query the sender for full-list
-        return GroupCommand.query(group);
+        var res = GroupCommand.query(group);
+        return this.respondContent(res);
     };
 
-    // @Override
-    ResetCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // Override
+    ResetCommandProcessor.prototype.process = function (cmd, rMsg) {
         var facebook = this.getFacebook();
 
         // 0. check group
@@ -83,28 +99,27 @@
         if (!owner || !members || members.length === 0) {
             // FIXME: group info lost?
             // FIXME: how to avoid strangers impersonating group member?
-            return save.call(this, cmd, rMsg.getSender());
+            return this.temporarySave(cmd, rMsg.getSender());
         }
 
         // 1. check permission
         var sender = rMsg.getSender();
-        if (members.indexOf(sender) < 0) {
-            // not a member? check assistants
+        if (!owner.equals(sender)) {
+            // not the owner? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw new EvalError(sender.toString() + ' is not a member/assistant of group '
-                    + group.toString() + ', cannot reset member.');
+                return this.respondText(RESET_NOT_ALLOWED, group);
             }
         }
 
         // 2. resetting members
         var newMembers = this.getMembers(cmd);
         if (newMembers.length === 0) {
-            throw new EvalError('reset command error: ' + cmd.getMap());
+            return this.respondText(RESET_CMD_ERROR, group);
         }
         // 2.1. check owner
         if (newMembers.indexOf(owner) < 0) {
-            throw new EvalError('cannot expel owner ' + owner.toString() + ' of group ' + group.toString());
+            return this.respondText(RESET_CMD_ERROR, group);
         }
         // 2.2. build expel list
         var removes = [];

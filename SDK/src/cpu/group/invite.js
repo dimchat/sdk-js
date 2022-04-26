@@ -35,22 +35,18 @@
 (function (ns) {
     'use strict';
 
-    var GroupCommand = ns.protocol.GroupCommand;
+    var ResetCommandProcessor = ns.cpu.ResetCommandProcessor;
 
-    var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
+    var INVITE_CMD_ERROR = 'Invite command error.';
+    var INVITE_NOT_ALLOWED = 'Sorry, yo are not allowed to invite new members into this group.';
 
-    var InviteCommandProcessor = function () {
-        GroupCommandProcessor.call(this);
+    var InviteCommandProcessor = function (facebook, messenger) {
+        ResetCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(InviteCommandProcessor, GroupCommandProcessor, null);
+    ns.Class(InviteCommandProcessor, ResetCommandProcessor, null);
 
-    var call_reset = function (cmd, rMsg) {
-        var gpu = GroupCommandProcessor.getProcessor(GroupCommand.RESET);
-        gpu.setMessenger(this.getMessenger());
-        return gpu.execute(cmd, rMsg);
-    };
-
-    InviteCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // Override
+    InviteCommandProcessor.prototype.process = function (cmd, rMsg) {
         var facebook = this.getFacebook();
 
         // 0. check group
@@ -60,7 +56,7 @@
         if (!owner || !members || members.length === 0) {
             // NOTICE: group membership lost?
             //         reset group members
-            return call_reset.call(this, cmd, rMsg);
+            return this.temporarySave(cmd, rMsg.getSender());
         }
 
         // 1. check permission
@@ -69,21 +65,20 @@
             // not a member? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw new EvalError(sender.toString() + ' is not a member/assistant of group '
-                    + group.toString() + ', cannot invite member.');
+                return this.respondText(INVITE_NOT_ALLOWED, group);
             }
         }
 
         // 2. inviting members
         var invites = this.getMembers(cmd);
         if (invites.length === 0) {
-            throw new EvalError('invite command error: ' + cmd.getMap());
+            return this.respondText(INVITE_CMD_ERROR, group);
         }
         // 2.1. check for reset
         if (sender.equals(owner) && invites.indexOf(owner) >= 0) {
             // NOTICE: owner invites owner?
             //         it means this should be a 'reset' command
-            return call_reset.call(this, cmd, rMsg);
+            return this.temporarySave(cmd, rMsg.getSender());
         }
         // 2.2. build invite list
         var adds = [];

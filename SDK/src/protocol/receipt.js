@@ -30,21 +30,6 @@
 // =============================================================================
 //
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,  // the same serial number with the original message
- *
- *      command   : "receipt",
- *      message   : "...",
- *      // -- extra info
- *      sender    : "...",
- *      receiver  : "...",
- *      time      : 0,
- *      signature : "..." // the same signature with the original message
- *  }
- */
-
 //! require <dimp.js>
 
 (function (ns) {
@@ -54,64 +39,137 @@
     var Command = ns.protocol.Command;
 
     /**
+     *  Command message: {
+     *      type : 0x88,
+     *      sn   : 123,  // the same serial number with the original message
+     *
+     *      command   : "receipt",
+     *      message   : "...",
+     *      // -- extra info
+     *      sender    : "...",
+     *      receiver  : "...",
+     *      time      : 0,
+     *      signature : "..." // the same signature with the original message
+     *  }
+     */
+    var ReceiptCommand = function () {};
+    ns.Interface(ReceiptCommand, [Command]);
+
+    /**
+     *  Get text message
+     *
+     * @return {String}
+     */
+    ReceiptCommand.prototype.getMessage = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Store 'sender', 'receiver', 'time' & 'group'
+     *  from origin message's envelope
+     *
+     * @param {Envelope} env
+     */
+    ReceiptCommand.prototype.setEnvelope = function (env) {
+        console.assert(false, 'implement me!');
+    };
+    ReceiptCommand.prototype.getEnvelope = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Store origin message's signature
+     *
+     * @param {String|Uint8Array} signature
+     */
+    ReceiptCommand.prototype.setSignature = function (signature) {
+        console.assert(false, 'implement me!');
+    };
+    ReceiptCommand.prototype.getSignature = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    //-------- namespace --------
+    ns.protocol.ReceiptCommand = ReceiptCommand;
+
+    ns.protocol.registers('ReceiptCommand');
+
+})(DIMSDK);
+
+(function (ns) {
+    'use strict';
+
+    var Base64 = ns.format.Base64;
+    var Envelope = ns.protocol.Envelope;
+    var Command = ns.protocol.Command;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
+    var BaseCommand = ns.dkd.BaseCommand;
+
+    /**
      *  Create receipt command
      *
      *  Usages:
-     *      1. new ReceiptCommand(map);
-     *      2. new ReceiptCommand(text);
-     *      3. new ReceiptCommand(text, sn, envelope);
+     *      1. new BaseReceiptCommand(map);
+     *      2. new BaseReceiptCommand(text);
+     *      3. new BaseReceiptCommand(text, sn, envelope);
      */
-    var ReceiptCommand = function () {
+    var BaseReceiptCommand = function () {
         if (arguments.length === 3) {
-            // new ReceiptCommand(text, sn, envelope);
-            Command.call(this, Command.RECEIPT);
+            // new BaseReceiptCommand(text, sn, envelope);
+            BaseCommand.call(this, Command.RECEIPT);
             this.setMessage(arguments[0]);
             if (arguments[1] > 0) {
                 this.setSerialNumber(arguments[1]);
             }
             this.setEnvelope(arguments[2]);
         } else if (typeof arguments[0] === 'string') {
-            // new ReceiptCommand(text);
-            Command.call(this, Command.RECEIPT);
+            // new BaseReceiptCommand(text);
+            BaseCommand.call(this, Command.RECEIPT);
             this.setMessage(arguments[0]);
             this.__envelope = null;
         } else {
-            // new ReceiptCommand(map);
-            Command.call(this, arguments[0]);
+            // new BaseReceiptCommand(map);
+            BaseCommand.call(this, arguments[0]);
             this.__envelope = null;
         }
     };
-    ns.Class(ReceiptCommand, Command, null);
+    ns.Class(BaseReceiptCommand, BaseCommand, [ReceiptCommand]);
 
-    //-------- setter/getter --------
-
-    ReceiptCommand.prototype.setSerialNumber = function (sn) {
+    BaseReceiptCommand.prototype.setSerialNumber = function (sn) {
         this.setValue('sn', sn);
-        this.sn = sn;
+        // this.__sn = sn;
     };
 
-    ReceiptCommand.prototype.getMessage = function () {
-        return this.getValue('message');
-    };
-    ReceiptCommand.prototype.setMessage = function (message) {
+    BaseReceiptCommand.prototype.setMessage = function (message) {
         this.setValue('message', message);
     };
 
-    ReceiptCommand.prototype.getEnvelope = function () {
+    // Override
+    BaseReceiptCommand.prototype.getMessage = function () {
+        return this.getValue('message');
+    };
+
+    // Override
+    BaseReceiptCommand.prototype.getEnvelope = function () {
         if (!this.__envelope) {
             var env = this.getValue('envelope');
             if (!env) {
                 var sender = this.getValue('sender');
                 var receiver = this.getValue('receiver');
                 if (sender && receiver) {
-                    env = this.getMap();
+                    env = this.toMap();
                 }
             }
             this.__envelope = Envelope.parse(env);
         }
         return this.__envelope;
     };
-    ReceiptCommand.prototype.setEnvelope = function (env) {
+
+    // Override
+    BaseReceiptCommand.prototype.setEnvelope = function (env) {
         this.setValue('envelope', null);
         if (env) {
             this.setValue('sender', env.getValue('sender'));
@@ -128,25 +186,26 @@
         this.__envelope = env;
     };
 
-    ReceiptCommand.prototype.getSignature = function () {
+    // Override
+    BaseReceiptCommand.prototype.setSignature = function (signature) {
+        if (signature instanceof Uint8Array) {
+            signature = Base64.encode(signature);
+        }
+        this.setValue('signature', signature);
+    };
+
+    // Override
+    BaseReceiptCommand.prototype.getSignature = function () {
         var signature = this.getValue('signature');
         if (typeof signature === 'string') {
-            signature = ns.format.Base64.decode(signature);
+            signature = Base64.decode(signature);
         }
         return signature;
     };
-    ReceiptCommand.prototype.setSignature = function (signature) {
-        if (signature instanceof Uint8Array) {
-            signature = ns.format.Base64.encode(signature);
-        }
-        if (typeof signature === 'string') {
-            this.setValue('signature', signature);
-        }
-    };
 
     //-------- namespace --------
-    ns.protocol.ReceiptCommand = ReceiptCommand;
+    ns.dkd.BaseReceiptCommand = BaseReceiptCommand;
 
-    ns.protocol.registers('ReceiptCommand');
+    ns.dkd.registers('BaseReceiptCommand');
 
 })(DIMSDK);

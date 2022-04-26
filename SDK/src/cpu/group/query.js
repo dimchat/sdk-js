@@ -35,19 +35,19 @@
 (function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
-    var InviteCommand = ns.protocol.InviteCommand;
-    var ResetCommand = ns.protocol.group.ResetCommand;
-
+    var GroupCommand = ns.protocol.GroupCommand;
     var GroupCommandProcessor = ns.cpu.GroupCommandProcessor;
 
-    var QueryCommandProcessor = function () {
-        GroupCommandProcessor.call(this);
+    var GROUP_EMPTY = 'Group empty.';
+    var QUERY_NOT_ALLOWED = 'Sorry, you are not allowed to query this group.';
+
+    var QueryCommandProcessor = function (facebook, messenger) {
+        GroupCommandProcessor.call(this, facebook, messenger);
     };
     ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
 
-    // @Override
-    QueryCommandProcessor.prototype.execute = function (cmd, rMsg) {
+    // Override
+    QueryCommandProcessor.prototype.process = function (cmd, rMsg) {
         var facebook = this.getFacebook();
 
         // 0. check group
@@ -55,10 +55,7 @@
         var owner = facebook.getOwner(group);
         var members = facebook.getMembers(group);
         if (!owner || !members || members.length === 0) {
-            var text = 'Sorry, members not found in group: ' + group.toString();
-            var res = new TextContent(text);
-            res.setGroup(group);
-            return res;
+            return this.respondText(GROUP_EMPTY, group);
         }
 
         // 1. check permission
@@ -67,18 +64,19 @@
             // not a member? check assistants
             var assistants = facebook.getAssistants(group);
             if (!assistants || assistants.indexOf(sender) < 0) {
-                throw new EvalError(sender.toString() + ' is not a member/assistant of group '
-                    + group.toString() + ', cannot query.');
+                return this.respondText(QUERY_NOT_ALLOWED, group);
             }
         }
 
         // 2. respond
+        var res;
         var user = facebook.getCurrentUser();
-        if (owner.equals(user.identifier)) {
-            return new ResetCommand(group, members);
+        if (user.getIdentifier().equals(owner)) {
+            res = GroupCommand.reset(group, members);
         } else {
-            return new InviteCommand(group, members);
+            res = GroupCommand.invite(group, members);
         }
+        return this.respondContent(res);
     };
 
     //-------- namespace --------

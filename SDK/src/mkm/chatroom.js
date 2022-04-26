@@ -30,64 +30,50 @@
 // =============================================================================
 //
 
-//! require 'history.js'
+//! require <dimp.js>
 
 (function (ns) {
     'use strict';
 
-    var TextContent = ns.protocol.TextContent;
-
-    var CommandProcessor = ns.cpu.CommandProcessor;
-    var HistoryCommandProcessor = ns.cpu.HistoryCommandProcessor;
+    var Group = ns.mkm.Group;
+    var BaseGroup = ns.mkm.BaseGroup;
 
     /**
-     *  Group Command Processor
+     *  Big group with admins
      */
-    var GroupCommandProcessor = function () {
-        HistoryCommandProcessor.call(this);
+    var Chatroom = function (identifier) {
+        BaseGroup.call(this, identifier);
     };
-    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
+    ns.Class(Chatroom, BaseGroup, null);
 
-    GroupCommandProcessor.getProcessor = CommandProcessor.getProcessor;
-
-    GroupCommandProcessor.prototype.getMembers = function (cmd) {
-        // get from 'members'
-        var members = cmd.getMembers();
-        if (members) {
-            return members;
-        }
-        // get from 'member'
-        var member = cmd.getMember();
-        if (member) {
-            return [member];
-        } else {
-            return [];
-        }
+    Chatroom.prototype.getAdmins = function () {
+        var identifier = this.getIdentifier();
+        var delegate = this.getDataSource();
+        return delegate.getAdmins(identifier);
     };
 
-    // @Override
-    GroupCommandProcessor.prototype.execute = function (cmd, rMsg) {
-        var text = 'Group command (name: ' + cmd.getCommand() + ') not support yet!';
-        var res = new TextContent(text)
-        res.setGroup(cmd.getGroup());
-        return res;
+    /**
+     *  This interface is for getting information for chatroom
+     *  Chatroom admins should be set complying with the consensus algorithm
+     */
+    var ChatroomDataSource = function () {};
+    ns.Interface(ChatroomDataSource, [Group.DataSource]);
+
+    /**
+     *  Get all admins in the chatroom
+     *
+     * @returns {ID[]}
+     */
+    ChatroomDataSource.prototype.getAdmins = function () {
+        console.assert(false, 'implement me!');
+        return null;
     };
 
-    // @Override
-    GroupCommandProcessor.prototype.process = function (cmd, rMsg) {
-        // process command content by name
-        var cpu = CommandProcessor.getProcessor(cmd);
-        if (cpu) {
-            cpu.setMessenger(this.getMessenger());
-        } else {
-            cpu = this;
-        }
-        return cpu.execute(cmd, rMsg);
-    };
+    Chatroom.DataSource = ChatroomDataSource;
 
     //-------- namespace --------
-    ns.cpu.GroupCommandProcessor = GroupCommandProcessor;
+    ns.mkm.Chatroom = Chatroom;
 
-    ns.cpu.registers('GroupCommandProcessor');
+    ns.mkm.registers('Chatroom');
 
 })(DIMSDK);

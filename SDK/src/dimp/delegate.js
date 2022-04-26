@@ -35,28 +35,42 @@
 (function (ns) {
     'use strict';
 
-    var Group = ns.Group;
-
     /**
-     *  Simple group chat
+     *  Cipher Key Delegate
+     *  ~~~~~~~~~~~~~~~~~~~
      */
-    var Polylogue = function (identifier) {
-        Group.call(this, identifier);
-    };
-    ns.Class(Polylogue, Group, null);
+    var CipherKeyDelegate = function () {};
+    ns.Interface(CipherKeyDelegate, null);
 
-    Polylogue.prototype.getOwner = function () {
-        var owner = Group.prototype.getOwner.call(this);
-        if (owner) {
-            return owner;
-        }
-        // polylogue's owner is its founder
-        return this.getFounder();
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Get cipher key for encrypt message from 'sender' to 'receiver'
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {boolean} generate - generate when key not exists
+     * @returns {SymmetricKey}
+     */
+    CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    /**
+     *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {SymmetricKey} key
+     */
+    CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
+        console.assert(false, 'implement me!');
     };
 
     //-------- namespace --------
-    ns.Polylogue = Polylogue;
+    ns.CipherKeyDelegate = CipherKeyDelegate;
 
-    ns.registers('Polylogue');
+    ns.registers('CipherKeyDelegate');
 
-})(DIMSDK);
+})(DIMP);
