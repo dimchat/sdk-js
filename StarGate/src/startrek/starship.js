@@ -42,18 +42,17 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
     var Ship = ns.Ship;
 
     var StarShip = function (priority, delegate) {
-        obj.call(this);
+        Object.call(this);
         this.priority = priority;
         this.__delegate = delegate;
         // for retry
         this.__timestamp = 0;  // milliseconds
         this.__retries = -1;
     };
-    sys.Class(StarShip, obj, [Ship]);
+    sys.Class(StarShip, Object, [Ship]);
 
     // retry
     StarShip.EXPIRES = 120 * 1000;  // 2 minutes

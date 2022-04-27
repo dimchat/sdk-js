@@ -36,7 +36,6 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
     var Arrays = sys.type.Arrays;
 
     var Notification = ns.Notification;
@@ -46,10 +45,10 @@
      *  Notification center
      */
     var Center = function () {
-        obj.call(this);
+        Object.call(this);
         this.__observers = {};
     };
-    sys.Class(Center, obj, null);
+    sys.Class(Center, Object, null);
 
     /**
      *  Add observer with notification name

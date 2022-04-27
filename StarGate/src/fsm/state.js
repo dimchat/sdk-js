@@ -35,16 +35,14 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     /**
      *  State
      */
     var State = function () {
-        obj.call(this);
+        Object.call(this);
         this.__transitions = [];
     };
-    sys.Class(State, obj, null);
+    sys.Class(State, Object, null);
 
     /**
      *  Append a transition for this state

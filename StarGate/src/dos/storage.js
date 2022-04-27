@@ -36,10 +36,8 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     var Storage = function (storage, prefix) {
-        obj.call(this);
+        Object.call(this);
         // Web storage
         this.storage = storage;
         // key prefix
@@ -49,7 +47,7 @@
             this.ROOT = 'dim';
         }
     };
-    sys.Class(Storage, obj, null);
+    sys.Class(Storage, Object, null);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);

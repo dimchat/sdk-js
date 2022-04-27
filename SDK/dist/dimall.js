@@ -10298,10 +10298,196 @@ if (typeof StarTrek !== "object") {
 if (typeof StarGate !== "object") {
     StarGate = new MONKEY.Namespace();
 }
+(function (ns) {
+    if (typeof ns.threading !== "object") {
+        ns.threading = new MONKEY.Namespace();
+    }
+    ns.registers("threading");
+})(MONKEY);
+(function (ns) {
+    var Runnable = function () {};
+    ns.Interface(Runnable, null);
+    Runnable.prototype.run = function () {
+        console.assert(false, "implement me!");
+        return false;
+    };
+    ns.threading.Runnable = Runnable;
+    ns.threading.registers("Runnable");
+})(MONKEY);
+(function (ns) {
+    var Runnable = ns.threading.Runnable;
+    var Thread = function () {
+        Object.call(this);
+        if (arguments.length === 0) {
+            this.__target = null;
+            this.__interval = 128;
+        } else {
+            if (arguments.length === 2) {
+                this.__target = arguments[0];
+                this.__interval = arguments[1];
+            } else {
+                if (typeof arguments[0] === "number") {
+                    this.__target = null;
+                    this.__interval = arguments[0];
+                } else {
+                    this.__target = arguments[0];
+                    this.__interval = 128;
+                }
+            }
+        }
+        this.__running = false;
+        this.__thread_id = 0;
+    };
+    ns.Class(Thread, Object, [Runnable]);
+    Thread.prototype.start = function () {
+        this.__running = true;
+        var thread = this;
+        this.__thread_id = setInterval(function () {
+            var ran = thread.isRunning() && thread.run();
+            if (!ran) {
+                stop(thread);
+            }
+        }, this.getInterval());
+    };
+    var stop = function (thread) {
+        var tid = thread.__thread_id;
+        if (tid > 0) {
+            thread.__thread_id = 0;
+            clearInterval(tid);
+        }
+    };
+    Thread.prototype.stop = function () {
+        stop(this);
+        this.__running = false;
+    };
+    Thread.prototype.isRunning = function () {
+        return this.__running;
+    };
+    Thread.prototype.getInterval = function () {
+        return this.__interval;
+    };
+    Thread.prototype.run = function () {
+        var target = this.__target;
+        if (!target || target === this) {
+            throw new SyntaxError("Thread::run() > override me!");
+        } else {
+            return target.run();
+        }
+    };
+    ns.threading.Thread = Thread;
+    ns.threading.registers("Thread");
+})(MONKEY);
+(function (ns) {
+    var Handler = function () {};
+    ns.Interface(Handler, null);
+    Handler.prototype.setup = function () {
+        console.assert(false, "implement me!");
+        return false;
+    };
+    Handler.prototype.handle = function () {
+        console.assert(false, "implement me!");
+        return false;
+    };
+    Handler.prototype.finish = function () {
+        console.assert(false, "implement me!");
+        return false;
+    };
+    ns.threading.Handler = Handler;
+    ns.threading.registers("Handler");
+})(MONKEY);
+(function (ns) {
+    var Processor = function () {};
+    ns.Interface(Processor, null);
+    Processor.prototype.process = function () {
+        console.assert(false, "implement me!");
+        return false;
+    };
+    ns.threading.Processor = Processor;
+    ns.threading.registers("Processor");
+})(MONKEY);
+(function (ns) {
+    var Thread = ns.threading.Thread;
+    var Handler = ns.threading.Handler;
+    var Processor = ns.threading.Processor;
+    var STAGE_INIT = 0;
+    var STAGE_HANDLING = 1;
+    var STAGE_CLEANING = 2;
+    var STAGE_STOPPED = 3;
+    var Runner = function () {
+        if (arguments.length === 0) {
+            Thread.call(this);
+            this.__processor = null;
+        } else {
+            if (arguments.length === 2) {
+                Thread.call(this, arguments[1]);
+                this.__processor = arguments[0];
+            } else {
+                if (typeof arguments[0] === "number") {
+                    Thread.call(this, arguments[0]);
+                    this.__processor = null;
+                } else {
+                    Thread.call(this);
+                    this.__processor = arguments[0];
+                }
+            }
+        }
+        this.__stage = STAGE_INIT;
+    };
+    ns.Class(Runner, Thread, [Handler, Processor]);
+    Runner.prototype.run = function () {
+        if (this.__stage === STAGE_INIT) {
+            if (this.setup()) {
+                return true;
+            }
+            this.__stage = STAGE_HANDLING;
+        }
+        if (this.__stage === STAGE_HANDLING) {
+            try {
+                if (this.handle()) {
+                    return true;
+                }
+            } catch (e) {
+                console.error("Runner::handle() error", this, e);
+            }
+            this.__stage = STAGE_CLEANING;
+        }
+        if (this.__stage === STAGE_CLEANING) {
+            if (this.finish()) {
+                return true;
+            }
+            this.__stage = STAGE_STOPPED;
+        }
+        return false;
+    };
+    Runner.prototype.setup = function () {
+        return false;
+    };
+    Runner.prototype.handle = function () {
+        while (this.isRunning()) {
+            if (this.process()) {
+            } else {
+                return true;
+            }
+        }
+        return false;
+    };
+    Runner.prototype.finish = function () {
+        return false;
+    };
+    Runner.prototype.process = function () {
+        var processor = this.__processor;
+        if (!processor || processor === this) {
+            throw new SyntaxError("Runner::process() > override me!");
+        } else {
+            return processor.process();
+        }
+    };
+    ns.threading.Runner = Runner;
+    ns.threading.registers("Runner");
+})(MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Storage = function (storage, prefix) {
-        obj.call(this);
+        Object.call(this);
         this.storage = storage;
         if (prefix) {
             this.ROOT = prefix;
@@ -10309,7 +10495,7 @@ if (typeof StarGate !== "object") {
             this.ROOT = "dim";
         }
     };
-    sys.Class(Storage, obj, null);
+    sys.Class(Storage, Object, null);
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
     };
@@ -10382,14 +10568,13 @@ if (typeof StarGate !== "object") {
     ns.registers("SessionStorage");
 })(FileSystem, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Notification = function (name, sender, userInfo) {
-        obj.call(this);
+        Object.call(this);
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    sys.Class(Notification, obj, null);
+    sys.Class(Notification, Object, null);
     ns.Notification = Notification;
     ns.registers("Notification");
 })(LocalNotificationService, MONKEY);
@@ -10403,15 +10588,14 @@ if (typeof StarGate !== "object") {
     ns.registers("Observer");
 })(LocalNotificationService, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Arrays = sys.type.Arrays;
     var Notification = ns.Notification;
     var Observer = ns.Observer;
     var Center = function () {
-        obj.call(this);
+        Object.call(this);
         this.__observers = {};
     };
-    sys.Class(Center, obj, null);
+    sys.Class(Center, Object, null);
     Center.prototype.addObserver = function (observer, name) {
         var list = this.__observers[name];
         if (list) {
@@ -10486,12 +10670,11 @@ if (typeof StarGate !== "object") {
     ns.registers("Delegate");
 })(FiniteStateMachine, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Transition = function (targetStateName) {
-        obj.call(this);
+        Object.call(this);
         this.target = targetStateName;
     };
-    sys.Class(Transition, obj, null);
+    sys.Class(Transition, Object, null);
     Transition.prototype.evaluate = function (machine) {
         console.assert(false, "implement me!");
         return false;
@@ -10500,12 +10683,11 @@ if (typeof StarGate !== "object") {
     ns.registers("Transition");
 })(FiniteStateMachine, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var State = function () {
-        obj.call(this);
+        Object.call(this);
         this.__transitions = [];
     };
-    sys.Class(State, obj, null);
+    sys.Class(State, Object, null);
     State.prototype.addTransition = function (transition) {
         if (this.__transitions.indexOf(transition) < 0) {
             this.__transitions.push(transition);
@@ -10535,16 +10717,15 @@ if (typeof StarGate !== "object") {
     ns.registers("State");
 })(FiniteStateMachine, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Status = sys.type.Enum(null, { Stopped: 0, Running: 1, Paused: 2 });
     var Machine = function (defaultStateName) {
-        obj.call(this);
+        Object.call(this);
         this.__default = defaultStateName ? defaultStateName : "default";
         this.__current = null;
         this.__status = Status.Stopped;
         this.__delegate = null;
     };
-    sys.Class(Machine, obj, null);
+    sys.Class(Machine, Object, null);
     Machine.prototype.setDelegate = function (delegate) {
         this.__delegate = delegate;
     };
@@ -10691,16 +10872,15 @@ if (typeof StarGate !== "object") {
     ns.registers("Ship");
 })(StarTrek, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Ship = ns.Ship;
     var StarShip = function (priority, delegate) {
-        obj.call(this);
+        Object.call(this);
         this.priority = priority;
         this.__delegate = delegate;
         this.__timestamp = 0;
         this.__retries = -1;
     };
-    sys.Class(StarShip, obj, [Ship]);
+    sys.Class(StarShip, Object, [Ship]);
     StarShip.EXPIRES = 120 * 1000;
     StarShip.RETRIES = 2;
     StarShip.URGENT = -1;
@@ -10730,14 +10910,13 @@ if (typeof StarGate !== "object") {
     ns.registers("StarShip");
 })(StarTrek, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var StarShip = ns.StarShip;
     var Dock = function () {
-        obj.call(this);
+        Object.call(this);
         this.__priorities = [];
         this.__fleets = {};
     };
-    sys.Class(Dock, obj, null);
+    sys.Class(Dock, Object, null);
     Dock.prototype.park = function (task) {
         var prior = task.priority;
         var fleet = this.__fleets[prior];
@@ -11111,14 +11290,13 @@ if (typeof StarGate !== "object") {
     ns.registers("CachePool");
 })(StarGate, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var CachePool = ns.CachePool;
     var MemoryCache = function () {
-        obj.call(this);
+        Object.call(this);
         this.__packages = [];
         this.__occupied = 0;
     };
-    sys.Class(MemoryCache, obj, [CachePool]);
+    sys.Class(MemoryCache, Object, [CachePool]);
     MemoryCache.prototype.push = function (data) {
         this.__packages.push(data);
         this.__occupied += data.length;
@@ -11221,9 +11399,8 @@ if (typeof StarGate !== "object") {
         }
         return { scheme: scheme, host: host, port: port };
     };
-    var obj = sys.type.Object;
     var Socket = function (url) {
-        obj.call(this);
+        Object.call(this);
         this.__packages = [];
         this.__connected = false;
         this.__closed = false;
@@ -11238,7 +11415,7 @@ if (typeof StarGate !== "object") {
             this.__ws = null;
         }
     };
-    sys.Class(Socket, obj, null);
+    sys.Class(Socket, Object, null);
     Socket.prototype.getHost = function () {
         return this.__host;
     };
@@ -11678,14 +11855,13 @@ if (typeof StarGate !== "object") {
     ns.registers("ActiveConnection");
 })(StarGate, MONKEY);
 (function (ns, sys) {
-    var obj = sys.type.Object;
     var Host = function (ip, port, data) {
-        obj.call(this);
+        Object.call(this);
         this.ip = ip;
         this.port = port;
         this.data = data;
     };
-    sys.Class(Host, obj, null);
+    sys.Class(Host, Object, null);
     Host.prototype.valueOf = function () {
         console.assert(false, "implement me!");
         return null;

@@ -36,8 +36,6 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     /**
      *  Notification object with name, sender and extra info
      *
@@ -47,12 +45,12 @@
      * @constructor
      */
     var Notification = function (name, sender, userInfo) {
-        obj.call(this);
+        Object.call(this);
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    sys.Class(Notification, obj, null);
+    sys.Class(Notification, Object, null);
 
     //-------- namespace --------
     ns.Notification = Notification;

@@ -35,8 +35,6 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     /**
      *  Machine status
      */
@@ -53,13 +51,13 @@
      * @constructor
      */
     var Machine = function (defaultStateName) {
-        obj.call(this);
+        Object.call(this);
         this.__default = defaultStateName ? defaultStateName : 'default';
         this.__current = null;  // current state
         this.__status = Status.Stopped;
         this.__delegate = null;
     };
-    sys.Class(Machine, obj, null);
+    sys.Class(Machine, Object, null);
 
     Machine.prototype.setDelegate = function (delegate) {
         this.__delegate = delegate;

@@ -46,3 +46,15 @@ if (typeof StarTrek !== 'object') {
 if (typeof StarGate !== 'object') {
     StarGate = new MONKEY.Namespace();
 }
+
+(function (ns) {
+    "use strict";
+
+    //-------- namespace --------
+    if (typeof ns.threading !== 'object') {
+        ns.threading = new MONKEY.Namespace();
+    }
+
+    ns.registers('threading');
+
+})(MONKEY);

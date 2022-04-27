@@ -1,14 +1,14 @@
 ;
 // license: https://mit-license.org
 //
-//  Finite State Machine
+//  MONKEY: Memory Object aNd KEYs
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2021 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2021 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,35 +30,50 @@
 // =============================================================================
 //
 
-//! require 'namespace.js'
+//! require 'class.js'
 
-(function (ns, sys) {
-    "use strict";
+(function (ns) {
+    'use strict';
+
+    var Handler = function () {};
+    ns.Interface(Handler, null);
 
     /**
-     *  State Transition
-     */
-    var Transition = function (targetStateName) {
-        Object.call(this);
-        this.target = targetStateName;
-    };
-    sys.Class(Transition, Object, null);
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Evaluate the current state
+     *  Prepare for handling
+     *  (when return true, means still have work to do, call this again after sleep)
      *
-     * @param {Machine} machine
-     * @returns {boolean}
+     * @return {boolean} false on job done
      */
-    Transition.prototype.evaluate = function (machine) {
+    Handler.prototype.setup = function () {
+        console.assert(false, 'implement me!');
+        return false;
+    };
+
+    /**
+     *  Handling run loop
+     *  (when return true, means still have work to do, call this again after sleep)
+     *
+     * @return {boolean} false on job done
+     */
+    Handler.prototype.handle = function () {
+        console.assert(false, 'implement me!');
+        return false;
+    };
+
+    /**
+     *  Cleanup after handled
+     *  (when return true, means still have work to do, call this again after sleep)
+     *
+     * @return {boolean} false on job done
+     */
+    Handler.prototype.finish = function () {
         console.assert(false, 'implement me!');
         return false;
     };
 
     //-------- namespace --------
-    ns.Transition = Transition;
+    ns.threading.Handler = Handler;
 
-    ns.registers('Transition');
+    ns.threading.registers('Handler');
 
-})(FiniteStateMachine, MONKEY);
+})(MONKEY);

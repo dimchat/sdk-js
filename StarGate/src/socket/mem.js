@@ -40,15 +40,14 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
     var CachePool = ns.CachePool;
 
     var MemoryCache = function () {
-        obj.call(this);
+        Object.call(this);
         this.__packages = [];
         this.__occupied = 0;
     };
-    sys.Class(MemoryCache, obj, [CachePool]);
+    sys.Class(MemoryCache, Object, [CachePool]);
 
     MemoryCache.prototype.push = function (data) {
         this.__packages.push(data);

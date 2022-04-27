@@ -42,16 +42,14 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     var StarShip = ns.StarShip;
 
     var Dock = function () {
-        obj.call(this);
+        Object.call(this);
         this.__priorities = [];  // int[]
         this.__fleets = {}       // int -> StarShip[]
     };
-    sys.Class(Dock, obj, null);
+    sys.Class(Dock, Object, null);
 
     /**
      *  Park this ship in the Dock for departure

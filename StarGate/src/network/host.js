@@ -35,8 +35,6 @@
 (function (ns, sys) {
     "use strict";
 
-    var obj = sys.type.Object;
-
     //
     //  Host format
     //
@@ -62,7 +60,7 @@
      * @constructor
      */
     var Host = function (ip, port, data) {
-        obj.call(this);
+        Object.call(this);
         // ip string
         this.ip = ip;
         // port number
@@ -70,7 +68,7 @@
         // ip data array
         this.data = data;
     };
-    sys.Class(Host, obj, null);
+    sys.Class(Host, Object, null);
 
     Host.prototype.valueOf = function () {
         console.assert(false, 'implement me!');

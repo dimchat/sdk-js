@@ -110,10 +110,8 @@
         };
     };
 
-    var obj = sys.type.Object;
-
     var Socket = function (url) {
-        obj.call(this);
+        Object.call(this);
         this.__packages = [];
         this.__connected = false;
         this.__closed = false;
@@ -128,7 +126,7 @@
             this.__ws = null;
         }
     };
-    sys.Class(Socket, obj, null);
+    sys.Class(Socket, Object, null);
 
     Socket.prototype.getHost = function () {
         return this.__host;
