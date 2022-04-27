@@ -49,6 +49,7 @@
     };
     ns.Class(GeneralAddressFactory, AddressFactory, null);
 
+    // Override
     GeneralAddressFactory.prototype.createAddress = function(address) {
         if (address.length === 42) {
             return ETHAddress.parse(address);
@@ -67,8 +68,6 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
-
     var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.mkm.DefaultMeta;
@@ -80,11 +79,12 @@
      *  ~~~~~~~~~~~~
      */
     var GeneralMetaFactory = function (type) {
-        obj.call(this);
+        Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralMetaFactory, obj, [Meta.Factory]);
+    ns.Class(GeneralMetaFactory, Object, [Meta.Factory]);
 
+    // Override
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
         if (MetaType.MKM.equals(this.__type)) {
             // MKM
@@ -107,6 +107,7 @@
         }
     };
 
+    // Override
     GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
         var fingerprint = null;
         if (seed && seed.length > 0) {
@@ -115,45 +116,46 @@
         return this.createMeta(sKey.getPublicKey(), seed, fingerprint);
     };
 
+    // Override
     GeneralMetaFactory.prototype.parseMeta = function(meta) {
+        var out;
         var type = Meta.getType(meta);
         if (MetaType.MKM.equals(type)) {
             // MKM
-            return new DefaultMeta(meta);
+            out = new DefaultMeta(meta);
         } else if (MetaType.BTC.equals(type)) {
             // BTC
-            return new BTCMeta(meta);
+            out = new BTCMeta(meta);
         } else if (MetaType.ExBTC.equals(type)) {
             // ExBTC
-            return new BTCMeta(meta);
+            out = new BTCMeta(meta);
         } else if (MetaType.ETH.equals(type)) {
             // ETH
-            return new ETHMeta(meta);
+            out = new ETHMeta(meta);
         } else if (MetaType.ExETH.equals(type)) {
             // ExETH
-            return new ETHMeta(meta);
+            out = new ETHMeta(meta);
         } else {
             // unknown type
-            return null
+            throw TypeError('unknown meta type: ' + type);
         }
+        return Meta.check(out) ? out : null;
     };
 
     /**
      *  Register meta factories
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
-    Meta.register(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
-    Meta.register(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
-    Meta.register(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
-    Meta.register(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
-    Meta.register(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
+    Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
+    Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
+    Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
+    Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
+    Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
 
 })(MingKeMing);
 
 (function (ns) {
     'use strict';
-
-    var obj = ns.type.Object;
 
     var Document = ns.protocol.Document;
     var BaseDocument = ns.mkm.BaseDocument;
@@ -179,11 +181,12 @@
      *  ~~~~~~~~~~~~~~~~
      */
     var GeneralDocumentFactory = function (type) {
-        obj.call(this);
+        Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralDocumentFactory, obj, [Document.Factory]);
+    ns.Class(GeneralDocumentFactory, Object, [Document.Factory]);
 
+    // Override
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
         var type = doc_type(this.__type, identifier);
         if (type === Document.VISA) {
@@ -206,6 +209,8 @@
             }
         }
     };
+
+    // Override
     GeneralDocumentFactory.prototype.parseDocument = function(doc) {
         var identifier = Document.getIdentifier(doc);
         if (!identifier) {
@@ -228,17 +233,15 @@
      *  Register document factories
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    Document.register('*', new GeneralDocumentFactory('*'));
-    Document.register(Document.VISA, new GeneralDocumentFactory(Document.VISA));
-    Document.register(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
-    Document.register(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
+    Document.setFactory('*', new GeneralDocumentFactory('*'));
+    Document.setFactory(Document.VISA, new GeneralDocumentFactory(Document.VISA));
+    Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
+    Document.setFactory(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
 
 })(MingKeMing);
 
 (function (ns) {
     'use strict';
-
-    var obj = ns.type.Object;
 
     var SymmetricKey = ns.crypto.SymmetricKey;
     var AESKey = ns.crypto.AESKey;
@@ -248,16 +251,18 @@
      *  ~~~~~~~~~~~~~~~
      */
     var AESKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(AESKeyFactory, obj, [SymmetricKey.Factory]);
+    ns.Class(AESKeyFactory, Object, [SymmetricKey.Factory]);
 
+    // Override
     AESKeyFactory.prototype.generateSymmetricKey = function() {
-        return new AESKey({
+        return this.parseSymmetricKey({
             'algorithm': SymmetricKey.AES
         });
     };
 
+    // Override
     AESKeyFactory.prototype.parseSymmetricKey = function(key) {
         return new AESKey(key);
     };
@@ -267,15 +272,13 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     var aes = new AESKeyFactory();
-    SymmetricKey.register(SymmetricKey.AES, aes);
-    SymmetricKey.register('AES/CBC/PKCS7Padding', aes);
+    SymmetricKey.setFactory(SymmetricKey.AES, aes);
+    SymmetricKey.setFactory('AES/CBC/PKCS7Padding', aes);
 
 })(MONKEY);
 
 (function (ns) {
     'use strict';
-
-    var obj = ns.type.Object;
 
     var CryptographyKey = ns.crypto.CryptographyKey;
     var SymmetricKey = ns.crypto.SymmetricKey;
@@ -286,14 +289,16 @@
      *  ~~~~~~~~~~~~~~~~~
      */
     var PlainKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(PlainKeyFactory, obj, [SymmetricKey.Factory]);
+    ns.Class(PlainKeyFactory, Object, [SymmetricKey.Factory]);
 
+    // Override
     PlainKeyFactory.prototype.generateSymmetricKey = function() {
         return PlainKey.getInstance();
     };
 
+    // Override
     PlainKeyFactory.prototype.parseSymmetricKey = function(key) {
         if (CryptographyKey.getAlgorithm(key) !== PlainKey.PLAIN) {
             throw new TypeError('plain key error: ' + key);
@@ -305,14 +310,12 @@
      *  Register symmetric key parsers
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    SymmetricKey.register(PlainKey.PLAIN, new PlainKeyFactory());
+    SymmetricKey.setFactory(PlainKey.PLAIN, new PlainKeyFactory());
 
 })(MONKEY);
 
 (function (ns) {
     'use strict';
-
-    var obj = ns.type.Object;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
@@ -325,16 +328,18 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var RSAPrivateKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(RSAPrivateKeyFactory, obj, [PrivateKey.Factory]);
+    ns.Class(RSAPrivateKeyFactory, Object, [PrivateKey.Factory]);
 
+    // Override
     RSAPrivateKeyFactory.prototype.generatePrivateKey = function() {
-        return new RSAPrivateKey({
+        return this.parsePrivateKey({
             'algorithm': AsymmetricKey.RSA
         });
     };
 
+    // Override
     RSAPrivateKeyFactory.prototype.parsePrivateKey = function(key) {
         return new RSAPrivateKey(key);
     };
@@ -344,10 +349,11 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var RSAPublicKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(RSAPublicKeyFactory, obj, [PublicKey.Factory]);
+    ns.Class(RSAPublicKeyFactory, Object, [PublicKey.Factory]);
 
+    // Override
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new RSAPublicKey(key);
     };
@@ -357,21 +363,19 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     var rsa_pri = new RSAPrivateKeyFactory();
-    PrivateKey.register(AsymmetricKey.RSA, rsa_pri);
-    PrivateKey.register('SHA256withRSA', rsa_pri);
-    PrivateKey.register('RSA/ECB/PKCS1Padding', rsa_pri);
+    PrivateKey.setFactory(AsymmetricKey.RSA, rsa_pri);
+    PrivateKey.setFactory('SHA256withRSA', rsa_pri);
+    PrivateKey.setFactory('RSA/ECB/PKCS1Padding', rsa_pri);
 
     var rsa_pub = new RSAPublicKeyFactory();
-    PublicKey.register(AsymmetricKey.RSA, rsa_pub);
-    PublicKey.register('SHA256withRSA', rsa_pub);
-    PublicKey.register('RSA/ECB/PKCS1Padding', rsa_pub);
+    PublicKey.setFactory(AsymmetricKey.RSA, rsa_pub);
+    PublicKey.setFactory('SHA256withRSA', rsa_pub);
+    PublicKey.setFactory('RSA/ECB/PKCS1Padding', rsa_pub);
 
 })(MONKEY);
 
 (function (ns) {
     'use strict';
-
-    var obj = ns.type.Object;
 
     var AsymmetricKey = ns.crypto.AsymmetricKey;
     var PrivateKey = ns.crypto.PrivateKey;
@@ -384,16 +388,18 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var ECCPrivateKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(ECCPrivateKeyFactory, obj, [PrivateKey.Factory]);
+    ns.Class(ECCPrivateKeyFactory, Object, [PrivateKey.Factory]);
 
+    // Override
     ECCPrivateKeyFactory.prototype.generatePrivateKey = function() {
-        return new ECCPrivateKey({
+        return this.parsePrivateKey({
             'algorithm': AsymmetricKey.ECC
         });
     };
 
+    // Override
     ECCPrivateKeyFactory.prototype.parsePrivateKey = function(key) {
         return new ECCPrivateKey(key);
     };
@@ -403,10 +409,11 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var ECCPublicKeyFactory = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(ECCPublicKeyFactory, obj, [PublicKey.Factory]);
+    ns.Class(ECCPublicKeyFactory, Object, [PublicKey.Factory]);
 
+    // Override
     ECCPublicKeyFactory.prototype.parsePublicKey = function(key) {
         return new ECCPublicKey(key);
     };
@@ -416,11 +423,11 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     var ecc_pri = new ECCPrivateKeyFactory();
-    PrivateKey.register(AsymmetricKey.ECC, ecc_pri);
-    PrivateKey.register('SHA256withECC', ecc_pri);
+    PrivateKey.setFactory(AsymmetricKey.ECC, ecc_pri);
+    PrivateKey.setFactory('SHA256withECC', ecc_pri);
 
     var ecc_pub = new ECCPublicKeyFactory();
-    PublicKey.register(AsymmetricKey.ECC, ecc_pub);
-    PublicKey.register('SHA256withECC', ecc_pub);
+    PublicKey.setFactory(AsymmetricKey.ECC, ecc_pub);
+    PublicKey.setFactory('SHA256withECC', ecc_pub);
 
 })(MONKEY);

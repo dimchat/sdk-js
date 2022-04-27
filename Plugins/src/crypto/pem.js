@@ -123,15 +123,13 @@
 
     //-------- PEM functions end --------
 
-    var obj = ns.type.Object;
-
     //
     //  PEM
     //
     var pem = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(pem, obj, null);
+    ns.Class(pem, Object, null);
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };

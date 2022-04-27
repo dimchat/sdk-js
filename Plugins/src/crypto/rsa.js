@@ -56,7 +56,8 @@
     ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
 
     RSAPublicKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     RSAPublicKey.prototype.getData = function () {
@@ -181,7 +182,8 @@
     ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
 
     RSAPrivateKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     RSAPrivateKey.prototype.getData = function () {

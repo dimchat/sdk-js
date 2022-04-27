@@ -35,8 +35,7 @@
 (function (ns) {
     'use strict';
 
-    var str = ns.type.String;
-
+    var ConstantString = ns.type.ConstantString;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
@@ -100,9 +99,9 @@
      *          address     = hex_encode(digest.suffix(20));
      */
     var ETHAddress = function (string) {
-        str.call(this, string);
+        ConstantString.call(this, string);
     };
-    ns.Class(ETHAddress, str, [Address]);
+    ns.Class(ETHAddress, ConstantString, [Address]);
 
     ETHAddress.prototype.getNetwork = function () {
         return NetworkType.MAIN.valueOf();

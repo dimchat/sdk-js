@@ -52,7 +52,6 @@
     'use strict';
 
     var NetworkType = ns.protocol.NetworkType;
-
     var BTCAddress = ns.mkm.BTCAddress;
     var BaseMeta = ns.mkm.BaseMeta;
 
@@ -84,7 +83,7 @@
         }
         // check cache
         var address = this.__addresses[network];
-        if (!address && this.isValid()) {
+        if (!address) {
             // generate and cache it
             address = BTCAddress.generate(this.getFingerprint(), network);
             this.__addresses[network] = address;
@@ -117,7 +116,6 @@
     'use strict';
 
     var NetworkType = ns.protocol.NetworkType;
-
     var BTCAddress = ns.mkm.BTCAddress;
     var BaseMeta = ns.mkm.BaseMeta;
 
@@ -149,9 +147,10 @@
 
     BTCMeta.prototype.generateAddress = function (network) {
         // check cache
-        if (!this.__address && this.isValid()) {
+        if (!this.__address) {
             // generate and cache it
-            var fingerprint = this.getKey().getData();
+            var key = this.getKey();
+            var fingerprint = key.getData();
             this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
         }
         return this.__address;
@@ -211,9 +210,10 @@
 
     ETHMeta.prototype.generateAddress = function (network) {
         // check cache
-        if (!this.__address && this.isValid()) {
+        if (!this.__address) {
             // generate and cache it
-            var fingerprint = this.getKey().getData();
+            var key = this.getKey();
+            var fingerprint = key.getData();
             this.__address = ETHAddress.generate(fingerprint);
         }
         return this.__address;

@@ -181,24 +181,27 @@
 
     //-------- Base algorithm end --------
 
-    var obj = ns.type.Object;
-    var BaseCoder = ns.format.BaseCoder;
+    var DataCoder = ns.format.DataCoder;
 
     //
     //  Base58
     //
-    var base58 = function () {
-        obj.call(this);
+    var Base58Coder = function () {
+        Object.call(this);
     };
-    ns.Class(base58, obj, [BaseCoder]);
-    base58.prototype.encode = function (data) {
+    ns.Class(Base58Coder, Object, [DataCoder]);
+
+    // Override
+    Base58Coder.prototype.encode = function (data) {
         return bs58.encode(data);
     };
-    base58.prototype.decode = function (string) {
+
+    // Override
+    Base58Coder.prototype.decode = function (string) {
         return bs58.decode(string);
     };
 
     //-------- namespace --------
-    ns.format.Base58.coder = new base58();
+    ns.format.Base58.setCoder(new Base58Coder());
 
 })(MONKEY);

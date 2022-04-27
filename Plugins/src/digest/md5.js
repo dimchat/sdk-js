@@ -33,16 +33,17 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
-    var Hash = ns.digest.Hash;
+    var DataDigester = ns.digest.DataDigester;
 
     //
     //  MD5
     //
     var hash = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(hash, obj, [Hash]);
+    ns.Class(hash, Object, [DataDigester]);
+
+    // Override
     hash.prototype.digest = function (data) {
         // bytes2words
         var hex = ns.format.Hex.encode(data);
@@ -53,6 +54,6 @@
     };
 
     //-------- namespace --------
-    ns.digest.MD5.hash = new hash();
+    ns.digest.MD5.setDigester(new hash());
 
 })(MONKEY);

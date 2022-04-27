@@ -78,7 +78,8 @@
     ns.Class(AESKey, Dictionary, [SymmetricKey]);
 
     AESKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     AESKey.prototype.getSize = function () {

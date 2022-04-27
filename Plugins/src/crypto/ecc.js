@@ -159,7 +159,8 @@
     ns.Class(ECCPublicKey, Dictionary, [PublicKey]);
 
     ECCPublicKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     ECCPublicKey.prototype.getData = function () {
@@ -337,7 +338,8 @@
     ns.Class(ECCPrivateKey, Dictionary, [PrivateKey]);
 
     ECCPrivateKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     ECCPrivateKey.prototype.getData = function () {

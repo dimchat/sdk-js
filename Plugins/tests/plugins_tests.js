@@ -150,7 +150,7 @@ plugins_tests = [];
         };
         meta = Meta.parse(meta);
 
-        var json = ns.format.JSON.encode(key.getMap());
+        var json = ns.format.JSON.encode(key.toMap());
 
         var ciphertext;
         for (var i = 0; i < 10000; ++i) {

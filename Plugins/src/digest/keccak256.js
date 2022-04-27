@@ -32,24 +32,23 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
-    var Hash = ns.digest.Hash;
-
-    var keccak256 = window.keccak256;
+    var DataDigester = ns.digest.DataDigester;
 
     //
     //  KECCAK256
     //
     var hash = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(hash, obj, [Hash]);
+    ns.Class(hash, Object, [DataDigester]);
+
+    // Override
     hash.prototype.digest = function (data) {
-        var array = keccak256.update(data).digest();
+        var array = window.keccak256.update(data).digest();
         return new Uint8Array(array);
     };
 
     //-------- namespace --------
-    ns.digest.KECCAK256.hash = new hash();
+    ns.digest.KECCAK256.setDigester(new hash());
 
 })(MONKEY);

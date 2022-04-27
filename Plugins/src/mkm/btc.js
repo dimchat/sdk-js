@@ -35,9 +35,8 @@
 (function (ns) {
     'use strict';
 
-    var str = ns.type.String;
-    var Data = ns.type.Data;
-
+    var ConstantString = ns.type.ConstantString;
+    var MutableData = ns.type.MutableData;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
@@ -56,10 +55,13 @@
      *          address     = base58_encode(network + digest + code);
      */
     var BTCAddress = function (string, network) {
-        str.call(this, string);
+        ConstantString.call(this, string);
+        if (network instanceof NetworkType) {
+            network = network.valueOf();
+        }
         this.__network = network;
     };
-    ns.Class(BTCAddress, str, [Address]);
+    ns.Class(BTCAddress, ConstantString, [Address]);
 
     BTCAddress.prototype.getNetwork = function () {
         return this.__network;
@@ -89,13 +91,13 @@
         // 1. digest = ripemd160(sha256(fingerprint))
         var digest = ns.digest.RIPEMD160.digest(ns.digest.SHA256.digest(fingerprint));
         // 2. head = network + digest
-        var head = new Data(21);
+        var head = new MutableData(21);
         head.setByte(0, network);
         head.append(digest);
         // 3. cc = sha256(sha256(head)).prefix(4)
         var cc = check_code(head.getBytes(false));
         // 4. data = base58_encode(head + cc)
-        var data = new Data(25);
+        var data = new MutableData(25);
         data.append(head);
         data.append(cc);
         return new BTCAddress(ns.format.Base58.encode(data.getBytes(false)), network);

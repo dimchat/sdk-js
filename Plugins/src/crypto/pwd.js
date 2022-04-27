@@ -35,14 +35,14 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
     var Data = ns.type.Data;
+    var MutableData = ns.type.MutableData;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Password = function () {
-        obj.call(this);
+        Object.call(this);
     };
-    ns.Class(Password, obj, null);
+    ns.Class(Password, Object, null);
 
     Password.KEY_SIZE = 32;
     Password.BLOCK_SIZE = 16;
@@ -60,7 +60,7 @@
         var filling = Password.KEY_SIZE - data.length;
         if (filling > 0) {
             // format: {digest_prefix}+{pwd_data}
-            var merged = new Data(Password.KEY_SIZE);
+            var merged = new MutableData(Password.KEY_SIZE);
             merged.fill(0, digest, 0, filling);
             merged.fill(filling, data, 0, data.length);
             data = merged.getBytes();
@@ -75,7 +75,7 @@
             }
         }
         // AES iv
-        var tail = new Data(Password.BLOCK_SIZE);
+        var tail = new MutableData(Password.BLOCK_SIZE);
         tail.fill(0, digest, digest.length - Password.BLOCK_SIZE, digest.length);
         var iv = tail.getBytes();
         // generate AES key
@@ -107,7 +107,8 @@
     ns.Class(PlainKey, Dictionary, [SymmetricKey]);
 
     PlainKey.prototype.getAlgorithm = function () {
-        return CryptographyKey.getAlgorithm(this.getMap());
+        var dict = this.toMap();
+        return CryptographyKey.getAlgorithm(dict);
     };
 
     PlainKey.prototype.getData = function () {
