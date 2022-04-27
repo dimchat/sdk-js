@@ -43,14 +43,13 @@
     var NetworkType = ns.protocol.NetworkType;
     var ID = ns.protocol.ID;
 
-    var User = ns.User;
-    var Robot = ns.Robot;
-    var Station = ns.Station;
-
-    var Group = ns.Group;
-    var Polylogue = ns.Polylogue;
-    var Chatroom = ns.Chatroom;
-    var ServiceProvider = ns.ServiceProvider;
+    var BaseUser = ns.mkm.BaseUser;
+    var Robot = ns.mkm.Robot;
+    var Station = ns.mkm.Station;
+    var BaseGroup = ns.mkm.BaseGroup;
+    var Polylogue = ns.mkm.Polylogue;
+    var Chatroom = ns.mkm.Chatroom;
+    var ServiceProvider = ns.mkm.ServiceProvider;
 
     var Barrack = ns.core.Barrack;
 
@@ -90,7 +89,7 @@
      *
      * @returns {Number}
      */
-    Barrack.prototype.reduceMemory = function () {
+    Facebook.prototype.reduceMemory = function () {
         var finger = 0;
         finger = thanos(this.__users, finger);
         finger = thanos(this.__groups, finger);
@@ -115,115 +114,6 @@
         }
         this.__groups[group.getIdentifier().toString()] = group;
         return true;
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    Barrack.prototype.createUser = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    Barrack.prototype.createGroup = function (identifier) {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    /**
-     *  Get all local users (for decrypting received message)
-     *
-     * @return {User[]} users with private key
-     */
-    Barrack.prototype.getLocalUsers = function () {
-        console.assert(false, 'implement me!');
-        return null;
-    };
-
-    //-------- EntityDelegate --------
-
-    // @override
-    Barrack.prototype.selectLocalUser = function (receiver) {
-        var users = this.getLocalUsers();
-        if (users == null || users.length === 0) {
-            throw new Error("local users should not be empty");
-        } else if (receiver.isBroadcast()) {
-            // broadcast message can decrypt by anyone, so just return current user
-            return users[0];
-        }
-        var i, user, uid;
-        if (receiver.isGroup()) {
-            // group message (recipient not designated)
-            var members = this.getMembers(receiver);
-            if (members == null || members.length === 0) {
-                // TODO: group not ready, waiting for group info
-                return null;
-            }
-            var j, member;
-            for (i = 0; i < users.length; ++i) {
-                user = users[i];
-                uid = user.getIdentifier();
-                for (j = 0; j < members.length; ++j) {
-                    member = members[j];
-                    if (member.equals(uid)) {
-                        // DISCUSS: set this item to be current user?
-                        return user;
-                    }
-                }
-            }
-        } else {
-            // 1. personal message
-            // 2. split group message
-            for (i = 0; i < users.length; ++i) {
-                user = users[i];
-                uid = user.getIdentifier();
-                if (receiver.equals(uid)) {
-                    // DISCUSS: set this item to be current user?
-                    return user;
-                }
-            }
-        }
-        return null;
-    };
-
-    // @override
-    Barrack.prototype.getUser = function (identifier) {
-        // 1. get from user cache
-        var user = this.__users[identifier.toString()];
-        if (!user) {
-            // 2. create user and cache it
-            user = this.createUser(identifier);
-            if (user) {
-                cacheUser.call(this, user);
-            }
-        }
-        return user;
-    };
-
-    // @override
-    Barrack.prototype.getGroup = function (identifier) {
-        // 1. get from group cache
-        var group = this.__groups[identifier.toString()];
-        if (!group) {
-            // 2. create group and cache it
-            group = this.createGroup(identifier);
-            if (group) {
-                cacheGroup.call(this, group);
-            }
-        }
-        return group;
-    };
-
-    /**
-     *  Get current user (for signing and sending message)
-     *
-     * @returns {User}
-     */
-    Facebook.prototype.getCurrentUser = function () {
-        var users = this.getLocalUsers();
-        if (!users || users.length === 0) {
-            return null;
-        }
-        return users[0];
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -326,15 +216,16 @@
         throw new Error('only Polylogue so far');
     };
 
+    // protected
     Facebook.prototype.createUser = function (identifier) {
         if (identifier.isBroadcast()) {
             // create user 'anyone@anywhere'
-            return new User(identifier);
+            return new BaseUser(identifier);
         }
         // check user type
         var type = identifier.getType();
         if (NetworkType.MAIN.equals(type) || NetworkType.BTC_MAIN.equals(type)) {
-            return new User(identifier);
+            return new BaseUser(identifier);
         }
         if (NetworkType.ROBOT.equals(type)) {
             return new Robot(identifier);
@@ -345,10 +236,11 @@
         throw new TypeError('Unsupported user type: ' + type);
     };
 
+    // protected
     Facebook.prototype.createGroup = function (identifier) {
         if (identifier.isBroadcast()) {
             // create group 'everyone@everywhere'
-            return new Group(identifier);
+            return new BaseGroup(identifier);
         }
         // check group type
         var type = identifier.getType();
@@ -362,6 +254,105 @@
             return new ServiceProvider(identifier);
         }
         throw new TypeError('Unsupported group type: ' + type);
+    };
+
+    /**
+     *  Get all local users (for decrypting received message)
+     *
+     * @return {User[]} users with private key
+     */
+    Facebook.prototype.getLocalUsers = function () {
+        console.assert(false, 'implement me!');
+        return null;
+    };
+
+    /**
+     *  Get current user (for signing and sending message)
+     *
+     * @returns {User}
+     */
+    Facebook.prototype.getCurrentUser = function () {
+        var users = this.getLocalUsers();
+        if (!users || users.length === 0) {
+            return null;
+        }
+        return users[0];
+    };
+
+    //-------- EntityDelegate --------
+
+    // @override
+    Facebook.prototype.selectLocalUser = function (receiver) {
+        var users = this.getLocalUsers();
+        if (!users || users.length === 0) {
+            throw new Error("local users should not be empty");
+        } else if (receiver.isBroadcast()) {
+            // broadcast message can decrypt by anyone, so just return current user
+            return users[0];
+        }
+        var i, user, uid;
+        if (receiver.isGroup()) {
+            // group message (recipient not designated)
+            var members = this.getMembers(receiver);
+            if (!members || members.length === 0) {
+                // TODO: group not ready, waiting for group info
+                return null;
+            }
+            var j, member;
+            for (i = 0; i < users.length; ++i) {
+                user = users[i];
+                uid = user.getIdentifier();
+                for (j = 0; j < members.length; ++j) {
+                    member = members[j];
+                    if (member.equals(uid)) {
+                        // DISCUSS: set this item to be current user?
+                        return user;
+                    }
+                }
+            }
+        } else {
+            // 1. personal message
+            // 2. split group message
+            for (i = 0; i < users.length; ++i) {
+                user = users[i];
+                uid = user.getIdentifier();
+                if (receiver.equals(uid)) {
+                    // DISCUSS: set this item to be current user?
+                    return user;
+                }
+            }
+        }
+        return null;
+    };
+
+    //-------- Entity Delegate
+
+    // Override
+    Facebook.prototype.getUser = function (identifier) {
+        // 1. get from user cache
+        var user = this.__users[identifier.toString()];
+        if (!user) {
+            // 2. create user and cache it
+            user = this.createUser(identifier);
+            if (user) {
+                cacheUser.call(this, user);
+            }
+        }
+        return user;
+    };
+
+    // Override
+    Facebook.prototype.getGroup = function (identifier) {
+        // 1. get from group cache
+        var group = this.__groups[identifier.toString()];
+        if (!group) {
+            // 2. create group and cache it
+            group = this.createGroup(identifier);
+            if (group) {
+                cacheGroup.call(this, group);
+            }
+        }
+        return group;
     };
 
     //-------- namespace --------

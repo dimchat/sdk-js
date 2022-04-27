@@ -69,14 +69,14 @@ sdk_tests = [];
         // get user
         var user = barrack.getUser(sender);
         log('user: ', user);
-        assert(user.identifier.isUser() === true, 'user error');
+        assert(user.getIdentifier().isUser() === true, 'user error');
         barrack.getLocalUsers = function () {
             return [user];
         };
         // get group
         var group = barrack.getUser(receiver);
         log('group: ', group);
-        assert(group.identifier.isGroup() === true, 'group error');
+        assert(group.getIdentifier().isGroup() === true, 'group error');
     };
     sdk_tests.push(test_facebook);
 
