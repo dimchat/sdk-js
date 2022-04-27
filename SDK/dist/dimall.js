@@ -80,9 +80,6 @@ if (typeof MONKEY !== "object") {
     if (typeof ns.type !== "object") {
         ns.type = new ns.Namespace();
     }
-    if (typeof ns.threading !== "object") {
-        ns.threading = new ns.Namespace();
-    }
     if (typeof ns.format !== "object") {
         ns.format = new ns.Namespace();
     }
@@ -93,7 +90,6 @@ if (typeof MONKEY !== "object") {
         ns.crypto = new ns.Namespace();
     }
     ns.registers("type");
-    ns.registers("threading");
     ns.registers("format");
     ns.registers("digest");
     ns.registers("crypto");
@@ -1120,88 +1116,6 @@ if (typeof MONKEY !== "object") {
     ns.format.registers("Base64");
 })(MONKEY);
 (function (ns) {
-    var StringCoder = ns.format.StringCoder;
-    var utf8_encode = function (string) {
-        var len = string.length;
-        var array = [];
-        var c, l;
-        for (var i = 0; i < len; ++i) {
-            c = string.charCodeAt(i);
-            if (55296 <= c && c <= 56319) {
-                l = string.charCodeAt(++i);
-                c = ((c - 55296) << 10) + 65536 + l - 56320;
-            }
-            if (c <= 0) {
-                break;
-            } else {
-                if (c < 128) {
-                    array.push(c);
-                } else {
-                    if (c < 2048) {
-                        array.push(192 | ((c >> 6) & 31));
-                        array.push(128 | ((c >> 0) & 63));
-                    } else {
-                        if (c < 65536) {
-                            array.push(224 | ((c >> 12) & 15));
-                            array.push(128 | ((c >> 6) & 63));
-                            array.push(128 | ((c >> 0) & 63));
-                        } else {
-                            array.push(240 | ((c >> 18) & 7));
-                            array.push(128 | ((c >> 12) & 63));
-                            array.push(128 | ((c >> 6) & 63));
-                            array.push(128 | ((c >> 0) & 63));
-                        }
-                    }
-                }
-            }
-        }
-        return Uint8Array.from(array);
-    };
-    var utf8_decode = function (array) {
-        var string = "";
-        var len = array.length;
-        var c, c2, c3, c4;
-        for (var i = 0; i < len; ++i) {
-            c = array[i];
-            switch (c >> 4) {
-                case 12:
-                case 13:
-                    c2 = array[++i];
-                    c = ((c & 31) << 6) | (c2 & 63);
-                    break;
-                case 14:
-                    c2 = array[++i];
-                    c3 = array[++i];
-                    c = ((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63);
-                    break;
-                case 15:
-                    c2 = array[++i];
-                    c3 = array[++i];
-                    c4 = array[++i];
-                    c =
-                        ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
-                    break;
-            }
-            if (c < 65536) {
-                string += String.fromCharCode(c);
-            } else {
-                c -= 65536;
-                string += String.fromCharCode((c >> 10) + 55296);
-                string += String.fromCharCode((c & 1023) + 56320);
-            }
-        }
-        return string;
-    };
-    var UTF8Coder = function () {
-        Object.call(this);
-    };
-    ns.Class(UTF8Coder, Object, [StringCoder]);
-    UTF8Coder.prototype.encode = function (string) {
-        return utf8_encode(string);
-    };
-    UTF8Coder.prototype.decode = function (data) {
-        return utf8_decode(data);
-    };
     var UTF8 = {
         encode: function (string) {
             return this.getCoder().encode(string);
@@ -1216,7 +1130,7 @@ if (typeof MONKEY !== "object") {
             utf8Coder = coder;
         }
     };
-    var utf8Coder = new UTF8Coder();
+    var utf8Coder = null;
     ns.format.UTF8 = UTF8;
     ns.format.registers("UTF8");
 })(MONKEY);
@@ -1726,6 +1640,7 @@ if (typeof MingKeMing !== "object") {
     var UTF8 = ns.format.UTF8;
     var PublicKey = ns.crypto.PublicKey;
     var Address = ns.protocol.Address;
+    var MetaType = ns.protocol.MetaType;
     var ID = ns.protocol.ID;
     var Meta = function () {};
     ns.Interface(Meta, [Mapper]);
@@ -2267,7 +2182,7 @@ if (typeof MingKeMing !== "object") {
 (function (ns) {
     var UTF8 = ns.format.UTF8;
     var Base64 = ns.format.Base64;
-    var JSON = ns.format.JSON;
+    var JsON = ns.format.JSON;
     var Dictionary = ns.type.Dictionary;
     var Document = ns.protocol.Document;
     var BaseDocument = function () {
@@ -2354,7 +2269,7 @@ if (typeof MingKeMing !== "object") {
             var data = this.getData();
             if (data) {
                 var json = UTF8.decode(data);
-                this.__properties = JSON.decode(json);
+                this.__properties = JsON.decode(json);
             } else {
                 this.__properties = {};
             }
@@ -2408,7 +2323,7 @@ if (typeof MingKeMing !== "object") {
         this.setProperty("time", now.getTime() / 1000);
         this.__status = 1;
         var dict = this.allProperties();
-        var json = JSON.encode(dict);
+        var json = JsON.encode(dict);
         var data = UTF8.encode(json);
         var sig = privateKey.sign(data);
         var b64 = Base64.encode(sig);
