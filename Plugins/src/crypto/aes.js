@@ -75,105 +75,111 @@
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
     };
-    ns.Class(AESKey, Dictionary, [SymmetricKey]);
+    ns.Class(AESKey, Dictionary, [SymmetricKey], {
 
-    AESKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    AESKey.prototype.getSize = function () {
-        var size = this.getValue('keySize');
-        if (size) {
-            return Number(size);
-        } else {
-            return 32;
+        getSize: function () {
+            var size = this.getValue('keySize');
+            if (size) {
+                return Number(size);
+            } else {
+                return 32;
+            }
+        },
+
+        getBlockSize: function () {
+            // TODO: get from iv data
+            var size = this.getValue('blockSize');
+            if (size) {
+                return Number(size);
+            } else {
+                return 16;
+            }
+        },
+
+        // Override
+        getData: function () {
+            var data = this.getValue('data');
+            if (data) {
+                return ns.format.Base64.decode(data);
+            }
+
+            //
+            // TODO: key data empty? generate new key info
+            //
+
+            // random key data
+            var keySize = this.getSize();
+            var pwd = random_data(keySize);
+            this.setValue('data', ns.format.Base64.encode(pwd));
+
+            // random initialization vector
+            var blockSize = this.getBlockSize();
+            var iv = random_data(blockSize);
+            this.setValue('iv', ns.format.Base64.encode(iv));
+
+            // // other parameters
+            // this.setValue('mode', 'CBC');
+            // this.setValue('padding', 'PKCS7');
+
+            return pwd;
+        },
+
+        getInitVector: function () {
+            var iv = this.getValue('iv');
+            if (iv) {
+                return ns.format.Base64.decode(iv);
+            }
+            // zero iv
+            var zeros = zero_data(this.getBlockSize());
+            this.setValue('iv', ns.format.Base64.encode(zeros));
+            return zeros;
+        },
+
+        // Override
+        encrypt: function (plaintext) {
+
+            var data = this.getData();
+            var iv = this.getInitVector();
+
+            var keyWordArray = bytes2words(data);
+            var ivWordArray = bytes2words(iv);
+
+            var message = bytes2words(plaintext);
+            var cipher = CryptoJS.AES.encrypt(message, keyWordArray, { iv: ivWordArray });
+            if (cipher.hasOwnProperty('ciphertext')) {
+                return words2bytes(cipher.ciphertext);
+            } else {
+                throw new TypeError('failed to encrypt message with key: ' + this);
+            }
+        },
+
+        // Override
+        decrypt: function (ciphertext) {
+
+            var data = this.getData();
+            var iv = this.getInitVector();
+
+            var keyWordArray = bytes2words(data);
+            var ivWordArray = bytes2words(iv);
+
+            var cipher = {
+                ciphertext: bytes2words(ciphertext)
+            };
+            var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
+            return words2bytes(plaintext);
+        },
+
+        // Override
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
         }
-    };
-
-    AESKey.prototype.getBlockSize = function () {
-        // TODO: get from iv data
-        var size = this.getValue('blockSize');
-        if (size) {
-            return Number(size);
-        } else {
-            return 16;
-        }
-    };
-
-    AESKey.prototype.getData = function () {
-        var data = this.getValue('data');
-        if (data) {
-            return ns.format.Base64.decode(data);
-        }
-
-        //
-        // TODO: key data empty? generate new key info
-        //
-
-        // random key data
-        var keySize = this.getSize();
-        var pwd = random_data(keySize);
-        this.setValue('data', ns.format.Base64.encode(pwd));
-
-        // random initialization vector
-        var blockSize = this.getBlockSize();
-        var iv = random_data(blockSize);
-        this.setValue('iv', ns.format.Base64.encode(iv));
-
-        // // other parameters
-        // this.setValue('mode', 'CBC');
-        // this.setValue('padding', 'PKCS7');
-
-        return pwd;
-    };
-
-    AESKey.prototype.getInitVector = function () {
-        var iv = this.getValue('iv');
-        if (iv) {
-            return ns.format.Base64.decode(iv);
-        }
-        // zero iv
-        var zeros = zero_data(this.getBlockSize());
-        this.setValue('iv', ns.format.Base64.encode(zeros));
-        return zeros;
-    };
-
-    AESKey.prototype.encrypt = function (plaintext) {
-
-        var data = this.getData();
-        var iv = this.getInitVector();
-
-        var keyWordArray = bytes2words(data);
-        var ivWordArray = bytes2words(iv);
-
-        var message = bytes2words(plaintext);
-        var cipher = CryptoJS.AES.encrypt(message, keyWordArray, { iv: ivWordArray });
-        if (cipher.hasOwnProperty('ciphertext')) {
-            return words2bytes(cipher.ciphertext);
-        } else {
-            throw new TypeError('failed to encrypt message with key: ' + this);
-        }
-    };
-
-    AESKey.prototype.decrypt = function (ciphertext) {
-
-        var data = this.getData();
-        var iv = this.getInitVector();
-
-        var keyWordArray = bytes2words(data);
-        var ivWordArray = bytes2words(iv);
-
-        var cipher = {
-            ciphertext: bytes2words(ciphertext)
-        };
-        var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
-        return words2bytes(plaintext);
-    };
-
-    AESKey.prototype.matches = function (pKey) {
-        return CryptographyKey.matches(pKey, this);
-    };
+    });
 
     //-------- namespace --------
     ns.crypto.AESKey = AESKey;

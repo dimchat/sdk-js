@@ -129,13 +129,15 @@
     var pem = function () {
         Object.call(this);
     };
-    ns.Class(pem, Object, null);
+    ns.Class(pem, Object, null, null);
+
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };
     pem.prototype.encodePrivateKey = function (key) {
         return encode_rsa_private(key);
     };
+
     pem.prototype.decodePublicKey = function (pem) {
         return decode_public(pem);
     };

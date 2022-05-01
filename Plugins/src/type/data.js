@@ -84,7 +84,7 @@
             throw new SyntaxError('arguments error: ' + arguments);
         }
     };
-    ns.Class(bytes, Object, null);
+    ns.Class(bytes, Object, null, null);
 
     bytes.ZERO = new bytes(new Uint8Array(0), 0, 0);
 

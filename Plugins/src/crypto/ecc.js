@@ -156,48 +156,70 @@
     var ECCPublicKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(ECCPublicKey, Dictionary, [PublicKey]);
+    ns.Class(ECCPublicKey, Dictionary, [PublicKey], {
 
-    ECCPublicKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    ECCPublicKey.prototype.getData = function () {
-        var pem = this.getValue('data');
-        if (!pem || pem.length === 0) {
-            throw new Error('ECC public key data not found');
-        } else if (pem.length === 66) {
-            // compressed key data
-            return ns.format.Hex.decode(pem);
-        } else if (pem.length === 130) {
-            // uncompressed key data
-            return ns.format.Hex.decode(pem);
-        } else {
-            // ANS.1 or X.509
-            var pos1 = pem.indexOf('-----BEGIN PUBLIC KEY-----');
-            if (pos1 >= 0) {
-                pos1 += '-----BEGIN PUBLIC KEY-----'.length;
-                var pos2 = pem.indexOf('-----END PUBLIC KEY-----', pos1);
-                if (pos2 > 0) {
-                    var base64 = pem.substr(pos1, pos2-pos1);
-                    var data = ns.format.Base64.decode(base64);
-                    // TODO: parse ASN.1 or X.509
-                    return data.subarray(data.length - 65);
+        // Override
+        getData: function () {
+            var pem = this.getValue('data');
+            if (!pem || pem.length === 0) {
+                throw new Error('ECC public key data not found');
+            } else if (pem.length === 66) {
+                // compressed key data
+                return ns.format.Hex.decode(pem);
+            } else if (pem.length === 130) {
+                // uncompressed key data
+                return ns.format.Hex.decode(pem);
+            } else {
+                // ANS.1 or X.509
+                var pos1 = pem.indexOf('-----BEGIN PUBLIC KEY-----');
+                if (pos1 >= 0) {
+                    pos1 += '-----BEGIN PUBLIC KEY-----'.length;
+                    var pos2 = pem.indexOf('-----END PUBLIC KEY-----', pos1);
+                    if (pos2 > 0) {
+                        var base64 = pem.substr(pos1, pos2-pos1);
+                        var data = ns.format.Base64.decode(base64);
+                        // TODO: parse ASN.1 or X.509
+                        return data.subarray(data.length - 65);
+                    }
                 }
             }
-        }
-        throw new EvalError('key data error: ' + pem);
-    };
+            throw new EvalError('key data error: ' + pem);
+        },
 
-    ECCPublicKey.prototype.getSize = function () {
-        var size = this.getValue('keySize');
-        if (size) {
-            return Number(size);
-        } else {
-            return this.getData().length/8;
+        getSize: function () {
+            var size = this.getValue('keySize');
+            if (size) {
+                return Number(size);
+            } else {
+                return this.getData().length/8;
+            }
+        },
+
+        // Override
+        verify: function (data, signature) {
+            var hash = ns.digest.SHA256.digest(data);
+            var z = Secp256k1.uint256(hash, 16);
+            var sig = ecc_der_to_sig(signature, signature.length);
+            if (!sig) {
+                throw new EvalError('signature error: ' + signature);
+            }
+            var sig_r = Secp256k1.uint256(sig.r, 16);
+            var sig_s = Secp256k1.uint256(sig.s, 16);
+            var pub = decode_points(this.getData());
+            return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
+        },
+
+        // Override
+        matches: function (sKey) {
+            return AsymmetricKey.matches(sKey, this);
         }
-    };
+    });
 
     var decode_points = function (data) {
         var x, y;
@@ -221,23 +243,6 @@
             throw new EvalError('key data length error: ' + data);
         }
         return {x: x, y: y};
-    };
-
-    ECCPublicKey.prototype.verify = function (data, signature) {
-        var hash = ns.digest.SHA256.digest(data);
-        var z = Secp256k1.uint256(hash, 16);
-        var sig = ecc_der_to_sig(signature, signature.length);
-        if (!sig) {
-            throw new EvalError('signature error: ' + signature);
-        }
-        var sig_r = Secp256k1.uint256(sig.r, 16);
-        var sig_s = Secp256k1.uint256(sig.s, 16);
-        var pub = decode_points(this.getData());
-        return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
-    };
-
-    ECCPublicKey.prototype.matches = function (sKey) {
-        return AsymmetricKey.matches(sKey, this);
     };
 
     //-------- namespace --------
@@ -335,30 +340,62 @@
         this.__privateKey = keyPair.privateKey;
         this.__publicKey = keyPair.publicKey;
     };
-    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey]);
+    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey], {
 
-    ECCPrivateKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    ECCPrivateKey.prototype.getData = function () {
-        var data = this.getValue('data');
-        if (data && data.length > 0) {
-            return ns.format.Hex.decode(data);
-        } else {
-            throw new Error('ECC private key data not found');
+        // Override
+        getData: function () {
+            var data = this.getValue('data');
+            if (data && data.length > 0) {
+                return ns.format.Hex.decode(data);
+            } else {
+                throw new Error('ECC private key data not found');
+            }
+        },
+
+        getSize: function () {
+            var size = this.getValue('keySize');
+            if (size) {
+                return Number(size);
+            } else {
+                return this.getData().length/8;
+            }
+        },
+
+        // Override
+        getPublicKey: function () {
+            var pub = this.__publicKey;
+            var data = '04' + pub.x + pub.y;
+            var info = {
+                'algorithm': this.getValue('algorithm'),
+                'data': data,
+                'curve': 'secp256k1',
+                'digest': 'SHA256'
+            };
+            return PublicKey.parse(info);
+        },
+
+        // Override
+        sign: function (data) {
+            var hash = ns.digest.SHA256.digest(data);
+            var z = Secp256k1.uint256(hash, 16);
+            var sig = Secp256k1.ecsign(this.__privateKey, z);
+            var sig_r = ns.format.Hex.decode(sig.r);
+            var sig_s = ns.format.Hex.decode(sig.s);
+            var der = new Uint8Array(72);
+            var sig_len = ecc_sig_to_der(sig_r, sig_s, der);
+            if (sig_len === der.length) {
+                return der;
+            } else {
+                return der.subarray(0, sig_len);
+            }
         }
-    };
-
-    ECCPrivateKey.prototype.getSize = function () {
-        var size = this.getValue('keySize');
-        if (size) {
-            return Number(size);
-        } else {
-            return this.getData().length/8;
-        }
-    };
+    });
 
     var get_key_pair = function () {
         var sKey;
@@ -383,33 +420,6 @@
         this.setValue('curve', 'secp256k1');
         this.setValue('digest', 'SHA256');
         return key;
-    };
-
-    ECCPrivateKey.prototype.getPublicKey = function () {
-        var pub = this.__publicKey;
-        var data = '04' + pub.x + pub.y;
-        var info = {
-            'algorithm': this.getValue('algorithm'),
-            'data': data,
-            'curve': 'secp256k1',
-            'digest': 'SHA256'
-        };
-        return PublicKey.parse(info);
-    };
-
-    ECCPrivateKey.prototype.sign = function (data) {
-        var hash = ns.digest.SHA256.digest(data);
-        var z = Secp256k1.uint256(hash, 16);
-        var sig = Secp256k1.ecsign(this.__privateKey, z);
-        var sig_r = ns.format.Hex.decode(sig.r);
-        var sig_s = ns.format.Hex.decode(sig.s);
-        var der = new Uint8Array(72);
-        var sig_len = ecc_sig_to_der(sig_r, sig_s, der);
-        if (sig_len === der.length) {
-            return der;
-        } else {
-            return der.subarray(0, sig_len);
-        }
     };
 
     //-------- namespace --------

@@ -40,7 +40,7 @@
     var hash = function () {
         Object.call(this);
     };
-    ns.Class(hash, Object, [DataDigester]);
+    ns.Class(hash, Object, [DataDigester], null);
 
     // Override
     hash.prototype.digest = function (data) {

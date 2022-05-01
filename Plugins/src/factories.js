@@ -47,7 +47,7 @@
     var GeneralAddressFactory = function () {
         AddressFactory.call(this);
     };
-    ns.Class(GeneralAddressFactory, AddressFactory, null);
+    ns.Class(GeneralAddressFactory, AddressFactory, null, null);
 
     // Override
     GeneralAddressFactory.prototype.createAddress = function(address) {
@@ -82,7 +82,7 @@
         Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralMetaFactory, Object, [Meta.Factory]);
+    ns.Class(GeneralMetaFactory, Object, [Meta.Factory], null);
 
     // Override
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
@@ -184,7 +184,7 @@
         Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralDocumentFactory, Object, [Document.Factory]);
+    ns.Class(GeneralDocumentFactory, Object, [Document.Factory], null);
 
     // Override
     GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
@@ -253,7 +253,7 @@
     var AESKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(AESKeyFactory, Object, [SymmetricKey.Factory]);
+    ns.Class(AESKeyFactory, Object, [SymmetricKey.Factory], null);
 
     // Override
     AESKeyFactory.prototype.generateSymmetricKey = function() {
@@ -291,7 +291,7 @@
     var PlainKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(PlainKeyFactory, Object, [SymmetricKey.Factory]);
+    ns.Class(PlainKeyFactory, Object, [SymmetricKey.Factory], null);
 
     // Override
     PlainKeyFactory.prototype.generateSymmetricKey = function() {
@@ -330,7 +330,7 @@
     var RSAPrivateKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(RSAPrivateKeyFactory, Object, [PrivateKey.Factory]);
+    ns.Class(RSAPrivateKeyFactory, Object, [PrivateKey.Factory], null);
 
     // Override
     RSAPrivateKeyFactory.prototype.generatePrivateKey = function() {
@@ -351,7 +351,7 @@
     var RSAPublicKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(RSAPublicKeyFactory, Object, [PublicKey.Factory]);
+    ns.Class(RSAPublicKeyFactory, Object, [PublicKey.Factory], null);
 
     // Override
     RSAPublicKeyFactory.prototype.parsePublicKey = function(key) {
@@ -390,7 +390,7 @@
     var ECCPrivateKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(ECCPrivateKeyFactory, Object, [PrivateKey.Factory]);
+    ns.Class(ECCPrivateKeyFactory, Object, [PrivateKey.Factory], null);
 
     // Override
     ECCPrivateKeyFactory.prototype.generatePrivateKey = function() {
@@ -411,7 +411,7 @@
     var ECCPublicKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(ECCPublicKeyFactory, Object, [PublicKey.Factory]);
+    ns.Class(ECCPublicKeyFactory, Object, [PublicKey.Factory], null);
 
     // Override
     ECCPublicKeyFactory.prototype.parsePublicKey = function(key) {

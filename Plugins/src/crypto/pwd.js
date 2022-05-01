@@ -42,7 +42,7 @@
     var Password = function () {
         Object.call(this);
     };
-    ns.Class(Password, Object, null);
+    ns.Class(Password, Object, null, null);
 
     Password.KEY_SIZE = 32;
     Password.BLOCK_SIZE = 16;
@@ -104,24 +104,34 @@
     var PlainKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(PlainKey, Dictionary, [SymmetricKey]);
+    ns.Class(PlainKey, Dictionary, [SymmetricKey], {
 
-    PlainKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    PlainKey.prototype.getData = function () {
-        return null;
-    };
+        // Override
+        getData: function () {
+            return null;
+        },
 
-    PlainKey.prototype.encrypt = function (data) {
-        return data;
-    };
+        // Override
+        encrypt: function (data) {
+            return data;
+        },
 
-    PlainKey.prototype.decrypt = function (data) {
-        return data;
-    };
+        // Override
+        decrypt: function (data) {
+            return data;
+        },
+
+        // Override
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
+        }
+    });
 
     //-------- runtime --------
     var plain_key = null;

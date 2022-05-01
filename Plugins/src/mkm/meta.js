@@ -75,21 +75,22 @@
         // memory cache
         this.__addresses = {};  // uint -> Address
     };
-    ns.Class(DefaultMeta, BaseMeta, null);
-
-    DefaultMeta.prototype.generateAddress = function (network) {
-        if (network instanceof NetworkType) {
-            network = network.valueOf();
+    ns.Class(DefaultMeta, BaseMeta, null, {
+        // Override
+        generateAddress: function (network) {
+            if (network instanceof NetworkType) {
+                network = network.valueOf();
+            }
+            // check cache
+            var address = this.__addresses[network];
+            if (!address) {
+                // generate and cache it
+                address = BTCAddress.generate(this.getFingerprint(), network);
+                this.__addresses[network] = address;
+            }
+            return address;
         }
-        // check cache
-        var address = this.__addresses[network];
-        if (!address) {
-            // generate and cache it
-            address = BTCAddress.generate(this.getFingerprint(), network);
-            this.__addresses[network] = address;
-        }
-        return address;
-    };
+    });
 
     //-------- namespace --------
     ns.mkm.DefaultMeta = DefaultMeta;
@@ -143,18 +144,19 @@
         // memory cache
         this.__address = null;  // cached address
     };
-    ns.Class(BTCMeta, BaseMeta, null);
-
-    BTCMeta.prototype.generateAddress = function (network) {
-        // check cache
-        if (!this.__address) {
-            // generate and cache it
-            var key = this.getKey();
-            var fingerprint = key.getData();
-            this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+    ns.Class(BTCMeta, BaseMeta, null, {
+        // Override
+        generateAddress: function (network) {
+            // check cache
+            if (!this.__address) {
+                // generate and cache it
+                var key = this.getKey();
+                var fingerprint = key.getData();
+                this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+            }
+            return this.__address;
         }
-        return this.__address;
-    };
+    });
 
     //-------- namespace --------
     ns.mkm.BTCMeta = BTCMeta;
@@ -206,18 +208,19 @@
         // memory cache
         this.__address = null;  // cached address
     };
-    ns.Class(ETHMeta, BaseMeta, null);
-
-    ETHMeta.prototype.generateAddress = function (network) {
-        // check cache
-        if (!this.__address) {
-            // generate and cache it
-            var key = this.getKey();
-            var fingerprint = key.getData();
-            this.__address = ETHAddress.generate(fingerprint);
+    ns.Class(ETHMeta, BaseMeta, null, {
+        // Override
+        generateAddress: function (network) {
+            // check cache
+            if (!this.__address) {
+                // generate and cache it
+                var key = this.getKey();
+                var fingerprint = key.getData();
+                this.__address = ETHAddress.generate(fingerprint);
+            }
+            return this.__address;
         }
-        return this.__address;
-    };
+    });
 
     //-------- namespace --------
     ns.mkm.ETHMeta = ETHMeta;

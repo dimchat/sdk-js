@@ -132,7 +132,7 @@
     var Utf8Coder = function () {
         Object.call(this);
     };
-    ns.Class(Utf8Coder, Object, [StringCoder])
+    ns.Class(Utf8Coder, Object, [StringCoder], null)
 
     // Override
     Utf8Coder.prototype.encode = function (string) {

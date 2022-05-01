@@ -101,7 +101,7 @@
     var ETHAddress = function (string) {
         ConstantString.call(this, string);
     };
-    ns.Class(ETHAddress, ConstantString, [Address]);
+    ns.Class(ETHAddress, ConstantString, [Address], null);
 
     ETHAddress.prototype.getNetwork = function () {
         return NetworkType.MAIN.valueOf();

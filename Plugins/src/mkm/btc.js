@@ -61,7 +61,7 @@
         }
         this.__network = network;
     };
-    ns.Class(BTCAddress, ConstantString, [Address]);
+    ns.Class(BTCAddress, ConstantString, [Address], null);
 
     BTCAddress.prototype.getNetwork = function () {
         return this.__network;

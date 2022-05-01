@@ -53,35 +53,94 @@
     var RSAPublicKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
+    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey], {
 
-    RSAPublicKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    RSAPublicKey.prototype.getData = function () {
-        var data = this.getValue('data');
-        if (data) {
-            return ns.format.PEM.decodePublicKey(data);
-        } else {
-            throw new Error('public key data not found');
+        // Override
+        getData: function () {
+            var data = this.getValue('data');
+            if (data) {
+                return ns.format.PEM.decodePublicKey(data);
+            } else {
+                throw new Error('public key data not found');
+            }
+        },
+
+        getSize: function () {
+            // TODO: get from key
+
+            var size = this.getValue('keySize');
+            if (size) {
+                return Number(size);
+            } else {
+                return 1024/8; // 128
+            }
+        },
+
+        // Override
+        verify: function (data, signature) {
+            // convert Uint8Array to WordArray
+            data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
+            // convert Uint8Array to Base64
+            signature = ns.format.Base64.encode(signature);
+            // create signer
+            var cipher = parse_key.call(this);
+            //
+            //  verify(data, signature):
+            //    param  WordArray
+            //    param  Base64
+            //    return boolean
+            //
+            return cipher.verify(data, signature, CryptoJS.SHA256);
+        },
+
+        // Override
+        matches: function (sKey) {
+            return AsymmetricKey.matches(sKey, this);
+        },
+
+        // Override
+        encrypt: function (plaintext) {
+            // convert Uint8Array to String
+            plaintext = ns.format.UTF8.decode(plaintext);
+            // create cipher
+            var cipher = parse_key.call(this);
+            //
+            //  encrypt(data):
+            //    param  String
+            //    return Base64|false
+            //
+            var base64 = cipher.encrypt(plaintext);
+            if (base64) {
+                // convert Base64 to Uint8Array
+                var res = ns.format.Base64.decode(base64);
+                if (res.length === this.getSize()) {
+                    return res;
+                }
+                // FIXME: There is a bug in JSEncrypt
+                //        that result.length may be 127 bytes sometimes,
+                //        here we just do it again to reduce error opportunities,
+                //        but it's still going to happen one in about ten thousand times.
+                var hex = cipher.getKey().encrypt(plaintext);
+                if (hex) {
+                    // convert Hex to Uint8Array
+                    res = ns.format.Hex.decode(hex);
+                    if (res.length === this.getSize()) {
+                        return res;
+                    }
+                    throw new Error('Error encrypt result: ' + plaintext);
+                }
+            }
+            throw new Error('RSA encrypt error: ' + plaintext);
         }
-    };
+    });
 
-    RSAPublicKey.prototype.getSize = function () {
-        // TODO: get from key
-
-        var size = this.getValue('keySize');
-        if (size) {
-            return Number(size);
-        } else {
-            return 1024/8; // 128
-        }
-    };
-
-    var x509_header = [48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0];
-    x509_header = new Data(x509_header);
+    var x509_header = new Data([48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0]);
     var parse_key = function () {
         var der = this.getData();
         var key = ns.format.Base64.encode(der);
@@ -94,60 +153,6 @@
             cipher.setPublicKey(key);
         }
         return cipher;
-    };
-
-    RSAPublicKey.prototype.verify = function (data, signature) {
-        // convert Uint8Array to WordArray
-        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
-        // convert Uint8Array to Base64
-        signature = ns.format.Base64.encode(signature);
-        // create signer
-        var cipher = parse_key.call(this);
-        //
-        //  verify(data, signature):
-        //    param  WordArray
-        //    param  Base64
-        //    return boolean
-        //
-        return cipher.verify(data, signature, CryptoJS.SHA256);
-    };
-
-    RSAPublicKey.prototype.matches = function (sKey) {
-        return AsymmetricKey.matches(sKey, this);
-    };
-
-    RSAPublicKey.prototype.encrypt = function (plaintext) {
-        // convert Uint8Array to String
-        plaintext = ns.format.UTF8.decode(plaintext);
-        // create cipher
-        var cipher = parse_key.call(this);
-        //
-        //  encrypt(data):
-        //    param  String
-        //    return Base64|false
-        //
-        var base64 = cipher.encrypt(plaintext);
-        if (base64) {
-            // convert Base64 to Uint8Array
-            var res = ns.format.Base64.decode(base64);
-            if (res.length === this.getSize()) {
-                return res;
-            }
-            // FIXME: There is a bug in JSEncrypt
-            //        that result.length may be 127 bytes sometimes,
-            //        here we just do it again to reduce error opportunities,
-            //        but it's still going to happen one in about ten thousand times.
-            var hex = cipher.getKey().encrypt(plaintext);
-            if (hex) {
-                // convert Hex to Uint8Array
-                res = ns.format.Hex.decode(hex);
-                if (res.length === this.getSize()) {
-                    return res;
-                }
-                throw new Error('Error encrypt result: ' + plaintext);
-            }
-        }
-        throw new Error('RSA encrypt error: ' + plaintext);
     };
 
     //-------- namespace --------
@@ -179,24 +184,100 @@
     var RSAPrivateKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
+    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey], {
 
-    RSAPrivateKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
+        // Override
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
 
-    RSAPrivateKey.prototype.getData = function () {
-        var data = this.getValue('data');
-        if (data) {
-            return ns.format.PEM.decodePrivateKey(data);
-        } else {
-            // generate key
-            var bits = this.getSize() * 8;
-            var pem = generate.call(this, bits);
-            return ns.format.PEM.decodePrivateKey(pem);
+        // Override
+        getData: function () {
+            var data = this.getValue('data');
+            if (data) {
+                return ns.format.PEM.decodePrivateKey(data);
+            } else {
+                // generate key
+                var bits = this.getSize() * 8;
+                var pem = generate.call(this, bits);
+                return ns.format.PEM.decodePrivateKey(pem);
+            }
+        },
+
+        getSize: function () {
+            // TODO: get from key
+
+            var size = this.getValue('keySize');
+            if (size) {
+                return Number(size);
+            } else {
+                return 1024/8; // 128
+            }
+        },
+
+        // Override
+        getPublicKey: function () {
+            // create cipher
+            var key = ns.format.Base64.encode(this.getData());
+            var cipher = new JSEncrypt();
+            cipher.setPrivateKey(key);
+            var pem = cipher.getPublicKey();
+            var info = {
+                'algorithm': this.getValue('algorithm'),
+                'data': pem,
+                'mode': 'ECB',
+                'padding': 'PKCS1',
+                'digest': 'SHA256'
+            };
+            return PublicKey.parse(info);
+        },
+
+        // Override
+        sign: function (data) {
+            // convert Uint8Array to WordArray
+            data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
+            // create signer
+            var cipher = parse_key.call(this);
+            //
+            //  sign(data):
+            //    param  WordArray
+            //    return Base64|false
+            //
+            var base64 = cipher.sign(data, CryptoJS.SHA256, 'sha256');
+            if (base64) {
+                // convert Base64 to Uint8Array
+                return ns.format.Base64.decode(base64);
+            } else {
+                throw new Error('RSA sign error: ' + data);
+            }
+        },
+
+        // Override
+        decrypt: function (data) {
+            // convert Uint8Array to Base64
+            data = ns.format.Base64.encode(data);
+            // create cipher
+            var cipher = parse_key.call(this);
+            //
+            //  decrypt(data):
+            //    param  Base64;
+            //    return String|false
+            //
+            var string = cipher.decrypt(data);
+            if (string) {
+                // convert String to Uint8Array
+                return ns.format.UTF8.encode(string);
+            } else {
+                throw new Error('RSA decrypt error: ' + data);
+            }
+        },
+
+        // Override
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
         }
-    };
+    });
 
     var generate = function (bits) {
         var cipher = new JSEncrypt({default_key_size: bits});
@@ -210,81 +291,12 @@
         return pem;
     };
 
-    RSAPrivateKey.prototype.getSize = function () {
-        // TODO: get from key
-
-        var size = this.getValue('keySize');
-        if (size) {
-            return Number(size);
-        } else {
-            return 1024/8; // 128
-        }
-    };
-
-    RSAPrivateKey.prototype.getPublicKey = function () {
-        // create cipher
-        var key = ns.format.Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
-        var pem = cipher.getPublicKey();
-        var info = {
-            'algorithm': this.getValue('algorithm'),
-            'data': pem,
-            'mode': 'ECB',
-            'padding': 'PKCS1',
-            'digest': 'SHA256'
-        };
-        return PublicKey.parse(info);
-    };
-
     var parse_key = function () {
         var der = this.getData();
         var key = ns.format.Base64.encode(der);
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         return cipher;
-    };
-
-    RSAPrivateKey.prototype.sign = function (data) {
-        // convert Uint8Array to WordArray
-        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
-        // create signer
-        var cipher = parse_key.call(this);
-        //
-        //  sign(data):
-        //    param  WordArray
-        //    return Base64|false
-        //
-        var base64 = cipher.sign(data, CryptoJS.SHA256, 'sha256');
-        if (base64) {
-            // convert Base64 to Uint8Array
-            return ns.format.Base64.decode(base64);
-        } else {
-            throw new Error('RSA sign error: ' + data);
-        }
-    };
-
-    RSAPrivateKey.prototype.decrypt = function (data) {
-        // convert Uint8Array to Base64
-        data = ns.format.Base64.encode(data);
-        // create cipher
-        var cipher = parse_key.call(this);
-        //
-        //  decrypt(data):
-        //    param  Base64;
-        //    return String|false
-        //
-        var string = cipher.decrypt(data);
-        if (string) {
-            // convert String to Uint8Array
-            return ns.format.UTF8.encode(string);
-        } else {
-            throw new Error('RSA decrypt error: ' + data);
-        }
-    };
-
-    RSAPrivateKey.prototype.matches = function (pKey) {
-        return CryptographyKey.matches(pKey, this);
     };
 
     //-------- namespace --------

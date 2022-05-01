@@ -46,7 +46,7 @@
             }
         }
     };
-    ns.Class(bytes, Object, null);
+    ns.Class(bytes, Object, null, null);
     bytes.ZERO = new bytes(new Uint8Array(0), 0, 0);
     bytes.prototype.getBuffer = function () {
         return this._buffer;
@@ -737,7 +737,7 @@
     var Base58Coder = function () {
         Object.call(this);
     };
-    ns.Class(Base58Coder, Object, [DataCoder]);
+    ns.Class(Base58Coder, Object, [DataCoder], null);
     Base58Coder.prototype.encode = function (data) {
         return bs58.encode(data);
     };
@@ -816,7 +816,7 @@
     var Base64Coder = function () {
         Object.call(this);
     };
-    ns.Class(Base64Coder, Object, [DataCoder]);
+    ns.Class(Base64Coder, Object, [DataCoder], null);
     Base64Coder.prototype.encode = function (data) {
         return base64_encode(data);
     };
@@ -901,7 +901,7 @@
     var Utf8Coder = function () {
         Object.call(this);
     };
-    ns.Class(Utf8Coder, Object, [StringCoder]);
+    ns.Class(Utf8Coder, Object, [StringCoder], null);
     Utf8Coder.prototype.encode = function (string) {
         return utf8_encode(string);
     };
@@ -915,7 +915,7 @@
     var hash = function () {
         Object.call(this);
     };
-    ns.Class(hash, Object, [DataDigester]);
+    ns.Class(hash, Object, [DataDigester], null);
     hash.prototype.digest = function (data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -929,7 +929,7 @@
     var hash = function () {
         Object.call(this);
     };
-    ns.Class(hash, Object, [DataDigester]);
+    ns.Class(hash, Object, [DataDigester], null);
     hash.prototype.digest = function (data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -943,7 +943,7 @@
     var hash = function () {
         Object.call(this);
     };
-    ns.Class(hash, Object, [DataDigester]);
+    ns.Class(hash, Object, [DataDigester], null);
     hash.prototype.digest = function (data) {
         var hex = ns.format.Hex.encode(data);
         var array = CryptoJS.enc.Hex.parse(hex);
@@ -957,7 +957,7 @@
     var hash = function () {
         Object.call(this);
     };
-    ns.Class(hash, Object, [DataDigester]);
+    ns.Class(hash, Object, [DataDigester], null);
     hash.prototype.digest = function (data) {
         var array = window.keccak256.update(data).digest();
         return new Uint8Array(array);
@@ -1058,7 +1058,7 @@
     var pem = function () {
         Object.call(this);
     };
-    ns.Class(pem, Object, null);
+    ns.Class(pem, Object, null, null);
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
     };
@@ -1084,32 +1084,61 @@
     var RSAPublicKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey]);
-    RSAPublicKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    RSAPublicKey.prototype.getData = function () {
-        var data = this.getValue("data");
-        if (data) {
-            return ns.format.PEM.decodePublicKey(data);
-        } else {
-            throw new Error("public key data not found");
+    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getData: function () {
+            var data = this.getValue("data");
+            if (data) {
+                return ns.format.PEM.decodePublicKey(data);
+            } else {
+                throw new Error("public key data not found");
+            }
+        },
+        getSize: function () {
+            var size = this.getValue("keySize");
+            if (size) {
+                return Number(size);
+            } else {
+                return 1024 / 8;
+            }
+        },
+        verify: function (data, signature) {
+            data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
+            signature = ns.format.Base64.encode(signature);
+            var cipher = parse_key.call(this);
+            return cipher.verify(data, signature, CryptoJS.SHA256);
+        },
+        matches: function (sKey) {
+            return AsymmetricKey.matches(sKey, this);
+        },
+        encrypt: function (plaintext) {
+            plaintext = ns.format.UTF8.decode(plaintext);
+            var cipher = parse_key.call(this);
+            var base64 = cipher.encrypt(plaintext);
+            if (base64) {
+                var res = ns.format.Base64.decode(base64);
+                if (res.length === this.getSize()) {
+                    return res;
+                }
+                var hex = cipher.getKey().encrypt(plaintext);
+                if (hex) {
+                    res = ns.format.Hex.decode(hex);
+                    if (res.length === this.getSize()) {
+                        return res;
+                    }
+                    throw new Error("Error encrypt result: " + plaintext);
+                }
+            }
+            throw new Error("RSA encrypt error: " + plaintext);
         }
-    };
-    RSAPublicKey.prototype.getSize = function () {
-        var size = this.getValue("keySize");
-        if (size) {
-            return Number(size);
-        } else {
-            return 1024 / 8;
-        }
-    };
-    var x509_header = [
+    });
+    var x509_header = new Data([
         48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3,
         -127, -115, 0
-    ];
-    x509_header = new Data(x509_header);
+    ]);
     var parse_key = function () {
         var der = this.getData();
         var key = ns.format.Base64.encode(der);
@@ -1121,35 +1150,6 @@
             cipher.setPublicKey(key);
         }
         return cipher;
-    };
-    RSAPublicKey.prototype.verify = function (data, signature) {
-        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
-        signature = ns.format.Base64.encode(signature);
-        var cipher = parse_key.call(this);
-        return cipher.verify(data, signature, CryptoJS.SHA256);
-    };
-    RSAPublicKey.prototype.matches = function (sKey) {
-        return AsymmetricKey.matches(sKey, this);
-    };
-    RSAPublicKey.prototype.encrypt = function (plaintext) {
-        plaintext = ns.format.UTF8.decode(plaintext);
-        var cipher = parse_key.call(this);
-        var base64 = cipher.encrypt(plaintext);
-        if (base64) {
-            var res = ns.format.Base64.decode(base64);
-            if (res.length === this.getSize()) {
-                return res;
-            }
-            var hex = cipher.getKey().encrypt(plaintext);
-            if (hex) {
-                res = ns.format.Hex.decode(hex);
-                if (res.length === this.getSize()) {
-                    return res;
-                }
-                throw new Error("Error encrypt result: " + plaintext);
-            }
-        }
-        throw new Error("RSA encrypt error: " + plaintext);
     };
     ns.crypto.RSAPublicKey = RSAPublicKey;
     ns.crypto.registers("RSAPublicKey");
@@ -1163,21 +1163,67 @@
     var RSAPrivateKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey]);
-    RSAPrivateKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    RSAPrivateKey.prototype.getData = function () {
-        var data = this.getValue("data");
-        if (data) {
-            return ns.format.PEM.decodePrivateKey(data);
-        } else {
-            var bits = this.getSize() * 8;
-            var pem = generate.call(this, bits);
-            return ns.format.PEM.decodePrivateKey(pem);
+    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getData: function () {
+            var data = this.getValue("data");
+            if (data) {
+                return ns.format.PEM.decodePrivateKey(data);
+            } else {
+                var bits = this.getSize() * 8;
+                var pem = generate.call(this, bits);
+                return ns.format.PEM.decodePrivateKey(pem);
+            }
+        },
+        getSize: function () {
+            var size = this.getValue("keySize");
+            if (size) {
+                return Number(size);
+            } else {
+                return 1024 / 8;
+            }
+        },
+        getPublicKey: function () {
+            var key = ns.format.Base64.encode(this.getData());
+            var cipher = new JSEncrypt();
+            cipher.setPrivateKey(key);
+            var pem = cipher.getPublicKey();
+            var info = {
+                algorithm: this.getValue("algorithm"),
+                data: pem,
+                mode: "ECB",
+                padding: "PKCS1",
+                digest: "SHA256"
+            };
+            return PublicKey.parse(info);
+        },
+        sign: function (data) {
+            data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
+            var cipher = parse_key.call(this);
+            var base64 = cipher.sign(data, CryptoJS.SHA256, "sha256");
+            if (base64) {
+                return ns.format.Base64.decode(base64);
+            } else {
+                throw new Error("RSA sign error: " + data);
+            }
+        },
+        decrypt: function (data) {
+            data = ns.format.Base64.encode(data);
+            var cipher = parse_key.call(this);
+            var string = cipher.decrypt(data);
+            if (string) {
+                return ns.format.UTF8.encode(string);
+            } else {
+                throw new Error("RSA decrypt error: " + data);
+            }
+        },
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
         }
-    };
+    });
     var generate = function (bits) {
         var cipher = new JSEncrypt({ default_key_size: bits });
         var key = cipher.getKey();
@@ -1188,57 +1234,12 @@
         this.setValue("digest", "SHA256");
         return pem;
     };
-    RSAPrivateKey.prototype.getSize = function () {
-        var size = this.getValue("keySize");
-        if (size) {
-            return Number(size);
-        } else {
-            return 1024 / 8;
-        }
-    };
-    RSAPrivateKey.prototype.getPublicKey = function () {
-        var key = ns.format.Base64.encode(this.getData());
-        var cipher = new JSEncrypt();
-        cipher.setPrivateKey(key);
-        var pem = cipher.getPublicKey();
-        var info = {
-            algorithm: this.getValue("algorithm"),
-            data: pem,
-            mode: "ECB",
-            padding: "PKCS1",
-            digest: "SHA256"
-        };
-        return PublicKey.parse(info);
-    };
     var parse_key = function () {
         var der = this.getData();
         var key = ns.format.Base64.encode(der);
         var cipher = new JSEncrypt();
         cipher.setPrivateKey(key);
         return cipher;
-    };
-    RSAPrivateKey.prototype.sign = function (data) {
-        data = CryptoJS.enc.Hex.parse(ns.format.Hex.encode(data));
-        var cipher = parse_key.call(this);
-        var base64 = cipher.sign(data, CryptoJS.SHA256, "sha256");
-        if (base64) {
-            return ns.format.Base64.decode(base64);
-        } else {
-            throw new Error("RSA sign error: " + data);
-        }
-    };
-    RSAPrivateKey.prototype.decrypt = function (data) {
-        data = ns.format.Base64.encode(data);
-        var cipher = parse_key.call(this);
-        var string = cipher.decrypt(data);
-        if (string) {
-            return ns.format.UTF8.encode(string);
-        } else {
-            throw new Error("RSA decrypt error: " + data);
-        }
-    };
-    RSAPrivateKey.prototype.matches = function (pKey) {
-        return CryptographyKey.matches(pKey, this);
     };
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
     ns.crypto.registers("RSAPrivateKey");
@@ -1300,45 +1301,61 @@
     var ECCPublicKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(ECCPublicKey, Dictionary, [PublicKey]);
-    ECCPublicKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    ECCPublicKey.prototype.getData = function () {
-        var pem = this.getValue("data");
-        if (!pem || pem.length === 0) {
-            throw new Error("ECC public key data not found");
-        } else {
-            if (pem.length === 66) {
-                return ns.format.Hex.decode(pem);
+    ns.Class(ECCPublicKey, Dictionary, [PublicKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getData: function () {
+            var pem = this.getValue("data");
+            if (!pem || pem.length === 0) {
+                throw new Error("ECC public key data not found");
             } else {
-                if (pem.length === 130) {
+                if (pem.length === 66) {
                     return ns.format.Hex.decode(pem);
                 } else {
-                    var pos1 = pem.indexOf("-----BEGIN PUBLIC KEY-----");
-                    if (pos1 >= 0) {
-                        pos1 += "-----BEGIN PUBLIC KEY-----".length;
-                        var pos2 = pem.indexOf("-----END PUBLIC KEY-----", pos1);
-                        if (pos2 > 0) {
-                            var base64 = pem.substr(pos1, pos2 - pos1);
-                            var data = ns.format.Base64.decode(base64);
-                            return data.subarray(data.length - 65);
+                    if (pem.length === 130) {
+                        return ns.format.Hex.decode(pem);
+                    } else {
+                        var pos1 = pem.indexOf("-----BEGIN PUBLIC KEY-----");
+                        if (pos1 >= 0) {
+                            pos1 += "-----BEGIN PUBLIC KEY-----".length;
+                            var pos2 = pem.indexOf("-----END PUBLIC KEY-----", pos1);
+                            if (pos2 > 0) {
+                                var base64 = pem.substr(pos1, pos2 - pos1);
+                                var data = ns.format.Base64.decode(base64);
+                                return data.subarray(data.length - 65);
+                            }
                         }
                     }
                 }
             }
+            throw new EvalError("key data error: " + pem);
+        },
+        getSize: function () {
+            var size = this.getValue("keySize");
+            if (size) {
+                return Number(size);
+            } else {
+                return this.getData().length / 8;
+            }
+        },
+        verify: function (data, signature) {
+            var hash = ns.digest.SHA256.digest(data);
+            var z = Secp256k1.uint256(hash, 16);
+            var sig = ecc_der_to_sig(signature, signature.length);
+            if (!sig) {
+                throw new EvalError("signature error: " + signature);
+            }
+            var sig_r = Secp256k1.uint256(sig.r, 16);
+            var sig_s = Secp256k1.uint256(sig.s, 16);
+            var pub = decode_points(this.getData());
+            return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
+        },
+        matches: function (sKey) {
+            return AsymmetricKey.matches(sKey, this);
         }
-        throw new EvalError("key data error: " + pem);
-    };
-    ECCPublicKey.prototype.getSize = function () {
-        var size = this.getValue("keySize");
-        if (size) {
-            return Number(size);
-        } else {
-            return this.getData().length / 8;
-        }
-    };
+    });
     var decode_points = function (data) {
         var x, y;
         if (data.length === 65) {
@@ -1361,21 +1378,6 @@
             }
         }
         return { x: x, y: y };
-    };
-    ECCPublicKey.prototype.verify = function (data, signature) {
-        var hash = ns.digest.SHA256.digest(data);
-        var z = Secp256k1.uint256(hash, 16);
-        var sig = ecc_der_to_sig(signature, signature.length);
-        if (!sig) {
-            throw new EvalError("signature error: " + signature);
-        }
-        var sig_r = Secp256k1.uint256(sig.r, 16);
-        var sig_s = Secp256k1.uint256(sig.s, 16);
-        var pub = decode_points(this.getData());
-        return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
-    };
-    ECCPublicKey.prototype.matches = function (sKey) {
-        return AsymmetricKey.matches(sKey, this);
     };
     ns.crypto.ECCPublicKey = ECCPublicKey;
     ns.crypto.registers("ECCPublicKey");
@@ -1445,27 +1447,53 @@
         this.__privateKey = keyPair.privateKey;
         this.__publicKey = keyPair.publicKey;
     };
-    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey]);
-    ECCPrivateKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    ECCPrivateKey.prototype.getData = function () {
-        var data = this.getValue("data");
-        if (data && data.length > 0) {
-            return ns.format.Hex.decode(data);
-        } else {
-            throw new Error("ECC private key data not found");
+    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getData: function () {
+            var data = this.getValue("data");
+            if (data && data.length > 0) {
+                return ns.format.Hex.decode(data);
+            } else {
+                throw new Error("ECC private key data not found");
+            }
+        },
+        getSize: function () {
+            var size = this.getValue("keySize");
+            if (size) {
+                return Number(size);
+            } else {
+                return this.getData().length / 8;
+            }
+        },
+        getPublicKey: function () {
+            var pub = this.__publicKey;
+            var data = "04" + pub.x + pub.y;
+            var info = {
+                algorithm: this.getValue("algorithm"),
+                data: data,
+                curve: "secp256k1",
+                digest: "SHA256"
+            };
+            return PublicKey.parse(info);
+        },
+        sign: function (data) {
+            var hash = ns.digest.SHA256.digest(data);
+            var z = Secp256k1.uint256(hash, 16);
+            var sig = Secp256k1.ecsign(this.__privateKey, z);
+            var sig_r = ns.format.Hex.decode(sig.r);
+            var sig_s = ns.format.Hex.decode(sig.s);
+            var der = new Uint8Array(72);
+            var sig_len = ecc_sig_to_der(sig_r, sig_s, der);
+            if (sig_len === der.length) {
+                return der;
+            } else {
+                return der.subarray(0, sig_len);
+            }
         }
-    };
-    ECCPrivateKey.prototype.getSize = function () {
-        var size = this.getValue("keySize");
-        if (size) {
-            return Number(size);
-        } else {
-            return this.getData().length / 8;
-        }
-    };
+    });
     var get_key_pair = function () {
         var sKey;
         var data = this.getData();
@@ -1488,31 +1516,6 @@
         this.setValue("curve", "secp256k1");
         this.setValue("digest", "SHA256");
         return key;
-    };
-    ECCPrivateKey.prototype.getPublicKey = function () {
-        var pub = this.__publicKey;
-        var data = "04" + pub.x + pub.y;
-        var info = {
-            algorithm: this.getValue("algorithm"),
-            data: data,
-            curve: "secp256k1",
-            digest: "SHA256"
-        };
-        return PublicKey.parse(info);
-    };
-    ECCPrivateKey.prototype.sign = function (data) {
-        var hash = ns.digest.SHA256.digest(data);
-        var z = Secp256k1.uint256(hash, 16);
-        var sig = Secp256k1.ecsign(this.__privateKey, z);
-        var sig_r = ns.format.Hex.decode(sig.r);
-        var sig_s = ns.format.Hex.decode(sig.s);
-        var der = new Uint8Array(72);
-        var sig_len = ecc_sig_to_der(sig_r, sig_s, der);
-        if (sig_len === der.length) {
-            return der;
-        } else {
-            return der.subarray(0, sig_len);
-        }
     };
     ns.crypto.ECCPrivateKey = ECCPrivateKey;
     ns.crypto.registers("ECCPrivateKey");
@@ -1542,78 +1545,79 @@
     var AESKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(AESKey, Dictionary, [SymmetricKey]);
-    AESKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    AESKey.prototype.getSize = function () {
-        var size = this.getValue("keySize");
-        if (size) {
-            return Number(size);
-        } else {
-            return 32;
+    ns.Class(AESKey, Dictionary, [SymmetricKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getSize: function () {
+            var size = this.getValue("keySize");
+            if (size) {
+                return Number(size);
+            } else {
+                return 32;
+            }
+        },
+        getBlockSize: function () {
+            var size = this.getValue("blockSize");
+            if (size) {
+                return Number(size);
+            } else {
+                return 16;
+            }
+        },
+        getData: function () {
+            var data = this.getValue("data");
+            if (data) {
+                return ns.format.Base64.decode(data);
+            }
+            var keySize = this.getSize();
+            var pwd = random_data(keySize);
+            this.setValue("data", ns.format.Base64.encode(pwd));
+            var blockSize = this.getBlockSize();
+            var iv = random_data(blockSize);
+            this.setValue("iv", ns.format.Base64.encode(iv));
+            return pwd;
+        },
+        getInitVector: function () {
+            var iv = this.getValue("iv");
+            if (iv) {
+                return ns.format.Base64.decode(iv);
+            }
+            var zeros = zero_data(this.getBlockSize());
+            this.setValue("iv", ns.format.Base64.encode(zeros));
+            return zeros;
+        },
+        encrypt: function (plaintext) {
+            var data = this.getData();
+            var iv = this.getInitVector();
+            var keyWordArray = bytes2words(data);
+            var ivWordArray = bytes2words(iv);
+            var message = bytes2words(plaintext);
+            var cipher = CryptoJS.AES.encrypt(message, keyWordArray, {
+                iv: ivWordArray
+            });
+            if (cipher.hasOwnProperty("ciphertext")) {
+                return words2bytes(cipher.ciphertext);
+            } else {
+                throw new TypeError("failed to encrypt message with key: " + this);
+            }
+        },
+        decrypt: function (ciphertext) {
+            var data = this.getData();
+            var iv = this.getInitVector();
+            var keyWordArray = bytes2words(data);
+            var ivWordArray = bytes2words(iv);
+            var cipher = { ciphertext: bytes2words(ciphertext) };
+            var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, {
+                iv: ivWordArray
+            });
+            return words2bytes(plaintext);
+        },
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
         }
-    };
-    AESKey.prototype.getBlockSize = function () {
-        var size = this.getValue("blockSize");
-        if (size) {
-            return Number(size);
-        } else {
-            return 16;
-        }
-    };
-    AESKey.prototype.getData = function () {
-        var data = this.getValue("data");
-        if (data) {
-            return ns.format.Base64.decode(data);
-        }
-        var keySize = this.getSize();
-        var pwd = random_data(keySize);
-        this.setValue("data", ns.format.Base64.encode(pwd));
-        var blockSize = this.getBlockSize();
-        var iv = random_data(blockSize);
-        this.setValue("iv", ns.format.Base64.encode(iv));
-        return pwd;
-    };
-    AESKey.prototype.getInitVector = function () {
-        var iv = this.getValue("iv");
-        if (iv) {
-            return ns.format.Base64.decode(iv);
-        }
-        var zeros = zero_data(this.getBlockSize());
-        this.setValue("iv", ns.format.Base64.encode(zeros));
-        return zeros;
-    };
-    AESKey.prototype.encrypt = function (plaintext) {
-        var data = this.getData();
-        var iv = this.getInitVector();
-        var keyWordArray = bytes2words(data);
-        var ivWordArray = bytes2words(iv);
-        var message = bytes2words(plaintext);
-        var cipher = CryptoJS.AES.encrypt(message, keyWordArray, {
-            iv: ivWordArray
-        });
-        if (cipher.hasOwnProperty("ciphertext")) {
-            return words2bytes(cipher.ciphertext);
-        } else {
-            throw new TypeError("failed to encrypt message with key: " + this);
-        }
-    };
-    AESKey.prototype.decrypt = function (ciphertext) {
-        var data = this.getData();
-        var iv = this.getInitVector();
-        var keyWordArray = bytes2words(data);
-        var ivWordArray = bytes2words(iv);
-        var cipher = { ciphertext: bytes2words(ciphertext) };
-        var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, {
-            iv: ivWordArray
-        });
-        return words2bytes(plaintext);
-    };
-    AESKey.prototype.matches = function (pKey) {
-        return CryptographyKey.matches(pKey, this);
-    };
+    });
     ns.crypto.AESKey = AESKey;
     ns.crypto.registers("AESKey");
 })(MONKEY);
@@ -1624,7 +1628,7 @@
     var Password = function () {
         Object.call(this);
     };
-    ns.Class(Password, Object, null);
+    ns.Class(Password, Object, null, null);
     Password.KEY_SIZE = 32;
     Password.BLOCK_SIZE = 16;
     Password.generate = function (password) {
@@ -1666,20 +1670,24 @@
     var PlainKey = function (key) {
         Dictionary.call(this, key);
     };
-    ns.Class(PlainKey, Dictionary, [SymmetricKey]);
-    PlainKey.prototype.getAlgorithm = function () {
-        var dict = this.toMap();
-        return CryptographyKey.getAlgorithm(dict);
-    };
-    PlainKey.prototype.getData = function () {
-        return null;
-    };
-    PlainKey.prototype.encrypt = function (data) {
-        return data;
-    };
-    PlainKey.prototype.decrypt = function (data) {
-        return data;
-    };
+    ns.Class(PlainKey, Dictionary, [SymmetricKey], {
+        getAlgorithm: function () {
+            var dict = this.toMap();
+            return CryptographyKey.getAlgorithm(dict);
+        },
+        getData: function () {
+            return null;
+        },
+        encrypt: function (data) {
+            return data;
+        },
+        decrypt: function (data) {
+            return data;
+        },
+        matches: function (pKey) {
+            return CryptographyKey.matches(pKey, this);
+        }
+    });
     var plain_key = null;
     PlainKey.getInstance = function () {
         if (!plain_key) {
@@ -1704,7 +1712,7 @@
         }
         this.__network = network;
     };
-    ns.Class(BTCAddress, ConstantString, [Address]);
+    ns.Class(BTCAddress, ConstantString, [Address], null);
     BTCAddress.prototype.getNetwork = function () {
         return this.__network;
     };
@@ -1812,7 +1820,7 @@
     var ETHAddress = function (string) {
         ConstantString.call(this, string);
     };
-    ns.Class(ETHAddress, ConstantString, [Address]);
+    ns.Class(ETHAddress, ConstantString, [Address], null);
     ETHAddress.prototype.getNetwork = function () {
         return NetworkType.MAIN.valueOf();
     };
@@ -1879,18 +1887,19 @@
         }
         this.__addresses = {};
     };
-    ns.Class(DefaultMeta, BaseMeta, null);
-    DefaultMeta.prototype.generateAddress = function (network) {
-        if (network instanceof NetworkType) {
-            network = network.valueOf();
+    ns.Class(DefaultMeta, BaseMeta, null, {
+        generateAddress: function (network) {
+            if (network instanceof NetworkType) {
+                network = network.valueOf();
+            }
+            var address = this.__addresses[network];
+            if (!address) {
+                address = BTCAddress.generate(this.getFingerprint(), network);
+                this.__addresses[network] = address;
+            }
+            return address;
         }
-        var address = this.__addresses[network];
-        if (!address) {
-            address = BTCAddress.generate(this.getFingerprint(), network);
-            this.__addresses[network] = address;
-        }
-        return address;
-    };
+    });
     ns.mkm.DefaultMeta = DefaultMeta;
     ns.mkm.registers("DefaultMeta");
 })(MingKeMing);
@@ -1920,15 +1929,16 @@
         }
         this.__address = null;
     };
-    ns.Class(BTCMeta, BaseMeta, null);
-    BTCMeta.prototype.generateAddress = function (network) {
-        if (!this.__address) {
-            var key = this.getKey();
-            var fingerprint = key.getData();
-            this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+    ns.Class(BTCMeta, BaseMeta, null, {
+        generateAddress: function (network) {
+            if (!this.__address) {
+                var key = this.getKey();
+                var fingerprint = key.getData();
+                this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+            }
+            return this.__address;
         }
-        return this.__address;
-    };
+    });
     ns.mkm.BTCMeta = BTCMeta;
     ns.mkm.registers("BTCMeta");
 })(MingKeMing);
@@ -1957,15 +1967,16 @@
         }
         this.__address = null;
     };
-    ns.Class(ETHMeta, BaseMeta, null);
-    ETHMeta.prototype.generateAddress = function (network) {
-        if (!this.__address) {
-            var key = this.getKey();
-            var fingerprint = key.getData();
-            this.__address = ETHAddress.generate(fingerprint);
+    ns.Class(ETHMeta, BaseMeta, null, {
+        generateAddress: function (network) {
+            if (!this.__address) {
+                var key = this.getKey();
+                var fingerprint = key.getData();
+                this.__address = ETHAddress.generate(fingerprint);
+            }
+            return this.__address;
         }
-        return this.__address;
-    };
+    });
     ns.mkm.ETHMeta = ETHMeta;
     ns.mkm.registers("ETHMeta");
 })(MingKeMing);
@@ -1977,7 +1988,7 @@
     var GeneralAddressFactory = function () {
         AddressFactory.call(this);
     };
-    ns.Class(GeneralAddressFactory, AddressFactory, null);
+    ns.Class(GeneralAddressFactory, AddressFactory, null, null);
     GeneralAddressFactory.prototype.createAddress = function (address) {
         if (address.length === 42) {
             return ETHAddress.parse(address);
@@ -1996,7 +2007,7 @@
         Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralMetaFactory, Object, [Meta.Factory]);
+    ns.Class(GeneralMetaFactory, Object, [Meta.Factory], null);
     GeneralMetaFactory.prototype.createMeta = function (key, seed, fingerprint) {
         if (MetaType.MKM.equals(this.__type)) {
             return new DefaultMeta(this.__type, key, seed, fingerprint);
@@ -2083,7 +2094,7 @@
         Object.call(this);
         this.__type = type;
     };
-    ns.Class(GeneralDocumentFactory, Object, [Document.Factory]);
+    ns.Class(GeneralDocumentFactory, Object, [Document.Factory], null);
     GeneralDocumentFactory.prototype.createDocument = function (
         identifier,
         data,
@@ -2148,7 +2159,7 @@
     var AESKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(AESKeyFactory, Object, [SymmetricKey.Factory]);
+    ns.Class(AESKeyFactory, Object, [SymmetricKey.Factory], null);
     AESKeyFactory.prototype.generateSymmetricKey = function () {
         return this.parseSymmetricKey({ algorithm: SymmetricKey.AES });
     };
@@ -2166,7 +2177,7 @@
     var PlainKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(PlainKeyFactory, Object, [SymmetricKey.Factory]);
+    ns.Class(PlainKeyFactory, Object, [SymmetricKey.Factory], null);
     PlainKeyFactory.prototype.generateSymmetricKey = function () {
         return PlainKey.getInstance();
     };
@@ -2187,7 +2198,7 @@
     var RSAPrivateKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(RSAPrivateKeyFactory, Object, [PrivateKey.Factory]);
+    ns.Class(RSAPrivateKeyFactory, Object, [PrivateKey.Factory], null);
     RSAPrivateKeyFactory.prototype.generatePrivateKey = function () {
         return this.parsePrivateKey({ algorithm: AsymmetricKey.RSA });
     };
@@ -2197,7 +2208,7 @@
     var RSAPublicKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(RSAPublicKeyFactory, Object, [PublicKey.Factory]);
+    ns.Class(RSAPublicKeyFactory, Object, [PublicKey.Factory], null);
     RSAPublicKeyFactory.prototype.parsePublicKey = function (key) {
         return new RSAPublicKey(key);
     };
@@ -2219,7 +2230,7 @@
     var ECCPrivateKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(ECCPrivateKeyFactory, Object, [PrivateKey.Factory]);
+    ns.Class(ECCPrivateKeyFactory, Object, [PrivateKey.Factory], null);
     ECCPrivateKeyFactory.prototype.generatePrivateKey = function () {
         return this.parsePrivateKey({ algorithm: AsymmetricKey.ECC });
     };
@@ -2229,7 +2240,7 @@
     var ECCPublicKeyFactory = function () {
         Object.call(this);
     };
-    ns.Class(ECCPublicKeyFactory, Object, [PublicKey.Factory]);
+    ns.Class(ECCPublicKeyFactory, Object, [PublicKey.Factory], null);
     ECCPublicKeyFactory.prototype.parsePublicKey = function (key) {
         return new ECCPublicKey(key);
     };

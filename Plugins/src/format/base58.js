@@ -189,7 +189,7 @@
     var Base58Coder = function () {
         Object.call(this);
     };
-    ns.Class(Base58Coder, Object, [DataCoder]);
+    ns.Class(Base58Coder, Object, [DataCoder], null);
 
     // Override
     Base58Coder.prototype.encode = function (data) {
