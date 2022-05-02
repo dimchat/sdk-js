@@ -261,4 +261,4 @@
 
     ns.registers('MessagePacker');
 
-})(DIMP);
+})(DIMSDK);

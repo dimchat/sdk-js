@@ -73,4 +73,4 @@
 
     ns.registers('CipherKeyDelegate');
 
-})(DIMP);
+})(DIMSDK);

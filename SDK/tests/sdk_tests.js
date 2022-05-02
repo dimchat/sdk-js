@@ -8,12 +8,54 @@
     var ClientFacebook = function () {
         Facebook.call(this);
     };
-    ns.Class(ClientFacebook, Facebook, null);
+    ns.Class(ClientFacebook, Facebook, null, {
 
-    ClientFacebook.prototype.getMeta = function (identifier) {
-    };
+        // Override
+        getMeta: function (identifier) {
+            // TODO:
+        }
+    });
 
     ns.ClientFacebook = ClientFacebook;
+
+}(DIMSDK);
+
+!function (ns) {
+    'use strict';
+
+    var Messenger = ns.Messenger;
+    var MessagePacker = ns.MessagePacker;
+    var MessageProcessor = ns.MessageProcessor;
+
+    var ClientMessenger = function (facebook, keyCache) {
+        Messenger.call(this);
+        this.__facebook = facebook;
+        this.__keyCache = keyCache;
+        this.__packer = new MessagePacker(facebook, this);
+        this.__processor = new MessageProcessor(facebook, this);
+    };
+    ns.Class(ClientMessenger, Messenger, null, {
+        // Override
+        getEntityDelegate: function () {
+            return this.__facebook;
+        },
+        // Override
+        getCipherKeyDelegate: function () {
+            return this.__keyCache;
+        },
+        // Override
+        getPacker: function () {
+            return this.__packer;
+        },
+        // Override
+        getProcessor: function () {
+            return this.__processor;
+        }
+    });
+
+    ns.ClientMessenger = ClientMessenger;
+
+    ns.registerAllFactories();
 
 }(DIMSDK);
 
@@ -29,27 +71,18 @@ sdk_tests = [];
 
     var PlainKey = ns.crypto.PlainKey;
 
-    var TextContent = ns.protocol.TextContent;
     var Envelope = ns.protocol.Envelope;
     var InstantMessage = ns.protocol.InstantMessage;
+    var BaseTextContent = ns.dkd.BaseTextContent;
 
     var KeyStore = ns.KeyStore;
     var ClientFacebook = ns.ClientFacebook;
-
-    var MessagePacker = ns.MessagePacker;
-    var MessageProcessor = ns.MessageProcessor;
-    var MessageTransmitter = ns.MessageTransmitter;
-    var Messenger = ns.Messenger;
+    var ClientMessenger = ns.ClientMessenger;
 
     var key_cache = new KeyStore();
     var barrack = new ClientFacebook();
 
-    var transceiver = new Messenger();
-    transceiver.setCipherKeyDelegate(key_cache);
-    transceiver.setEntityDelegate(barrack);
-    transceiver.setPacker(new MessagePacker(transceiver));
-    transceiver.setProcessor(new MessageProcessor(transceiver));
-    transceiver.setTransmitter(new MessageTransmitter(transceiver));
+    var transceiver = new ClientMessenger(barrack, key_cache);
 
     var hulk = ID.parse('hulk@4YeVEN3aUnvC1DNUufCq1bs9zoBSJTzVEj');
     var moki = ID.parse('moki@4WDfe3zZ4T7opFSi3iDAKiuTnUHjxmXekk');
@@ -82,7 +115,7 @@ sdk_tests = [];
 
     var test_messenger = function () {
         // test
-        var content = new TextContent('Hello world!');
+        var content = new BaseTextContent('Hello world!');
         log('content: ', content);
         var env = Envelope.create(sender, receiver, 0);
         log('envelope: ', env);

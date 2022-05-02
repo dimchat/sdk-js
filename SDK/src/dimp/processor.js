@@ -213,4 +213,4 @@
 
     ns.registers('MessageProcessor');
 
-})(DIMP);
+})(DIMSDK);

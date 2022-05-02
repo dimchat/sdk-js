@@ -35,7 +35,6 @@
 (function (ns) {
     'use strict';
 
-    var obj = ns.type.Object;
     var CipherKeyDelegate = ns.CipherKeyDelegate;
 
     /**
@@ -44,12 +43,12 @@
      *  Manage keys for conversations
      */
     var KeyCache = function () {
-        obj.call(this);
+        Object.call(this);
         // memory cache
         this.keyMap = {};
         this.isDirty = false;
     };
-    ns.Class(KeyCache, obj, [CipherKeyDelegate]);
+    ns.Class(KeyCache, Object, [CipherKeyDelegate], null);
 
     /**
      *  Trigger for loading cipher key table
@@ -85,7 +84,7 @@
      * @returns {boolean}
      */
     KeyCache.prototype.saveKeys = function (map) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return false;
     };
 
@@ -96,7 +95,7 @@
      * @returns {{}}
      */
     KeyCache.prototype.loadKeys = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -196,41 +195,41 @@
         // current user
         this.user = null;
     };
-    ns.Class(KeyStore, KeyCache, null);
+    ns.Class(KeyStore, KeyCache, null, {
 
-    KeyStore.prototype.getUser = function () {
-        return this.user;
-    };
-    KeyStore.prototype.setUser = function (user) {
-        if (this.user) {
-            // save key map for old user
-            this.flush();
-            if (this.user.equals(user)) {
-                // user not changed
+        getUser: function () {
+            return this.user;
+        },
+        setUser: function (user) {
+            if (this.user) {
+                // save key map for old user
+                this.flush();
+                if (this.user.equals(user)) {
+                    // user not changed
+                    return;
+                }
+            }
+            if (!user) {
+                this.user = null;
                 return;
             }
-        }
-        if (!user) {
-            this.user = null;
-            return;
-        }
-        // change current user
-        this.user = user;
-        var keys = this.loadKeys();
-        if (keys) {
-            this.updateKeys(keys);
-        }
-    };
+            // change current user
+            this.user = user;
+            var keys = this.loadKeys();
+            if (keys) {
+                this.updateKeys(keys);
+            }
+        },
 
-    // noinspection JSUnusedLocalSymbols
-    KeyStore.prototype.saveKeys = function(map) {
-        // do nothing
-        return false
-    };
-    KeyStore.prototype.loadKeys = function() {
-        // do nothing
-        return null
-    };
+        saveKeys: function(map) {
+            // do nothing
+            return false
+        },
+        loadKeys: function() {
+            // do nothing
+            return null
+        }
+    });
 
     //-------- namespace --------
     ns.KeyStore = KeyStore;
