@@ -34,7 +34,6 @@
 (function (ns) {
     'use strict';
 
-    var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
 
     var CryptographyKey = ns.crypto.CryptographyKey;
@@ -117,30 +116,23 @@
             //
             var base64 = cipher.encrypt(plaintext);
             if (base64) {
+                var keySize = this.getSize();
                 // convert Base64 to Uint8Array
                 var res = ns.format.Base64.decode(base64);
-                if (res.length === this.getSize()) {
+                if (res.length === keySize) {
                     return res;
                 }
                 // FIXME: There is a bug in JSEncrypt
-                //        that result.length may be 127 bytes sometimes,
-                //        here we just do it again to reduce error opportunities,
-                //        but it's still going to happen one in about ten thousand times.
-                var hex = cipher.getKey().encrypt(plaintext);
-                if (hex) {
-                    // convert Hex to Uint8Array
-                    res = ns.format.Hex.decode(hex);
-                    if (res.length === this.getSize()) {
-                        return res;
-                    }
-                    throw new Error('Error encrypt result: ' + plaintext);
-                }
+                //        see https://github.com/travist/jsencrypt/issues/158
+                var pad = new Uint8Array(keySize);
+                pad.set(res, keySize - res.length);
+                return pad;
             }
             throw new Error('RSA encrypt error: ' + plaintext);
         }
     });
 
-    var x509_header = new Data([48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0]);
+    var x509_header = new Uint8Array([48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3, -127, -115, 0]);
     var parse_key = function () {
         var der = this.getData();
         var key = ns.format.Base64.encode(der);
@@ -148,8 +140,10 @@
         cipher.setPublicKey(key);
         if (cipher.key.e === 0 || cipher.key.n === null) {
             // FIXME: PKCS#1 -> X.509
-            der = x509_header.concat(der).getBytes();
-            key = ns.format.Base64.encode(der);
+            var fixed = new Uint8Array(x509_header.length + der.length);
+            fixed.set(x509_header);
+            fixed.set(der, x509_header.length);
+            key = ns.format.Base64.encode(fixed);
             cipher.setPublicKey(key);
         }
         return cipher;

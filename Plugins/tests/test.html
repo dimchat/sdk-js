@@ -27,9 +27,6 @@
     <script>
         !function (ns) {
             var sources = [
-                'src/type/data.js',
-                'src/type/data_m.js',
-
                 'src/format/base58.js',
                 'src/format/base64.js',
                 'src/format/utf8.js',
@@ -59,8 +56,6 @@
             var tests = [
                 '../Crypto/tests/crypto_tests.js',
                 '../MingKeMing/tests/mkm_tests.js',
-                '../DaoKeDao/tests/dkd_tests.js',
-                '../DIMP/tests/core_tests.js',
                 'tests/plugins_tests.js',
                 null
             ];
@@ -91,16 +86,6 @@
         });
 
         $(function () {
-            var runner = new Runner('dkd_tests');
-            runner.run(dkd_tests);
-        });
-
-        $(function () {
-            var runner = new Runner('core_tests');
-            runner.run(core_tests);
-        });
-
-        $(function () {
             var runner = new Runner('plugins_tests');
             runner.run(plugins_tests);
         });
@@ -114,14 +99,6 @@
 
 <h2>MingKeMing Tests</h2>
 <div id="mkm_tests">Testing ...</div>
-<div>&nbsp;</div>
-
-<h2>DaoKeDao Tests</h2>
-<div id="dkd_tests">Testing ...</div>
-<div>&nbsp;</div>
-
-<h2>Core Tests</h2>
-<div id="core_tests">Testing ...</div>
 <div>&nbsp;</div>
 
 <h2>Plugins Tests</h2>

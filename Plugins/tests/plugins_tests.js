@@ -122,6 +122,24 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
+    var Arrays = ns.type.Arrays;
+    var Password = ns.crypto.Password;
+
+    var moky = ns.format.UTF8.encode('moky');
+
+    var test_password = function () {
+        var pwd = Password.generate('Hello world!');
+        var ciphertext = pwd.encrypt(moky);
+        var plaintext = pwd.decrypt(ciphertext);
+        assert(Arrays.equals(plaintext, moky), 'generate password error');
+    };
+    plugins_tests.push(test_password);
+
+}(MONKEY);
+
+!function (ns) {
+    'use strict';
+
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Meta = ns.protocol.Meta;
@@ -151,10 +169,11 @@ plugins_tests = [];
         meta = Meta.parse(meta);
 
         var json = ns.format.JSON.encode(key.toMap());
+        var data = ns.format.UTF8.encode(json);
 
         var ciphertext;
         for (var i = 0; i < 10000; ++i) {
-            ciphertext = meta.getKey().encrypt(json);
+            ciphertext = meta.getKey().encrypt(data);
             if (ciphertext.length !== 128) {
                 throw new Error('encrypt error');
             }
@@ -162,4 +181,4 @@ plugins_tests = [];
     };
     plugins_tests.push(test_encrypt_key);
 
-}(MONKEY);
+}(MingKeMing);

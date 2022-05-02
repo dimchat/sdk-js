@@ -8,601 +8,15 @@
  * @license   {@link https://mit-license.org | MIT License}
  */;
 (function (ns) {
-    var Arrays = ns.type.Arrays;
-    var bytes = function () {
-        Object.call(this);
-        this._buffer = null;
-        this._offset = 0;
-        this._length = 0;
-        if (arguments.length === 0) {
-            this._buffer = new Uint8Array(4);
-        } else {
-            if (arguments.length === 1) {
-                var arg = arguments[0];
-                if (typeof arg === "number") {
-                    this._buffer = new Uint8Array(arg);
-                } else {
-                    if (arg instanceof bytes) {
-                        this._buffer = arg._buffer;
-                        this._offset = arg._offset;
-                        this._length = arg._length;
-                    } else {
-                        if (arg instanceof Uint8Array) {
-                            this._buffer = arg;
-                        } else {
-                            this._buffer = new Uint8Array(arg);
-                        }
-                        this._length = arg.length;
-                    }
-                }
-            } else {
-                if (arguments.length === 3) {
-                    this._buffer = arguments[0];
-                    this._offset = arguments[1];
-                    this._length = arguments[2];
-                } else {
-                    throw new SyntaxError("arguments error: " + arguments);
-                }
-            }
+    var repeat = function (count) {
+        var string = "";
+        for (var i = 0; i < count; ++i) {
+            string += this;
         }
+        return string;
     };
-    ns.Class(bytes, Object, null, null);
-    bytes.ZERO = new bytes(new Uint8Array(0), 0, 0);
-    bytes.prototype.getBuffer = function () {
-        return this._buffer;
-    };
-    bytes.prototype.getOffset = function () {
-        return this._offset;
-    };
-    bytes.prototype.equals = function (other) {
-        if (!other) {
-            return this._length === 0;
-        } else {
-            if (this === other) {
-                return true;
-            }
-        }
-        var otherBuffer, otherOffset, otherLength;
-        if (other instanceof bytes) {
-            otherBuffer = other._buffer;
-            otherOffset = other._offset;
-            otherLength = other._length;
-        } else {
-            otherBuffer = other;
-            otherOffset = 0;
-            otherLength = other.length;
-        }
-        if (this._length !== otherLength) {
-            return false;
-        } else {
-            if (this._buffer === otherBuffer && this._offset === otherOffset) {
-                return true;
-            }
-        }
-        var buffer = this._buffer;
-        var pos1 = this._offset + this._length - 1;
-        var pos2 = otherOffset + otherLength - 1;
-        for (; pos2 >= otherOffset; --pos1, --pos2) {
-            if (buffer[pos1] !== otherBuffer[pos2]) {
-                return false;
-            }
-        }
-        return true;
-    };
-    var adjust = function (pos, len) {
-        if (pos < 0) {
-            pos += len;
-            if (pos < 0) {
-                return 0;
-            }
-        } else {
-            if (pos > len) {
-                return len;
-            }
-        }
-        return pos;
-    };
-    bytes.adjust = adjust;
-    var find_value = function (value, start, end) {
-        start += this._offset;
-        end += this._offset;
-        for (; start < end; ++start) {
-            if (this._buffer[start] === value) {
-                return start - this._offset;
-            }
-        }
-        return -1;
-    };
-    var find_sub = function (sub, start, end) {
-        if (end - start < sub._length) {
-            return -1;
-        }
-        start += this._offset;
-        end += this._offset - sub._length + 1;
-        if (this._buffer === sub._buffer) {
-            if (start === sub._offset) {
-                return start - this._offset;
-            }
-        }
-        var index;
-        for (; start < end; ++start) {
-            for (index = 0; index < sub._length; ++index) {
-                if (this._buffer[start + index] !== sub._buffer[sub._offset + index]) {
-                    break;
-                }
-            }
-            if (index === sub._length) {
-                return start - this._offset;
-            }
-        }
-        return -1;
-    };
-    bytes.prototype.find = function () {
-        var sub, start, end;
-        if (arguments.length === 1) {
-            sub = arguments[0];
-            start = 0;
-            end = this._length;
-        } else {
-            if (arguments.length === 2) {
-                sub = arguments[0];
-                start = arguments[1];
-                end = this._length;
-                start = adjust(start, this._length);
-            } else {
-                if (arguments.length === 3) {
-                    sub = arguments[0];
-                    start = arguments[1];
-                    end = arguments[2];
-                    start = adjust(start, this._length);
-                    end = adjust(end, this._length);
-                } else {
-                    throw new SyntaxError("arguments error: " + arguments);
-                }
-            }
-        }
-        if (typeof sub === "number") {
-            return find_value.call(this, sub & 255, start, end);
-        } else {
-            if (sub instanceof bytes) {
-                return find_sub.call(this, sub, start, end);
-            } else {
-                return find_sub.call(this, new bytes(sub), start, end);
-            }
-        }
-    };
-    bytes.prototype.getByte = function (index) {
-        if (index < 0) {
-            index += this._length;
-            if (index < 0) {
-                throw new RangeError(
-                    "error index: " + (index - this._length) + ", length: " + this._length
-                );
-            }
-        } else {
-            if (index >= this._length) {
-                throw new RangeError(
-                    "error index: " + index + ", length: " + this._length
-                );
-            }
-        }
-        return this._buffer[this._offset + index];
-    };
-    var get_bytes = function (start, end) {
-        start += this._offset;
-        end += this._offset;
-        if (start === 0 && end === this._buffer.length) {
-            return this._buffer;
-        } else {
-            if (start < end) {
-                return this._buffer.subarray(start, end);
-            } else {
-                return this.ZERO.getBytes();
-            }
-        }
-    };
-    bytes.prototype.getBytes = function () {
-        var start, end;
-        if (arguments.length === 0) {
-            start = 0;
-            end = this._length;
-        } else {
-            if (arguments.length === 1) {
-                start = arguments[0];
-                end = this._length;
-                start = adjust(start, this._length);
-            } else {
-                if (arguments.length === 2) {
-                    start = arguments[0];
-                    end = arguments[1];
-                    start = adjust(start, this._length);
-                    end = adjust(end, this._length);
-                } else {
-                    throw new SyntaxError("arguments error: " + arguments);
-                }
-            }
-        }
-        return get_bytes.call(this, start, end);
-    };
-    bytes.prototype.slice = function (start) {
-        var end;
-        if (arguments.length === 2) {
-            end = arguments[1];
-            end = adjust(end, this._length);
-        } else {
-            end = this._length;
-        }
-        start = adjust(start, this._length);
-        return slice(this, start, end);
-    };
-    var slice = function (data, start, end) {
-        if (start === 0 && end === data._length) {
-            return data;
-        } else {
-            if (start < end) {
-                return new bytes(data._buffer, data._offset + start, end - start);
-            } else {
-                return bytes.ZERO;
-            }
-        }
-    };
-    bytes.prototype.concat = function () {
-        var result = this;
-        var arg, other;
-        for (var i = 0; i < arguments.length; ++i) {
-            arg = arguments[i];
-            if (arg instanceof bytes) {
-                other = arg;
-            } else {
-                other = new bytes(arg);
-            }
-            result = concat(result, other);
-        }
-        return result;
-    };
-    var concat = function (left, right) {
-        if (left._length === 0) {
-            return right;
-        } else {
-            if (right._length === 0) {
-                return left;
-            } else {
-                if (
-                    left._buffer === right._buffer &&
-                    left._offset + left._length === right._offset
-                ) {
-                    return new bytes(
-                        left._buffer,
-                        left._offset,
-                        left._length + right._length
-                    );
-                } else {
-                    var joined = new Uint8Array(left._length + right._length);
-                    Arrays.copy(left._buffer, left._offset, joined, 0, left._length);
-                    Arrays.copy(
-                        right._buffer,
-                        right._offset,
-                        joined,
-                        left._length,
-                        right._length
-                    );
-                    return new bytes(joined, 0, joined.length);
-                }
-            }
-        }
-    };
-    bytes.prototype.copy = function () {
-        return new bytes(this._buffer, this._offset, this._length);
-    };
-    bytes.prototype.mutableCopy = function () {
-        var buffer = this.getBytes();
-        buffer = new Uint8Array(buffer);
-        return new bytes(buffer, 0, buffer.length);
-    };
-    bytes.prototype.toArray = function () {
-        var array = this.getBytes();
-        if (typeof Array.from === "function") {
-            return Array.from(array);
-        } else {
-            return [].slice.call(array);
-        }
-    };
-    ns.type.Data = bytes;
-    ns.type.registers("Data");
-})(MONKEY);
-(function (ns) {
-    var Arrays = ns.type.Arrays;
-    var bytes = ns.type.Data;
-    var adjust = bytes.adjust;
-    var resize = function (size) {
-        var bigger = new Uint8Array(size);
-        Arrays.copy(this._buffer, this._offset, bigger, 0, this._length);
-        this._buffer = bigger;
-        this._offset = 0;
-    };
-    var expand = function () {
-        var capacity = this._buffer.length - this._offset;
-        if (capacity > 4) {
-            resize.call(this, capacity << 1);
-        } else {
-            resize.call(this, 8);
-        }
-    };
-    bytes.prototype.setByte = function (index, value) {
-        if (index < 0) {
-            index += this._length;
-            if (index < 0) {
-                return false;
-            }
-        }
-        if (index >= this._length) {
-            if (this._offset + index >= this._buffer.length) {
-                if (index < this._buffer.length) {
-                    Arrays.copy(
-                        this._buffer,
-                        this._offset,
-                        this._buffer,
-                        0,
-                        this._length
-                    );
-                    this._offset = 0;
-                } else {
-                    resize.call(this, index + 1);
-                }
-            }
-            this._length = index + 1;
-        }
-        this._buffer[this._offset + index] = value & 255;
-        return true;
-    };
-    var copy_buffer = function (data, pos, source, start, end) {
-        var copyLen = end - start;
-        if (copyLen > 0) {
-            var copyEnd = pos + copyLen;
-            if (source !== data._buffer || data._offset + pos !== start) {
-                if (data._offset + copyEnd > data._buffer.length) {
-                    resize.call(data, copyEnd);
-                }
-                Arrays.copy(source, start, data._buffer, data._offset + pos, copyLen);
-            }
-            if (copyEnd > data._length) {
-                data._length = copyEnd;
-            }
-        }
-    };
-    bytes.prototype.fill = function (pos, source) {
-        if (pos < 0) {
-            pos += this._length;
-            if (pos < 0) {
-                throw new RangeError(
-                    "error position: " +
-                    (pos - this._length) +
-                    ", length: " +
-                    this._length
-                );
-            }
-        }
-        var start, end;
-        if (arguments.length === 4) {
-            start = arguments[2];
-            end = arguments[3];
-            start = adjust(start, get_length(source));
-            end = adjust(end, get_length(source));
-        } else {
-            if (arguments.length === 3) {
-                start = arguments[2];
-                end = get_length(source);
-                start = adjust(start, get_length(source));
-            } else {
-                start = 0;
-                end = get_length(source);
-            }
-        }
-        if (source instanceof bytes) {
-            copy_buffer(
-                this,
-                pos,
-                source._buffer,
-                source._offset + start,
-                source._offset + end
-            );
-        } else {
-            copy_buffer(this, pos, source, start, end);
-        }
-    };
-    var get_length = function (source) {
-        if (source instanceof bytes) {
-            return source._length;
-        } else {
-            return source.length;
-        }
-    };
-    bytes.prototype.append = function (source) {
-        if (arguments.length > 1 && typeof arguments[1] !== "number") {
-            for (var i = 0; i < arguments.length; ++i) {
-                this.append(arguments[i]);
-            }
-            return;
-        }
-        var start, end;
-        if (arguments.length === 3) {
-            start = arguments[1];
-            end = arguments[2];
-            start = adjust(start, get_length(source));
-            end = adjust(end, get_length(source));
-        } else {
-            if (arguments.length === 2) {
-                start = arguments[1];
-                end = get_length(source);
-                start = adjust(start, get_length(source));
-            } else {
-                start = 0;
-                end = get_length(source);
-            }
-        }
-        if (source instanceof bytes) {
-            copy_buffer(
-                this,
-                this._length,
-                source._buffer,
-                source._offset + start,
-                source._offset + end
-            );
-        } else {
-            copy_buffer(this, this._length, source, start, end);
-        }
-    };
-    bytes.prototype.insert = function (index, value) {
-        if (index < 0) {
-            index += this._length;
-            if (index < 0) {
-                return false;
-            }
-        }
-        if (index >= this._length) {
-            return this.setByte(index, value);
-        }
-        if (index === 0) {
-            if (this._offset > 0) {
-                this._offset -= 1;
-            } else {
-                if (this._length === this._buffer.length) {
-                    expand.call(this);
-                }
-                Arrays.copy(this._buffer, 0, this._buffer, 1, this._length);
-            }
-        } else {
-            if (index < this._length >> 1) {
-                if (this._offset > 0) {
-                    Arrays.copy(
-                        this._buffer,
-                        this._offset,
-                        this._buffer,
-                        this._offset - 1,
-                        index
-                    );
-                    this._offset -= 1;
-                } else {
-                    if (this._offset + this._length === this._buffer.length) {
-                        expand.call(this);
-                    }
-                    Arrays.copy(
-                        this._buffer,
-                        this._offset + index,
-                        this._buffer,
-                        this._offset + index + 1,
-                        this._length - index
-                    );
-                }
-            } else {
-                if (this._offset + this._length < this._buffer.length) {
-                    Arrays.copy(
-                        this._buffer,
-                        this._offset + index,
-                        this._buffer,
-                        this._offset + index + 1,
-                        this._length - index
-                    );
-                } else {
-                    if (this._offset > 0) {
-                        Arrays.copy(
-                            this._buffer,
-                            this._offset,
-                            this._buffer,
-                            this._offset - 1,
-                            index
-                        );
-                        this._offset -= 1;
-                    } else {
-                        expand.call(this);
-                        Arrays.copy(
-                            this._buffer,
-                            this._offset + index,
-                            this._buffer,
-                            this._offset + index + 1,
-                            this._length - index
-                        );
-                    }
-                }
-            }
-        }
-        this._buffer[this._offset + index] = value & 255;
-        this._length += 1;
-        return true;
-    };
-    bytes.prototype.remove = function (index) {
-        if (index < 0) {
-            index += this._length;
-            if (index < 0) {
-                throw new RangeError(
-                    "error index: " + (index - this._length) + ", length: " + this._length
-                );
-            }
-        } else {
-            if (index >= this._length) {
-                throw new RangeError(
-                    "index error: " + index + ", length: " + this._length
-                );
-            }
-        }
-        if (index === 0) {
-            return this.shift();
-        } else {
-            if (index === this._length - 1) {
-                return this.pop();
-            }
-        }
-        var erased = this._buffer[this._offset + index];
-        if (index < this._length >> 1) {
-            Arrays.copy(
-                this._buffer,
-                this._offset,
-                this._buffer,
-                this._offset + 1,
-                index
-            );
-        } else {
-            Arrays.copy(
-                this._buffer,
-                this._offset + index + 1,
-                this._buffer,
-                this._offset + index,
-                this._length - index - 1
-            );
-        }
-        return erased;
-    };
-    bytes.prototype.shift = function () {
-        if (this._length < 1) {
-            throw new RangeError("data empty!");
-        }
-        var erased = this._buffer[this._offset];
-        this._offset += 1;
-        this._length -= 1;
-        return erased;
-    };
-    bytes.prototype.pop = function () {
-        if (this._length < 1) {
-            throw new RangeError("data empty!");
-        }
-        this._length -= 1;
-        return this._buffer[this._offset + this._length];
-    };
-    bytes.prototype.push = function (element) {
-        this.setByte(this._length, element);
-    };
-    ns.type.MutableData = bytes;
-    ns.type.registers("MutableData");
-})(MONKEY);
-(function (ns) {
     if (typeof String.prototype.repeat !== "function") {
-        String.prototype.repeat = function (count) {
-            var string = "";
-            for (var i = 0; i < count; ++i) {
-                string += this;
-            }
-            return string;
-        };
+        String.prototype.repeat = repeat;
     }
     function base(ALPHABET) {
         if (ALPHABET.length >= 255) {
@@ -660,7 +74,7 @@
             while (it2 !== size && b58[it2] === 0) {
                 it2++;
             }
-            var str = LEADER.repeat(zeroes);
+            var str = repeat.call(LEADER, zeroes);
             for (; it2 < size; ++it2) {
                 str += ALPHABET.charAt(b58[it2]);
             }
@@ -747,7 +161,6 @@
     ns.format.Base58.setCoder(new Base58Coder());
 })(MONKEY);
 (function (ns) {
-    var MutableData = ns.type.MutableData;
     var DataCoder = ns.format.DataCoder;
     var base64_chars =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -796,7 +209,7 @@
         if (length % 4 !== 0 || !/^[A-Za-z0-9+\/]+={0,2}$/.test(str)) {
             throw new Error("base64 string error: " + string);
         }
-        var array = new MutableData((length * 3) / 4);
+        var array = [];
         var ch1, ch2, ch3, ch4;
         var i;
         for (i = 0; i < length; i += 4) {
@@ -811,7 +224,7 @@
         while (str[--i] === "=") {
             array.pop();
         }
-        return array.getBytes();
+        return Uint8Array.from(array);
     };
     var Base64Coder = function () {
         Object.call(this);
@@ -1075,7 +488,6 @@
     ns.format.registers("PEM");
 })(MONKEY);
 (function (ns) {
-    var Data = ns.type.Data;
     var Dictionary = ns.type.Dictionary;
     var CryptographyKey = ns.crypto.CryptographyKey;
     var AsymmetricKey = ns.crypto.AsymmetricKey;
@@ -1119,23 +531,19 @@
             var cipher = parse_key.call(this);
             var base64 = cipher.encrypt(plaintext);
             if (base64) {
+                var keySize = this.getSize();
                 var res = ns.format.Base64.decode(base64);
-                if (res.length === this.getSize()) {
+                if (res.length === keySize) {
                     return res;
                 }
-                var hex = cipher.getKey().encrypt(plaintext);
-                if (hex) {
-                    res = ns.format.Hex.decode(hex);
-                    if (res.length === this.getSize()) {
-                        return res;
-                    }
-                    throw new Error("Error encrypt result: " + plaintext);
-                }
+                var pad = new Uint8Array(keySize);
+                pad.set(res, keySize - res.length);
+                return pad;
             }
             throw new Error("RSA encrypt error: " + plaintext);
         }
     });
-    var x509_header = new Data([
+    var x509_header = new Uint8Array([
         48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1, 5, 0, 3,
         -127, -115, 0
     ]);
@@ -1145,8 +553,10 @@
         var cipher = new JSEncrypt();
         cipher.setPublicKey(key);
         if (cipher.key.e === 0 || cipher.key.n === null) {
-            der = x509_header.concat(der).getBytes();
-            key = ns.format.Base64.encode(der);
+            var fixed = new Uint8Array(x509_header.length + der.length);
+            fixed.set(x509_header);
+            fixed.set(der, x509_header.length);
+            key = ns.format.Base64.encode(fixed);
             cipher.setPublicKey(key);
         }
         return cipher;
@@ -1622,8 +1032,6 @@
     ns.crypto.registers("AESKey");
 })(MONKEY);
 (function (ns) {
-    var Data = ns.type.Data;
-    var MutableData = ns.type.MutableData;
     var SymmetricKey = ns.crypto.SymmetricKey;
     var Password = function () {
         Object.call(this);
@@ -1636,23 +1044,23 @@
         var digest = ns.digest.SHA256.digest(data);
         var filling = Password.KEY_SIZE - data.length;
         if (filling > 0) {
-            var merged = new MutableData(Password.KEY_SIZE);
-            merged.fill(0, digest, 0, filling);
-            merged.fill(filling, data, 0, data.length);
-            data = merged.getBytes();
+            var merged = new Uint8Array(Password.KEY_SIZE);
+            merged.set(digest.subarray(0, filling));
+            merged.set(data, filling);
+            data = merged;
         } else {
             if (filling < 0) {
                 if (Password.KEY_SIZE === digest.length) {
                     data = digest;
                 } else {
-                    var head = new Data(digest);
-                    data = head.slice(0, Password.KEY_SIZE);
+                    data = digest.subarray(0, Password.KEY_SIZE);
                 }
             }
         }
-        var tail = new MutableData(Password.BLOCK_SIZE);
-        tail.fill(0, digest, digest.length - Password.BLOCK_SIZE, digest.length);
-        var iv = tail.getBytes();
+        var iv = digest.subarray(
+            digest.length - Password.BLOCK_SIZE,
+            digest.length
+        );
         var key = {
             algorithm: SymmetricKey.AES,
             data: ns.format.Base64.encode(data),
@@ -1702,7 +1110,6 @@
 })(MONKEY);
 (function (ns) {
     var ConstantString = ns.type.ConstantString;
-    var MutableData = ns.type.MutableData;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
     var BTCAddress = function (string, network) {
@@ -1732,15 +1139,15 @@
         var digest = ns.digest.RIPEMD160.digest(
             ns.digest.SHA256.digest(fingerprint)
         );
-        var head = new MutableData(21);
-        head.setByte(0, network);
-        head.append(digest);
-        var cc = check_code(head.getBytes(false));
-        var data = new MutableData(25);
-        data.append(head);
-        data.append(cc);
+        var head = [];
+        head.push(network);
+        head.push(digest);
+        var cc = check_code(Uint8Array.from(head));
+        var data = [];
+        data.push(head);
+        data.push(cc);
         return new BTCAddress(
-            ns.format.Base58.encode(data.getBytes(false)),
+            ns.format.Base58.encode(Uint8Array.from(data)),
             network
         );
     };

@@ -36,7 +36,6 @@
 (function (ns) {
     'use strict';
 
-    var MutableData = ns.type.MutableData;
     var DataCoder = ns.format.DataCoder;
 
     //-------- Base64 algorithm begin --------
@@ -127,7 +126,7 @@
         if ((length % 4) !== 0 || !/^[A-Za-z0-9+\/]+={0,2}$/.test(str)) {
             throw new Error('base64 string error: ' + string)
         }
-        var array = new MutableData(length * 3 / 4);
+        var array = [];
         // parse each 4 chars to 3 bytes
         var ch1, ch2, ch3, ch4;
         var i;
@@ -147,7 +146,7 @@
         while (str[--i] === '=') {
             array.pop();
         }
-        return array.getBytes();
+        return Uint8Array.from(array);
     };
     //-------- Base64 algorithm end --------
 

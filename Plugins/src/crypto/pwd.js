@@ -35,8 +35,6 @@
 (function (ns) {
     'use strict';
 
-    var Data = ns.type.Data;
-    var MutableData = ns.type.MutableData;
     var SymmetricKey = ns.crypto.SymmetricKey;
 
     var Password = function () {
@@ -60,24 +58,21 @@
         var filling = Password.KEY_SIZE - data.length;
         if (filling > 0) {
             // format: {digest_prefix}+{pwd_data}
-            var merged = new MutableData(Password.KEY_SIZE);
-            merged.fill(0, digest, 0, filling);
-            merged.fill(filling, data, 0, data.length);
-            data = merged.getBytes();
+            var merged = new Uint8Array(Password.KEY_SIZE);
+            merged.set(digest.subarray(0, filling));
+            merged.set(data, filling);
+            data = merged;
         } else if (filling < 0) {
             // throw new RangeError('password too long: ' + password);
             if (Password.KEY_SIZE === digest.length) {
                 data = digest;
             } else {
                 // FIXME: what about KEY_SIZE > digest.length?
-                var head = new Data(digest);
-                data = head.slice(0, Password.KEY_SIZE);
+                data = digest.subarray(0, Password.KEY_SIZE);
             }
         }
         // AES iv
-        var tail = new MutableData(Password.BLOCK_SIZE);
-        tail.fill(0, digest, digest.length - Password.BLOCK_SIZE, digest.length);
-        var iv = tail.getBytes();
+        var iv = digest.subarray(digest.length - Password.BLOCK_SIZE, digest.length);
         // generate AES key
         var key = {
             'algorithm': SymmetricKey.AES,

@@ -33,14 +33,15 @@
     //
     //  Patch for String.repeat()
     //
+    var repeat = function (count) {
+        var string = '';
+        for (var i = 0; i < count; ++i) {
+            string += this;
+        }
+        return string;
+    };
     if (typeof String.prototype.repeat !== 'function') {
-        String.prototype.repeat = function (count) {
-            var string = '';
-            for (var i = 0; i < count; ++i) {
-                string += this;
-            }
-            return string;
-        };
+        String.prototype.repeat = repeat;
     }
 
     //-------- Base algorithm begin --------
@@ -102,7 +103,7 @@
             while (it2 !== size && b58[it2] === 0) {
                 it2++
             }
-            var str = LEADER.repeat(zeroes);
+            var str = repeat.call(LEADER, zeroes);
             for (; it2 < size; ++it2) {
                 str += ALPHABET.charAt(b58[it2])
             }

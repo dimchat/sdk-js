@@ -36,7 +36,6 @@
     'use strict';
 
     var ConstantString = ns.type.ConstantString;
-    var MutableData = ns.type.MutableData;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
@@ -91,16 +90,16 @@
         // 1. digest = ripemd160(sha256(fingerprint))
         var digest = ns.digest.RIPEMD160.digest(ns.digest.SHA256.digest(fingerprint));
         // 2. head = network + digest
-        var head = new MutableData(21);
-        head.setByte(0, network);
-        head.append(digest);
+        var head = [];
+        head.push(network);
+        head.push(digest);
         // 3. cc = sha256(sha256(head)).prefix(4)
-        var cc = check_code(head.getBytes(false));
+        var cc = check_code(Uint8Array.from(head));
         // 4. data = base58_encode(head + cc)
-        var data = new MutableData(25);
-        data.append(head);
-        data.append(cc);
-        return new BTCAddress(ns.format.Base58.encode(data.getBytes(false)), network);
+        var data = [];
+        data.push(head);
+        data.push(cc);
+        return new BTCAddress(ns.format.Base58.encode(Uint8Array.from(data)), network);
     };
 
     /**
@@ -130,6 +129,12 @@
         }
     };
 
+    /**
+     *  Get BTC check code
+     *
+     * @param {Uint8Array} data
+     * @return {Uint8Array}
+     */
     var check_code = function (data) {
         var sha256d = ns.digest.SHA256.digest(ns.digest.SHA256.digest(data));
         return sha256d.subarray(0, 4);
