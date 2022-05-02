@@ -43,16 +43,18 @@
     var Polylogue = function (identifier) {
         BaseGroup.call(this, identifier);
     };
-    ns.Class(Polylogue, BaseGroup, null);
+    ns.Class(Polylogue, BaseGroup, null, {
 
-    Polylogue.prototype.getOwner = function () {
-        var owner = BaseGroup.prototype.getOwner.call(this);
-        if (owner) {
-            return owner;
+        // Override
+        getOwner: function () {
+            var owner = BaseGroup.prototype.getOwner.call(this);
+            if (owner) {
+                return owner;
+            }
+            // polylogue's owner is its founder
+            return this.getFounder();
         }
-        // polylogue's owner is its founder
-        return this.getFounder();
-    };
+    });
 
     //-------- namespace --------
     ns.mkm.Polylogue = Polylogue;

@@ -59,10 +59,10 @@
      * @param {ID[]} list
      */
     BlockCommand.prototype.setBlockCList = function (list) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     BlockCommand.prototype.getBlockCList = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     BlockCommand.setBlockList = function (list, cmd) {
@@ -117,23 +117,24 @@
             this.__list = null;
         }
     };
-    ns.Class(BaseBlockCommand, BaseCommand, [BlockCommand]);
+    ns.Class(BaseBlockCommand, BaseCommand, [BlockCommand], {
 
-    // Override
-    BaseBlockCommand.prototype.getBlockCList = function () {
-        if (!this.__list) {
+        // Override
+        getBlockCList: function () {
+            if (!this.__list) {
+                var dict = this.toMap();
+                this.__list = BlockCommand.getBlockList(dict);
+            }
+            return this.__list;
+        },
+
+        // Override
+        setBlockCList: function (list) {
             var dict = this.toMap();
-            this.__list = BlockCommand.getBlockList(dict);
+            BlockCommand.setBlockList(list, dict);
+            this.__list = list;
         }
-        return this.__list;
-    };
-
-    // Override
-    BaseBlockCommand.prototype.setBlockCList = function (list) {
-        var dict = this.toMap();
-        BlockCommand.setBlockList(list, dict);
-        this.__list = list;
-    };
+    });
 
     //-------- namespace --------
     ns.dkd.BaseBlockCommand = BaseBlockCommand;

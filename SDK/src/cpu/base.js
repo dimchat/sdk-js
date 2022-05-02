@@ -49,7 +49,7 @@
     var BaseContentProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    ns.Class(BaseContentProcessor, TwinsHelper, [ContentProcessor]);
+    ns.Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
 
     // Override
     BaseContentProcessor.prototype.process = function (content, rMsg) {
@@ -103,13 +103,13 @@
     var BaseCommandProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
-    ns.Class(BaseCommandProcessor, BaseContentProcessor, null);
-
-    // Override
-    BaseCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var text = 'Command (name: ' + cmd.getCommand() + ') not support yet!';
-        return this.respondText(text, cmd.getGroup());
-    };
+    ns.Class(BaseCommandProcessor, BaseContentProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var text = 'Command (name: ' + cmd.getCommand() + ') not support yet!';
+            return this.respondText(text, cmd.getGroup());
+        }
+    });
 
     //-------- namespace --------
     ns.cpu.BaseCommandProcessor = BaseCommandProcessor;

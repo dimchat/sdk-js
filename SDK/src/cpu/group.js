@@ -47,7 +47,13 @@
     var GroupCommandProcessor = function (facebook, messenger) {
         HistoryCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null);
+    ns.Class(GroupCommandProcessor, HistoryCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var text = 'Group command (name: ' + cmd.getCommand() + ') not support yet!';
+            return this.respondText(text, cmd.getGroup());
+        }
+    });
 
     // protected
     GroupCommandProcessor.prototype.getMembers = function (cmd) {
@@ -63,12 +69,6 @@
         } else {
             return [];
         }
-    };
-
-    // Override
-    GroupCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var text = 'Group command (name: ' + cmd.getCommand() + ') not support yet!';
-        return this.respondText(text, cmd.getGroup());
     };
 
     //-------- namespace --------

@@ -83,7 +83,7 @@
      * @returns {ID}
      */
     AddressNameService.prototype.getIdentifier = function (name) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -95,7 +95,7 @@
      * @returns {String[]}
      */
     AddressNameService.prototype.getNames = function (identifier) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -108,7 +108,7 @@
      * @returns {boolean}
      */
     AddressNameService.prototype.save = function (name, identifier) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return false;
     };
 
@@ -146,7 +146,7 @@
         this.__caches = caches;      // String => ID
         this.__tables = {}           // String(ID) => String[], name list
     };
-    ns.Class(AddressNameServer, Object, [AddressNameService]);
+    ns.Class(AddressNameServer, Object, [AddressNameService], null);
 
     // protected
     AddressNameServer.prototype.isReserved = function (name) {

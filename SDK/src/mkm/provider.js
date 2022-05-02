@@ -40,11 +40,12 @@
     var ServiceProvider = function (identifier) {
         BaseGroup.call(this, identifier);
     };
-    ns.Class(ServiceProvider, BaseGroup, null);
+    ns.Class(ServiceProvider, BaseGroup, null, {
 
-    ServiceProvider.prototype.getStations = function () {
-        return this.getMembers();
-    };
+        getStations: function () {
+            return this.getMembers();
+        }
+    });
 
     //-------- namespace --------
     ns.mkm.ServiceProvider = ServiceProvider;

@@ -43,7 +43,7 @@
     var Robot = function (identifier) {
         BaseUser.call(this, identifier);
     };
-    ns.Class(Robot, BaseUser, null);
+    ns.Class(Robot, BaseUser, null, null);
 
     //-------- namespace --------
     ns.mkm.Robot = Robot;

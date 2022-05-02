@@ -61,7 +61,7 @@
      * @return {String}
      */
     ReceiptCommand.prototype.getMessage = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -72,10 +72,10 @@
      * @param {Envelope} env
      */
     ReceiptCommand.prototype.setEnvelope = function (env) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     ReceiptCommand.prototype.getEnvelope = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -85,10 +85,10 @@
      * @param {String|Uint8Array} signature
      */
     ReceiptCommand.prototype.setSignature = function (signature) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     ReceiptCommand.prototype.getSignature = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -136,72 +136,73 @@
             this.__envelope = null;
         }
     };
-    ns.Class(BaseReceiptCommand, BaseCommand, [ReceiptCommand]);
+    ns.Class(BaseReceiptCommand, BaseCommand, [ReceiptCommand], {
 
-    BaseReceiptCommand.prototype.setSerialNumber = function (sn) {
-        this.setValue('sn', sn);
-        // this.__sn = sn;
-    };
+        setSerialNumber: function (sn) {
+            this.setValue('sn', sn);
+            // this.__sn = sn;
+        },
 
-    BaseReceiptCommand.prototype.setMessage = function (message) {
-        this.setValue('message', message);
-    };
+        setMessage: function (message) {
+            this.setValue('message', message);
+        },
 
-    // Override
-    BaseReceiptCommand.prototype.getMessage = function () {
-        return this.getValue('message');
-    };
+        // Override
+        getMessage: function () {
+            return this.getValue('message');
+        },
 
-    // Override
-    BaseReceiptCommand.prototype.getEnvelope = function () {
-        if (!this.__envelope) {
-            var env = this.getValue('envelope');
-            if (!env) {
-                var sender = this.getValue('sender');
-                var receiver = this.getValue('receiver');
-                if (sender && receiver) {
-                    env = this.toMap();
+        // Override
+        getEnvelope: function () {
+            if (!this.__envelope) {
+                var env = this.getValue('envelope');
+                if (!env) {
+                    var sender = this.getValue('sender');
+                    var receiver = this.getValue('receiver');
+                    if (sender && receiver) {
+                        env = this.toMap();
+                    }
+                }
+                this.__envelope = Envelope.parse(env);
+            }
+            return this.__envelope;
+        },
+
+        // Override
+        setEnvelope: function (env) {
+            this.setValue('envelope', null);
+            if (env) {
+                this.setValue('sender', env.getValue('sender'));
+                this.setValue('receiver', env.getValue('receiver'));
+                var time = env.getValue('time');
+                if (time) {
+                    this.setValue('time', time);
+                }
+                var group = env.getValue('group');
+                if (group) {
+                    this.setValue('group', group);
                 }
             }
-            this.__envelope = Envelope.parse(env);
-        }
-        return this.__envelope;
-    };
+            this.__envelope = env;
+        },
 
-    // Override
-    BaseReceiptCommand.prototype.setEnvelope = function (env) {
-        this.setValue('envelope', null);
-        if (env) {
-            this.setValue('sender', env.getValue('sender'));
-            this.setValue('receiver', env.getValue('receiver'));
-            var time = env.getValue('time');
-            if (time) {
-                this.setValue('time', time);
+        // Override
+        setSignature: function (signature) {
+            if (signature instanceof Uint8Array) {
+                signature = Base64.encode(signature);
             }
-            var group = env.getValue('group');
-            if (group) {
-                this.setValue('group', group);
+            this.setValue('signature', signature);
+        },
+
+        // Override
+        getSignature: function () {
+            var signature = this.getValue('signature');
+            if (typeof signature === 'string') {
+                signature = Base64.decode(signature);
             }
+            return signature;
         }
-        this.__envelope = env;
-    };
-
-    // Override
-    BaseReceiptCommand.prototype.setSignature = function (signature) {
-        if (signature instanceof Uint8Array) {
-            signature = Base64.encode(signature);
-        }
-        this.setValue('signature', signature);
-    };
-
-    // Override
-    BaseReceiptCommand.prototype.getSignature = function () {
-        var signature = this.getValue('signature');
-        if (typeof signature === 'string') {
-            signature = Base64.decode(signature);
-        }
-        return signature;
-    };
+    });
 
     //-------- namespace --------
     ns.dkd.BaseReceiptCommand = BaseReceiptCommand;

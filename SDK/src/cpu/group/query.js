@@ -44,40 +44,40 @@
     var QueryCommandProcessor = function (facebook, messenger) {
         GroupCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(QueryCommandProcessor, GroupCommandProcessor, null);
+    ns.Class(QueryCommandProcessor, GroupCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var facebook = this.getFacebook();
 
-    // Override
-    QueryCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var facebook = this.getFacebook();
-
-        // 0. check group
-        var group = cmd.getGroup();
-        var owner = facebook.getOwner(group);
-        var members = facebook.getMembers(group);
-        if (!owner || !members || members.length === 0) {
-            return this.respondText(GROUP_EMPTY, group);
-        }
-
-        // 1. check permission
-        var sender = rMsg.getSender();
-        if (members.indexOf(sender) < 0) {
-            // not a member? check assistants
-            var assistants = facebook.getAssistants(group);
-            if (!assistants || assistants.indexOf(sender) < 0) {
-                return this.respondText(QUERY_NOT_ALLOWED, group);
+            // 0. check group
+            var group = cmd.getGroup();
+            var owner = facebook.getOwner(group);
+            var members = facebook.getMembers(group);
+            if (!owner || !members || members.length === 0) {
+                return this.respondText(GROUP_EMPTY, group);
             }
-        }
 
-        // 2. respond
-        var res;
-        var user = facebook.getCurrentUser();
-        if (user.getIdentifier().equals(owner)) {
-            res = GroupCommand.reset(group, members);
-        } else {
-            res = GroupCommand.invite(group, members);
+            // 1. check permission
+            var sender = rMsg.getSender();
+            if (members.indexOf(sender) < 0) {
+                // not a member? check assistants
+                var assistants = facebook.getAssistants(group);
+                if (!assistants || assistants.indexOf(sender) < 0) {
+                    return this.respondText(QUERY_NOT_ALLOWED, group);
+                }
+            }
+
+            // 2. respond
+            var res;
+            var user = facebook.getCurrentUser();
+            if (user.getIdentifier().equals(owner)) {
+                res = GroupCommand.reset(group, members);
+            } else {
+                res = GroupCommand.invite(group, members);
+            }
+            return this.respondContent(res);
         }
-        return this.respondContent(res);
-    };
+    });
 
     //-------- namespace --------
     ns.cpu.group.QueryCommandProcessor = QueryCommandProcessor;

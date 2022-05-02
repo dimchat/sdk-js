@@ -52,7 +52,7 @@
      * @returns {SymmetricKey}
      */
     CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -65,7 +65,7 @@
      * @param {SymmetricKey} key
      */
     CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
 
     //-------- namespace --------

@@ -72,7 +72,7 @@
      * @returns {ID}
      */
     LoginCommand.prototype.getIdentifier = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -82,7 +82,7 @@
      * @returns {String}
      */
     LoginCommand.prototype.getDevice = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     /**
@@ -91,7 +91,7 @@
      * @param {String} device
      */
     LoginCommand.prototype.setDevice = function (device) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
 
     /**
@@ -100,7 +100,7 @@
      * @returns {String}
      */
     LoginCommand.prototype.getAgent = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     /**
@@ -109,7 +109,7 @@
      * @param {String} UA
      */
     LoginCommand.prototype.setAgent = function (UA) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
 
     //-------- server info --------
@@ -117,10 +117,10 @@
     /**
      *  Get station info
      *
-     * @returns {{String:Object}}
+     * @returns {{}}
      */
     LoginCommand.prototype.getStation = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     /**
@@ -129,7 +129,7 @@
      * @param {{}} station
      */
     LoginCommand.prototype.setStation = function (station) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
 
     /**
@@ -138,7 +138,7 @@
      * @returns {{}}
      */
     LoginCommand.prototype.getProvider = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     /**
@@ -147,7 +147,7 @@
      * @param {{}} provider
      */
     LoginCommand.prototype.setProvider = function (provider) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
 
     //-------- namespace --------
@@ -183,74 +183,75 @@
             BaseCommand.call(this, info);
         }
     };
-    ns.Class(BaseLoginCommand, BaseCommand, [LoginCommand]);
+    ns.Class(BaseLoginCommand, BaseCommand, [LoginCommand], {
 
-    // Override
-    BaseLoginCommand.prototype.getIdentifier = function () {
-        return ID.parse(this.getValue('ID'));
-    };
+        // Override
+        getIdentifier: function () {
+            return ID.parse(this.getValue('ID'));
+        },
 
-    // Override
-    BaseLoginCommand.prototype.getDevice = function () {
-        return this.getValue('device');
-    };
+        // Override
+        getDevice: function () {
+            return this.getValue('device');
+        },
 
-    // Override
-    BaseLoginCommand.prototype.setDevice = function (device) {
-        this.setValue('device', device);
-    };
+        // Override
+        setDevice: function (device) {
+            this.setValue('device', device);
+        },
 
-    // Override
-    BaseLoginCommand.prototype.getAgent = function () {
-        return this.getValue('agent');
-    };
+        // Override
+        getAgent: function () {
+            return this.getValue('agent');
+        },
 
-    // Override
-    BaseLoginCommand.prototype.setAgent = function (UA) {
-        this.setValue('agent', UA);
-    };
+        // Override
+        setAgent: function (UA) {
+            this.setValue('agent', UA);
+        },
 
-    // Override
-    BaseLoginCommand.prototype.getStation = function () {
-        return this.getValue('station');
-    };
+        // Override
+        getStation: function () {
+            return this.getValue('station');
+        },
 
-    // Override
-    BaseLoginCommand.prototype.setStation = function (station) {
-        var info;
-        if (station instanceof ns.Station) {
-            info = {
-                'host': station.getHost(),
-                'port': station.getPort(),
-                'ID': station.getIdentifier().toString()
+        // Override
+        setStation: function (station) {
+            var info;
+            if (station instanceof ns.Station) {
+                info = {
+                    'host': station.getHost(),
+                    'port': station.getPort(),
+                    'ID': station.getIdentifier().toString()
+                }
+            } else {
+                info = Wrapper.fetchMap(station);
             }
-        } else {
-            info = Wrapper.fetchMap(station);
+            this.setValue('station', info);
+        },
+
+        // Override
+        getProvider: function () {
+            return this.getValue('provider');
+        },
+
+        // Override
+        setProvider: function (provider) {
+            var info;
+            if (provider instanceof ns.ServiceProvider) {
+                info = {
+                    'ID': provider.getIdentifier().toString()
+                }
+            } else if (ns.Interface.conforms(provider, ID)) {
+                info = {
+                    'ID': provider.toString()
+                }
+            } else {
+                info = Wrapper.fetchMap(provider);
+            }
+            this.setValue('provider', info);
         }
-        this.setValue('station', info);
-    };
-
-    // Override
-    BaseLoginCommand.prototype.getProvider = function () {
-        return this.getValue('provider');
-    };
-
-    // Override
-    BaseLoginCommand.prototype.setProvider = function (provider) {
-        var info;
-        if (provider instanceof ns.ServiceProvider) {
-            info = {
-                'ID': provider.getIdentifier().toString()
-            }
-        } else if (ns.Interface.conforms(provider, ID)) {
-            info = {
-                'ID': provider.toString()
-            }
-        } else {
-            info = Wrapper.fetchMap(provider);
-        }
-        this.setValue('provider', info);
-    };
+    });
 
     //-------- namespace --------
     ns.dkd.BaseLoginCommand = BaseLoginCommand;

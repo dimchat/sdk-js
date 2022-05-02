@@ -59,7 +59,146 @@
         this.__users  = {};  // String -> User
         this.__groups = {};  // String -> Group
     };
-    ns.Class(Facebook, Barrack, null);
+    ns.Class(Facebook, Barrack, null, {
+
+        /**
+         *  Document checking
+         *
+         * @param {Document|TAI} doc - entity document
+         * @return {boolean} true on accepted
+         */
+        checkDocument: function (doc) {
+            var identifier = doc.getIdentifier();
+            if (!identifier) {
+                return false;
+            }
+            // NOTICE: if this is a group profile,
+            //             verify it with each member's meta.key
+            //         else (this is a user profile)
+            //             verify it with the user's meta.key
+            var meta;
+            if (identifier.isGroup()) {
+                // check by owner
+                var owner = this.getOwner(identifier);
+                if (!owner) {
+                    if (NetworkType.POLYLOGUE.equals(identifier.getType())) {
+                        // NOTICE: if this is a polylogue profile
+                        //             verify it with the founder's meta.key
+                        //             (which equals to the group's meta.key)
+                        meta = this.getMeta(identifier);
+                    } else {
+                        // FIXME: owner not found for this group
+                        return false;
+                    }
+                } else {
+                    meta = this.getMeta(owner);
+                }
+            } else {
+                meta = this.getMeta(identifier);
+            }
+            return meta && doc.verify(meta.getKey());
+        },
+
+        //-------- group membership
+
+        isFounder: function (member, group) {
+            // check member's public key with group's meta.key
+            var gMeta = this.getMeta(group);
+            if (!gMeta) {
+                // throw new Error('failed to get meta for group: ' + group);
+                return false;
+            }
+            var mMeta = this.getMeta(member);
+            if (!mMeta) {
+                // throw new Error('failed to get meta for member: ' + member);
+                return false;
+            }
+            return gMeta.matches(mMeta.key);
+        },
+
+        isOwner: function (member, group) {
+            if (NetworkType.POLYLOGUE.equals(group.getType())) {
+                return this.isFounder(member, group);
+            }
+            throw new Error('only Polylogue so far');
+        },
+
+        //-------- EntityDelegate --------
+
+        // Override
+        selectLocalUser: function (receiver) {
+            var users = this.getLocalUsers();
+            if (!users || users.length === 0) {
+                throw new Error("local users should not be empty");
+            } else if (receiver.isBroadcast()) {
+                // broadcast message can decrypt by anyone, so just return current user
+                return users[0];
+            }
+            var i, user, uid;
+            if (receiver.isGroup()) {
+                // group message (recipient not designated)
+                var members = this.getMembers(receiver);
+                if (!members || members.length === 0) {
+                    // TODO: group not ready, waiting for group info
+                    return null;
+                }
+                var j, member;
+                for (i = 0; i < users.length; ++i) {
+                    user = users[i];
+                    uid = user.getIdentifier();
+                    for (j = 0; j < members.length; ++j) {
+                        member = members[j];
+                        if (member.equals(uid)) {
+                            // DISCUSS: set this item to be current user?
+                            return user;
+                        }
+                    }
+                }
+            } else {
+                // 1. personal message
+                // 2. split group message
+                for (i = 0; i < users.length; ++i) {
+                    user = users[i];
+                    uid = user.getIdentifier();
+                    if (receiver.equals(uid)) {
+                        // DISCUSS: set this item to be current user?
+                        return user;
+                    }
+                }
+            }
+            return null;
+        },
+
+        //-------- Entity Delegate
+
+        // Override
+        getUser: function (identifier) {
+            // 1. get from user cache
+            var user = this.__users[identifier.toString()];
+            if (!user) {
+                // 2. create user and cache it
+                user = this.createUser(identifier);
+                if (user) {
+                    cacheUser.call(this, user);
+                }
+            }
+            return user;
+        },
+
+        // Override
+        getGroup: function (identifier) {
+            // 1. get from group cache
+            var group = this.__groups[identifier.toString()];
+            if (!group) {
+                // 2. create group and cache it
+                group = this.createGroup(identifier);
+                if (group) {
+                    cacheGroup.call(this, group);
+                }
+            }
+            return group;
+        }
+    });
 
     /**
      *  Remove 1/2 objects from the dictionary
@@ -125,7 +264,7 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveMeta = function (meta, identifier) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return false;
     };
 
@@ -137,7 +276,7 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveDocument = function (doc) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return false;
     };
 
@@ -150,70 +289,8 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveMembers = function (members, identifier) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return false;
-    };
-
-    /**
-     *  Document checking
-     *
-     * @param {Document} doc - entity document
-     * @return {boolean} true on accepted
-     */
-    Facebook.prototype.checkDocument = function (doc) {
-        var identifier = doc.getIdentifier();
-        if (!identifier) {
-            return false;
-        }
-        // NOTICE: if this is a group profile,
-        //             verify it with each member's meta.key
-        //         else (this is a user profile)
-        //             verify it with the user's meta.key
-        var meta;
-        if (identifier.isGroup()) {
-            // check by owner
-            var owner = this.getOwner(identifier);
-            if (!owner) {
-                if (NetworkType.POLYLOGUE.equals(identifier.getType())) {
-                    // NOTICE: if this is a polylogue profile
-                    //             verify it with the founder's meta.key
-                    //             (which equals to the group's meta.key)
-                    meta = this.getMeta(identifier);
-                } else {
-                    // FIXME: owner not found for this group
-                    return false;
-                }
-            } else {
-                meta = this.getMeta(owner);
-            }
-        } else {
-            meta = this.getMeta(identifier);
-        }
-        return meta && doc.verify(meta.getKey());
-    };
-
-    //-------- group membership
-
-    Facebook.prototype.isFounder = function (member, group) {
-        // check member's public key with group's meta.key
-        var gMeta = this.getMeta(group);
-        if (!gMeta) {
-            // throw new Error('failed to get meta for group: ' + group);
-            return false;
-        }
-        var mMeta = this.getMeta(member);
-        if (!mMeta) {
-            // throw new Error('failed to get meta for member: ' + member);
-            return false;
-        }
-        return gMeta.matches(mMeta.key);
-    };
-
-    Facebook.prototype.isOwner = function (member, group) {
-        if (NetworkType.POLYLOGUE.equals(group.getType())) {
-            return this.isFounder(member, group);
-        }
-        throw new Error('only Polylogue so far');
     };
 
     // protected
@@ -262,7 +339,7 @@
      * @return {User[]} users with private key
      */
     Facebook.prototype.getLocalUsers = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -277,82 +354,6 @@
             return null;
         }
         return users[0];
-    };
-
-    //-------- EntityDelegate --------
-
-    // @override
-    Facebook.prototype.selectLocalUser = function (receiver) {
-        var users = this.getLocalUsers();
-        if (!users || users.length === 0) {
-            throw new Error("local users should not be empty");
-        } else if (receiver.isBroadcast()) {
-            // broadcast message can decrypt by anyone, so just return current user
-            return users[0];
-        }
-        var i, user, uid;
-        if (receiver.isGroup()) {
-            // group message (recipient not designated)
-            var members = this.getMembers(receiver);
-            if (!members || members.length === 0) {
-                // TODO: group not ready, waiting for group info
-                return null;
-            }
-            var j, member;
-            for (i = 0; i < users.length; ++i) {
-                user = users[i];
-                uid = user.getIdentifier();
-                for (j = 0; j < members.length; ++j) {
-                    member = members[j];
-                    if (member.equals(uid)) {
-                        // DISCUSS: set this item to be current user?
-                        return user;
-                    }
-                }
-            }
-        } else {
-            // 1. personal message
-            // 2. split group message
-            for (i = 0; i < users.length; ++i) {
-                user = users[i];
-                uid = user.getIdentifier();
-                if (receiver.equals(uid)) {
-                    // DISCUSS: set this item to be current user?
-                    return user;
-                }
-            }
-        }
-        return null;
-    };
-
-    //-------- Entity Delegate
-
-    // Override
-    Facebook.prototype.getUser = function (identifier) {
-        // 1. get from user cache
-        var user = this.__users[identifier.toString()];
-        if (!user) {
-            // 2. create user and cache it
-            user = this.createUser(identifier);
-            if (user) {
-                cacheUser.call(this, user);
-            }
-        }
-        return user;
-    };
-
-    // Override
-    Facebook.prototype.getGroup = function (identifier) {
-        // 1. get from group cache
-        var group = this.__groups[identifier.toString()];
-        if (!group) {
-            // 2. create group and cache it
-            group = this.createGroup(identifier);
-            if (group) {
-                cacheGroup.call(this, group);
-            }
-        }
-        return group;
     };
 
     //-------- namespace --------

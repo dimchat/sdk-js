@@ -44,47 +44,47 @@
     var QuitCommandProcessor = function (facebook, messenger) {
         GroupCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(QuitCommandProcessor, GroupCommandProcessor, null);
+    ns.Class(QuitCommandProcessor, GroupCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var facebook = this.getFacebook();
 
-    // protected
-    QuitCommandProcessor.prototype.removeAssistant = function (cmd, rMsg) {
-        // NOTICE: group assistant should be retired by the owner
-        return this.respondText(ASSISTANT_CANNOT_QUIT, cmd.getGroup());
-    };
+            // 0. check group
+            var group = cmd.getGroup();
+            var owner = facebook.getOwner(group);
+            var members = facebook.getMembers(group);
+            if (!owner || !members || members.length === 0) {
+                return this.respondText(GROUP_EMPTY, group);
+            }
 
-    // Override
-    QuitCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var facebook = this.getFacebook();
+            // 1. check permission
+            var sender = rMsg.getSender();
+            if (owner.equals(sender)) {
+                return this.respondText(OWNER_CANNOT_QUIT, group);
+            }
+            var assistants = facebook.getAssistants(group);
+            if (assistants && assistants.indexOf(sender) >= 0) {
+                return this.removeAssistant(cmd, rMsg);
+            }
 
-        // 0. check group
-        var group = cmd.getGroup();
-        var owner = facebook.getOwner(group);
-        var members = facebook.getMembers(group);
-        if (!owner || !members || members.length === 0) {
-            return this.respondText(GROUP_EMPTY, group);
+            // 2. remove the sender from group members
+            var pos = members.indexOf(sender);
+            if (pos > 0) {
+                // NOTICE: the first member must be the owner
+                members.splice(pos, 1);
+                facebook.saveMembers(members, group);
+            }
+
+            // 3. response (no need to response this group command)
+            return null;
+        },
+
+        // protected
+        removeAssistant: function (cmd, rMsg) {
+            // NOTICE: group assistant should be retired by the owner
+            return this.respondText(ASSISTANT_CANNOT_QUIT, cmd.getGroup());
         }
-
-        // 1. check permission
-        var sender = rMsg.getSender();
-        if (owner.equals(sender)) {
-            return this.respondText(OWNER_CANNOT_QUIT, group);
-        }
-        var assistants = facebook.getAssistants(group);
-        if (assistants && assistants.indexOf(sender) >= 0) {
-            return this.removeAssistant(cmd, rMsg);
-        }
-
-        // 2. remove the sender from group members
-        var pos = members.indexOf(sender);
-        if (pos > 0) {
-            // NOTICE: the first member must be the owner
-            members.splice(pos, 1);
-            facebook.saveMembers(members, group);
-        }
-
-        // 3. response (no need to response this group command)
-        return null;
-    };
+    });
 
     //-------- namespace --------
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;

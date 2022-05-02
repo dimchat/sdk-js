@@ -51,7 +51,7 @@
      * @returns {Content[]} responses to sender
      */
     ContentProcessor.prototype.process = function (content, rMsg) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -70,7 +70,7 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createContentProcessor = function (type) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -83,7 +83,7 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createCommandProcessor = function (type, command) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -102,7 +102,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getProcessor = function (content) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -114,7 +114,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getContentProcessor = function (type) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -127,7 +127,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getCommandProcessor = function (type, command) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 

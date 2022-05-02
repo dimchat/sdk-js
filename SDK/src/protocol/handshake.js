@@ -64,7 +64,7 @@
      * @returns {String}
      */
     HandshakeCommand.prototype.getMessage = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -74,7 +74,7 @@
      * @returns {String}
      */
     HandshakeCommand.prototype.getSessionKey = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -84,7 +84,7 @@
      * @return {HandshakeState}
      */
     HandshakeCommand.prototype.getState = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -152,22 +152,23 @@
             }
         }
     };
-    ns.Class(BaseHandshakeCommand, BaseCommand, [HandshakeCommand]);
+    ns.Class(BaseHandshakeCommand, BaseCommand, [HandshakeCommand], {
 
-    // Override
-    BaseHandshakeCommand.prototype.getMessage = function () {
-        return this.getValue('message');
-    };
+        // Override
+        getMessage: function () {
+            return this.getValue('message');
+        },
 
-    // Override
-    BaseHandshakeCommand.prototype.getSessionKey = function () {
-        return this.getValue('session');
-    };
+        // Override
+        getSessionKey: function () {
+            return this.getValue('session');
+        },
 
-    // Override
-    BaseHandshakeCommand.prototype.getState = function () {
-        return get_state(this.getMessage(), this.getSessionKey());
-    };
+        // Override
+        getState: function () {
+            return get_state(this.getMessage(), this.getSessionKey());
+        }
+    });
 
     //
     //  Factories

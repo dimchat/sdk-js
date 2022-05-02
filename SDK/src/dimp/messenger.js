@@ -41,23 +41,23 @@
     var Messenger = function () {
         Transceiver.call(this);
     };
-    ns.Class(Messenger, Transceiver, null);
+    ns.Class(Messenger, Transceiver, null, null);
 
     // protected
     Messenger.prototype.getCipherKeyDelegate = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
     // protected
     Messenger.prototype.getPacker = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
     // protected
     Messenger.prototype.getProcessor = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 

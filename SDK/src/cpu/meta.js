@@ -41,7 +41,25 @@
     var MetaCommandProcessor = function (facebook, messenger) {
         BaseCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(MetaCommandProcessor, BaseCommandProcessor, null);
+    ns.Class(MetaCommandProcessor, BaseCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var identifier = cmd.getIdentifier();
+            if (identifier) {
+                var meta = cmd.getMeta();
+                if (meta) {
+                    // received a meta for ID
+                    return put_meta.call(this, identifier, meta);
+                } else {
+                    // query meta for ID
+                    return get_meta.call(this, identifier);
+                }
+            }
+            // error
+            var text = 'Meta command error.';
+            return this.respondText(text, null);
+        }
+    });
 
     // query meta for ID
     var get_meta = function (identifier) {
@@ -71,24 +89,6 @@
             text = 'Meta not accept: ' + identifier;
             return this.respondText(text, null);
         }
-    };
-
-    // @Override
-    MetaCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var identifier = cmd.getIdentifier();
-        if (identifier) {
-            var meta = cmd.getMeta();
-            if (meta) {
-                // received a meta for ID
-                return put_meta.call(this, identifier, meta);
-            } else {
-                // query meta for ID
-                return get_meta.call(this, identifier);
-            }
-        }
-        // error
-        var text = 'Meta command error.';
-        return this.respondText(text, null);
     };
 
     //-------- namespace --------

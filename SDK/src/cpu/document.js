@@ -41,7 +41,31 @@
     var DocumentCommandProcessor = function (facebook, messenger) {
         MetaCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null);
+    ns.Class(DocumentCommandProcessor, MetaCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var identifier = cmd.getIdentifier();
+            if (identifier) {
+                var doc = cmd.getDocument();
+                if (!doc) {
+                    // query document for ID
+                    var type = cmd.getValue('doc_type');
+                    if (!type) {
+                        type = '*';  // ANY
+                    }
+                    return get_doc.call(this, identifier, type);
+                }
+                // received a document for ID
+                if (identifier.equals(doc.getIdentifier())) {
+                    var meta = cmd.getMeta();
+                    return put_doc.call(this, identifier, meta, doc);
+                }
+            }
+            // error
+            var text = 'Document command error.';
+            return this.respondText(text, null);
+        }
+    });
 
     // query document for ID
     var get_doc = function (identifier, type) {
@@ -81,30 +105,6 @@
             text = 'Document not accept: ' + identifier;
             return this.respondText(text, null);
         }
-    };
-
-    // @Override
-    DocumentCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var identifier = cmd.getIdentifier();
-        if (identifier) {
-            var doc = cmd.getDocument();
-            if (!doc) {
-                // query document for ID
-                var type = cmd.getValue('doc_type');
-                if (!type) {
-                    type = '*';  // ANY
-                }
-                return get_doc.call(this, identifier, type);
-            }
-            // received a document for ID
-            if (identifier.equals(doc.getIdentifier())) {
-                var meta = cmd.getMeta();
-                return put_doc.call(this, identifier, meta, doc);
-            }
-        }
-        // error
-        var text = 'Document command error.';
-        return this.respondText(text, null);
     };
 
     //-------- namespace --------

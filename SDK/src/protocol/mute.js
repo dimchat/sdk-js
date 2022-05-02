@@ -59,10 +59,10 @@
      * @param {ID[]} list
      */
     MuteCommand.prototype.setMuteCList = function (list) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     MuteCommand.prototype.getMuteCList = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     MuteCommand.setMuteList = function (list, cmd) {
@@ -117,23 +117,24 @@
             this.__list = null;
         }
     };
-    ns.Class(BaseMuteCommand, BaseCommand, [MuteCommand]);
+    ns.Class(BaseMuteCommand, BaseCommand, [MuteCommand], {
 
-    // Override
-    BaseMuteCommand.prototype.getMuteCList = function () {
-        if (!this.__list) {
+        // Override
+        getMuteCList: function () {
+            if (!this.__list) {
+                var dict = this.toMap();
+                this.__list = MuteCommand.getMuteList(dict);
+            }
+            return this.__list;
+        },
+
+        // Override
+        setMuteCList: function (list) {
             var dict = this.toMap();
-            this.__list = MuteCommand.getMuteList(dict);
+            MuteCommand.setMuteList(list, dict);
+            this.__list = list;
         }
-        return this.__list;
-    };
-
-    // Override
-    BaseMuteCommand.prototype.setMuteCList = function (list) {
-        var dict = this.toMap();
-        MuteCommand.setMuteList(list, dict);
-        this.__list = list;
-    };
+    });
 
     //-------- namespace --------
     ns.dkd.BaseMuteCommand = BaseMuteCommand;

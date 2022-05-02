@@ -52,56 +52,57 @@
     var ContentProcessorCreator = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    ns.Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator]);
+    ns.Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
 
-    // Override
-    ContentProcessorCreator.prototype.createContentProcessor = function (type) {
-        var facebook = this.getFacebook();
-        var messenger = this.getMessenger();
-        // forward content
-        if (ContentType.FORWARD.equals(type)) {
-            return new ns.cpu.ForwardContentProcessor(facebook, messenger);
-        }
-        // default commands
-        if (ContentType.COMMAND.equals(type)) {
-            return new ns.cpu.BaseCommandProcessor(facebook, messenger);
-        } else if (ContentType.HISTORY.equals(type)) {
-            return new ns.cpu.HistoryCommandProcessor(facebook, messenger);
-        }
-        if (0 === type) {
-            return new ns.cpu.BaseContentProcessor(facebook, messenger);
-        }
-        // unknown
-        return null;
-    };
+        // Override
+        createContentProcessor: function (type) {
+            var facebook = this.getFacebook();
+            var messenger = this.getMessenger();
+            // forward content
+            if (ContentType.FORWARD.equals(type)) {
+                return new ns.cpu.ForwardContentProcessor(facebook, messenger);
+            }
+            // default commands
+            if (ContentType.COMMAND.equals(type)) {
+                return new ns.cpu.BaseCommandProcessor(facebook, messenger);
+            } else if (ContentType.HISTORY.equals(type)) {
+                return new ns.cpu.HistoryCommandProcessor(facebook, messenger);
+            }
+            if (0 === type) {
+                return new ns.cpu.BaseContentProcessor(facebook, messenger);
+            }
+            // unknown
+            return null;
+        },
 
-    // Override
-    ContentProcessorCreator.prototype.createCommandProcessor = function (type, command) {
-        var facebook = this.getFacebook();
-        var messenger = this.getMessenger();
-        // meta command
-        if (command === Command.META) {
-            return new ns.cpu.MetaCommandProcessor(facebook, messenger);
-        } else if (command === Command.DOCUMENT) {
-            return new ns.cpu.DocumentCommandProcessor(facebook, messenger);
+        // Override
+        createCommandProcessor: function (type, command) {
+            var facebook = this.getFacebook();
+            var messenger = this.getMessenger();
+            // meta command
+            if (command === Command.META) {
+                return new ns.cpu.MetaCommandProcessor(facebook, messenger);
+            } else if (command === Command.DOCUMENT) {
+                return new ns.cpu.DocumentCommandProcessor(facebook, messenger);
+            }
+            // group commands
+            if (command === 'group') {
+                return new ns.cpu.GroupCommandProcessor(facebook, messenger);
+            } else if (command === GroupCommand.INVITE) {
+                return new ns.cpu.InviteCommandProcessor(facebook, messenger);
+            } else if (command === GroupCommand.EXPEL) {
+                return new ns.cpu.ExpelCommandProcessor(facebook, messenger);
+            } else if (command === GroupCommand.QUIT) {
+                return new ns.cpu.QuitCommandProcessor(facebook, messenger);
+            } else if (command === GroupCommand.QUERY) {
+                return new ns.cpu.QueryCommandProcessor(facebook, messenger);
+            } else if (command === GroupCommand.RESET) {
+                return new ns.cpu.ResetCommandProcessor(facebook, messenger);
+            }
+            // unknown
+            return null;
         }
-        // group commands
-        if (command === 'group') {
-            return new ns.cpu.GroupCommandProcessor(facebook, messenger);
-        } else if (command === GroupCommand.INVITE) {
-            return new ns.cpu.InviteCommandProcessor(facebook, messenger);
-        } else if (command === GroupCommand.EXPEL) {
-            return new ns.cpu.ExpelCommandProcessor(facebook, messenger);
-        } else if (command === GroupCommand.QUIT) {
-            return new ns.cpu.QuitCommandProcessor(facebook, messenger);
-        } else if (command === GroupCommand.QUERY) {
-            return new ns.cpu.QueryCommandProcessor(facebook, messenger);
-        } else if (command === GroupCommand.RESET) {
-            return new ns.cpu.ResetCommandProcessor(facebook, messenger);
-        }
-        // unknown
-        return null;
-    };
+    });
 
     //-------- namespace --------
     ns.cpu.ContentProcessorCreator = ContentProcessorCreator;
@@ -132,7 +133,7 @@
         this.__content_processors = {}  // uint => ContentProcessor
         this.__command_processors = {}  // string => ContentProcessor
     };
-    ns.Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory]);
+    ns.Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory], null);
 
     // Override
     ContentProcessorFactory.prototype.getProcessor = function (content) {

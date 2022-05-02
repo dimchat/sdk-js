@@ -42,6 +42,10 @@ if (typeof DIMSDK !== "object") {
     // exports namespace from DaoKeDao
     base.exports(ns);
 
+    if (typeof ns.assert !== 'function') {
+        ns.assert = console.assert;
+    }
+
     //-------- namespace --------
     if (typeof ns.cpu !== 'object') {
         ns.cpu = new ns.Namespace();

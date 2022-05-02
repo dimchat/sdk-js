@@ -67,10 +67,10 @@
      * @param {String} title
      */
     StorageCommand.prototype.setTitle = function (title) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     StorageCommand.prototype.getTitle = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -80,10 +80,10 @@
      * @param {ID} identifier
      */
     StorageCommand.prototype.setIdentifier = function (identifier) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     StorageCommand.prototype.getIdentifier = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -94,10 +94,10 @@
      * @param {Uint8Array} data
      */
     StorageCommand.prototype.setData = function (data) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     StorageCommand.prototype.getData = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -109,10 +109,10 @@
      * @param {Uint8Array} data
      */
     StorageCommand.prototype.setKey = function (data) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
     };
     StorageCommand.prototype.getKey = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -120,11 +120,11 @@
     //  Decryption
     //
     StorageCommand.prototype.decryptData = function (key) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
     StorageCommand.prototype.decryptKey = function (privateKey) {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 
@@ -167,121 +167,122 @@
         this.__key = null;       // encrypted symmetric key data
         this.__password = null;  // symmetric key for data
     };
-    ns.Class(BaseStorageCommand, BaseCommand, [StorageCommand]);
+    ns.Class(BaseStorageCommand, BaseCommand, [StorageCommand], {
 
-    // Override
-    BaseStorageCommand.prototype.setTitle = function (title) {
-        this.setValue('title', title);
-    };
+        // Override
+        setTitle: function (title) {
+            this.setValue('title', title);
+        },
 
-    // Override
-    BaseStorageCommand.prototype.getTitle = function () {
-        var title = this.getValue('title');
-        if (title && title.length > 0) {
-            return title;
-        } else {
-            // (compatible with v1.0)
-            //  contacts command: {
-            //      command : 'contacts',
-            //      data    : '...',
-            //      key     : '...'
-            //  }
-            return this.getCommand();
-        }
-    };
-
-    // Override
-    BaseStorageCommand.prototype.setIdentifier = function (identifier) {
-        if (identifier && ns.Interface.conforms(identifier, ID)) {
-            this.setValue('ID', identifier.toString());
-        } else {
-            this.setValue('ID', null);
-        }
-    };
-
-    // Override
-    BaseStorageCommand.prototype.getIdentifier = function () {
-        return ID.parse(this.getValue('ID'));
-    };
-
-    // Override
-    BaseStorageCommand.prototype.setData = function (data) {
-        var base64 = null;
-        if (data) {
-            base64 = Base64.encode(data);
-        }
-        this.setValue('data', base64);
-        this.__data = data;
-        this.__plaintext = null;
-    };
-
-    // Override
-    BaseStorageCommand.prototype.getData = function () {
-        if (!this.__data) {
-            var base64 = this.getValue('data');
-            if (base64) {
-                this.__data = Base64.decode(base64);
-            }
-        }
-        return this.__data;
-    };
-
-    // Override
-    BaseStorageCommand.prototype.setKey = function (data) {
-        var base64 = null;
-        if (data) {
-            base64 = Base64.encode(data);
-        }
-        this.setValue('key', base64);
-        this.__key = data;
-        this.__password = null;
-    };
-
-    // Override
-    BaseStorageCommand.prototype.getKey = function () {
-        if (!this.__key) {
-            var base64 = this.getValue('key');
-            if (base64) {
-                this.__key = Base64.decode(base64);
-            }
-        }
-        return this.__key;
-    };
-
-    // Override
-    BaseStorageCommand.prototype.decryptData = function (key) {
-        if (!this.__plaintext) {
-            // 1. get password for decrypting data
-            var pwd = null;
-            if (ns.Interface.conforms(key, PrivateKey)) {
-                // decrypt password with private key
-                pwd = this.decryptKey(key);
-                if (!pwd) {
-                    throw new Error('failed to decrypt key: ' + key);
-                }
-            } else if (ns.Interface.conforms(key, SymmetricKey)) {
-                pwd = key;
+        // Override
+        getTitle: function () {
+            var title = this.getValue('title');
+            if (title && title.length > 0) {
+                return title;
             } else {
-                throw new TypeError('Decryption key error: ' + key);
+                // (compatible with v1.0)
+                //  contacts command: {
+                //      command : 'contacts',
+                //      data    : '...',
+                //      key     : '...'
+                //  }
+                return this.getCommand();
             }
-            // 2. decrypt data with symmetric key
-            var data = this.getData();
-            this.__plaintext = pwd.decrypt(data);
-        }
-        return this.__plaintext;
-    };
+        },
 
-    // Override
-    BaseStorageCommand.prototype.decryptKey = function (privateKey) {
-        if (!this.__password) {
-            var key = this.getKey();
-            var data = privateKey.decrypt(key);
-            var json = ns.format.UTF8.decode(data);
-            var dict = ns.format.JSON.decode(json);
-            this.__password = SymmetricKey.parse(dict);
+        // Override
+        setIdentifier: function (identifier) {
+            if (identifier && ns.Interface.conforms(identifier, ID)) {
+                this.setValue('ID', identifier.toString());
+            } else {
+                this.setValue('ID', null);
+            }
+        },
+
+        // Override
+        getIdentifier: function () {
+            return ID.parse(this.getValue('ID'));
+        },
+
+        // Override
+        setData: function (data) {
+            var base64 = null;
+            if (data) {
+                base64 = Base64.encode(data);
+            }
+            this.setValue('data', base64);
+            this.__data = data;
+            this.__plaintext = null;
+        },
+
+        // Override
+        getData: function () {
+            if (!this.__data) {
+                var base64 = this.getValue('data');
+                if (base64) {
+                    this.__data = Base64.decode(base64);
+                }
+            }
+            return this.__data;
+        },
+
+        // Override
+        setKey: function (data) {
+            var base64 = null;
+            if (data) {
+                base64 = Base64.encode(data);
+            }
+            this.setValue('key', base64);
+            this.__key = data;
+            this.__password = null;
+        },
+
+        // Override
+        getKey: function () {
+            if (!this.__key) {
+                var base64 = this.getValue('key');
+                if (base64) {
+                    this.__key = Base64.decode(base64);
+                }
+            }
+            return this.__key;
+        },
+
+        // Override
+        decryptData: function (key) {
+            if (!this.__plaintext) {
+                // 1. get password for decrypting data
+                var pwd = null;
+                if (ns.Interface.conforms(key, PrivateKey)) {
+                    // decrypt password with private key
+                    pwd = this.decryptKey(key);
+                    if (!pwd) {
+                        throw new Error('failed to decrypt key: ' + key);
+                    }
+                } else if (ns.Interface.conforms(key, SymmetricKey)) {
+                    pwd = key;
+                } else {
+                    throw new TypeError('Decryption key error: ' + key);
+                }
+                // 2. decrypt data with symmetric key
+                var data = this.getData();
+                this.__plaintext = pwd.decrypt(data);
+            }
+            return this.__plaintext;
+        },
+
+        // Override
+        decryptKey: function (privateKey) {
+            if (!this.__password) {
+                var key = this.getKey();
+                var data = privateKey.decrypt(key);
+                var json = ns.format.UTF8.decode(data);
+                var dict = ns.format.JSON.decode(json);
+                this.__password = SymmetricKey.parse(dict);
+            }
+            return this.__password;
         }
-        return this.__password;
-    };
+    });
 
     //-------- namespace --------
     ns.dkd.BaseStorageCommand = BaseStorageCommand;

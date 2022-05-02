@@ -44,13 +44,14 @@
     var Chatroom = function (identifier) {
         BaseGroup.call(this, identifier);
     };
-    ns.Class(Chatroom, BaseGroup, null);
+    ns.Class(Chatroom, BaseGroup, null, {
 
-    Chatroom.prototype.getAdmins = function () {
-        var identifier = this.getIdentifier();
-        var delegate = this.getDataSource();
-        return delegate.getAdmins(identifier);
-    };
+        getAdmins: function () {
+            var identifier = this.getIdentifier();
+            var delegate = this.getDataSource();
+            return delegate.getAdmins(identifier);
+        }
+    });
 
     /**
      *  This interface is for getting information for chatroom
@@ -65,7 +66,7 @@
      * @returns {ID[]}
      */
     ChatroomDataSource.prototype.getAdmins = function () {
-        console.assert(false, 'implement me!');
+        ns.assert(false, 'implement me!');
         return null;
     };
 

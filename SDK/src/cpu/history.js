@@ -40,13 +40,13 @@
     var HistoryCommandProcessor = function (facebook, messenger) {
         BaseCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(HistoryCommandProcessor, BaseCommandProcessor, null);
-
-    // Override
-    HistoryCommandProcessor.prototype.process = function (cmd, rMsg) {
-        var text = 'History command (name: ' + cmd.getCommand() + ') not support yet!';
-        return this.respondText(text, cmd.getGroup());
-    };
+    ns.Class(HistoryCommandProcessor, BaseCommandProcessor, null, {
+        // Override
+        process: function (cmd, rMsg) {
+            var text = 'History command (name: ' + cmd.getCommand() + ') not support yet!';
+            return this.respondText(text, cmd.getGroup());
+        }
+    });
 
     //-------- namespace --------
     ns.cpu.HistoryCommandProcessor = HistoryCommandProcessor;

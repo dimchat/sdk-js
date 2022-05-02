@@ -45,33 +45,34 @@
         this.host = host;
         this.port = port;
     };
-    ns.Class(Station, BaseUser, null);
+    ns.Class(Station, BaseUser, null, {
 
-    Station.prototype.getHost = function () {
-        if (!this.host) {
-            var doc = this.getDocument('*');
-            if (doc) {
-                this.host = doc.getProperty('host');
-            }
+        getHost: function () {
             if (!this.host) {
-                this.host = '0.0.0.0';
+                var doc = this.getDocument('*');
+                if (doc) {
+                    this.host = doc.getProperty('host');
+                }
+                if (!this.host) {
+                    this.host = '0.0.0.0';
+                }
             }
-        }
-        return this.host;
-    };
+            return this.host;
+        },
 
-    Station.prototype.getPort = function () {
-        if (!this.port) {
-            var doc = this.getDocument('*');
-            if (doc) {
-                this.port = doc.getProperty('port');
-            }
+        getPort: function () {
             if (!this.port) {
-                this.port = 9394;
+                var doc = this.getDocument('*');
+                if (doc) {
+                    this.port = doc.getProperty('port');
+                }
+                if (!this.port) {
+                    this.port = 9394;
+                }
             }
+            return this.port;
         }
-        return this.port;
-    };
+    });
 
     //-------- namespace --------
     ns.mkm.Station = Station;

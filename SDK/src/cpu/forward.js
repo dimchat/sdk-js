@@ -40,29 +40,29 @@
     var ForwardContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
-    ns.Class(ForwardContentProcessor, BaseContentProcessor, null);
-
-    // Override
-    ForwardContentProcessor.prototype.process = function (content, rMsg) {
-        var secret = content.getMessage();
-        // call messenger to process it
-        var messenger = this.getMessenger();
-        // 1. verify message
-        var sMsg = messenger.verifyMessage(secret);
-        if (!sMsg) {
-            // waiting for sender's meta if not exists
-            return null;
+    ns.Class(ForwardContentProcessor, BaseContentProcessor, null, {
+        // Override
+        process: function (content, rMsg) {
+            var secret = content.getMessage();
+            // call messenger to process it
+            var messenger = this.getMessenger();
+            // 1. verify message
+            var sMsg = messenger.verifyMessage(secret);
+            if (!sMsg) {
+                // waiting for sender's meta if not exists
+                return null;
+            }
+            // 2. decrypt message
+            var iMsg = messenger.decryptMessage(sMsg);
+            if (!iMsg) {
+                // NOTICE: decrypt failed, not for you?
+                //         it means you are asked to re-pack and forward this message
+                return null;
+            }
+            // 3. process message content
+            return messenger.processContent(iMsg.getContent(), secret);
         }
-        // 2. decrypt message
-        var iMsg = messenger.decryptMessage(sMsg);
-        if (!iMsg) {
-            // NOTICE: decrypt failed, not for you?
-            //         it means you are asked to re-pack and forward this message
-            return null;
-        }
-        // 3. process message content
-        return messenger.processContent(iMsg.getContent(), secret);
-    };
+    });
 
     //-------- namespace --------
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;

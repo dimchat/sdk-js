@@ -38,7 +38,7 @@
         this.__facebook = facebook;
         this.__messenger = messenger;
     };
-    ns.Class(TwinsHelper, Object, null);
+    ns.Class(TwinsHelper, Object, null, null);
 
     TwinsHelper.prototype.getFacebook = function () {
         return this.__facebook;
