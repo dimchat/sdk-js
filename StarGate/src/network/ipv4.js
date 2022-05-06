@@ -61,17 +61,15 @@
         } else {
             throw new URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
         }
-        Host.call(this, ip, port, data);
+        var string;
+        if (port === 0) {
+            string = ip;
+        } else {
+            string = ip + ':' + port;
+        }
+        Host.call(this, string, ip, port, data);
     };
     sys.Class(IPv4, Host, null);
-
-    IPv4.prototype.valueOf = function () {
-        if (this.port === 0) {
-            return this.ip;
-        } else {
-            return this.ip + ':' + this.port;
-        }
-    };
 
     IPv4.patten = /^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/;  // 127.0.0.1:9527
 

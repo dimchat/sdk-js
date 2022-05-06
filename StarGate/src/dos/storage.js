@@ -30,11 +30,13 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns, sys) {
     "use strict";
+
+    var JsON = sys.format.JSON;
+    var Base64 = sys.format.Base64;
 
     var Storage = function (storage, prefix) {
         Object.call(this);
@@ -47,7 +49,7 @@
             this.ROOT = 'dim';
         }
     };
-    sys.Class(Storage, Object, null);
+    sys.Class(Storage, Object, null, null);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
@@ -104,7 +106,7 @@
         if (!base64) {
             return null;
         }
-        return sys.format.Base64.decode(base64);
+        return Base64.decode(base64);
     };
 
     /**
@@ -118,7 +120,7 @@
         if (!json) {
             return null;
         }
-        return sys.format.JSON.decode(json);
+        return JsON.decode(json);
     };
 
     //
@@ -160,7 +162,7 @@
     Storage.prototype.saveData = function (data, path) {
         var base64 = null;
         if (data) {
-            base64 = sys.format.Base64.encode(data);
+            base64 = Base64.encode(data);
         }
         return this.saveText(base64, path);
     };
@@ -174,8 +176,7 @@
     Storage.prototype.saveJSON = function (container, path) {
         var json = null;
         if (container) {
-            json = sys.format.JSON.encode(container);
-            json = sys.format.UTF8.decode(json);
+            json = JsON.encode(container);
         }
         return this.saveText(json, path);
     };

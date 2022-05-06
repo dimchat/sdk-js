@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns, sys) {
@@ -50,7 +49,7 @@
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    sys.Class(Notification, Object, null);
+    sys.Class(Notification, Object, null, null);
 
     //-------- namespace --------
     ns.Notification = Notification;

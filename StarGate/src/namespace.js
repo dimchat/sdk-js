@@ -25,36 +25,31 @@
 // =============================================================================
 //
 
-//! require <crypto.js>
+//! require <startrek.js>
 
 if (typeof LocalNotificationService !== 'object') {
     LocalNotificationService = new MONKEY.Namespace();
-}
-
-if (typeof FiniteStateMachine !== 'object') {
-    FiniteStateMachine = new MONKEY.Namespace();
 }
 
 if (typeof FileSystem !== 'object') {
     FileSystem = new MONKEY.Namespace();
 }
 
-if (typeof StarTrek !== 'object') {
-    StarTrek = new MONKEY.Namespace();
-}
-
 if (typeof StarGate !== 'object') {
     StarGate = new MONKEY.Namespace();
 }
 
-(function (ns) {
+(function (ns, base, sys) {
     "use strict";
 
+    // exports namespace from StarTrek
+    base.exports(ns);
+
     //-------- namespace --------
-    if (typeof ns.threading !== 'object') {
-        ns.threading = new MONKEY.Namespace();
+    if (typeof ns.ws !== 'object') {
+        ns.ws = new MONKEY.Namespace();
     }
 
-    ns.registers('threading');
+    ns.registers('ws');
 
-})(MONKEY);
+})(StarGate, StarTrek, MONKEY);

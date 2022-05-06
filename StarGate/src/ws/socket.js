@@ -40,6 +40,8 @@
 (function (ns, sys) {
     "use strict";
 
+    var SocketAddress = ns.type.SocketAddress;
+
     var connect = function (url, proxy) {
         var ws = new WebSocket(url);
         ws.onopen = function (ev) {
@@ -76,55 +78,48 @@
             return 'ws://' + host + ':' + port;
         }
     };
-    var parse_url = function (url) {
-        var pos1 = url.indexOf('://');
-        if (pos1 < 0) {
-            throw new URIError('URl error: ' + url);
-        }
-        var scheme = url.substr(0, pos1);
-        var host, port;
-        pos1 += 3;
-        var pos2 = url.indexOf('/', pos1 + 4);
-        if (pos2 > pos1) {
-            // ignore the tail
-            url = url.substr(0, pos2);
-        }
-        pos2 = url.indexOf(':', pos1 + 4);
-        if (pos2 > pos1) {
-            host = url.substr(pos1, pos2 - pos1);
-            port = parseInt(url.substr(pos2 + 1));
-        } else {
-            host = url.substr(pos1);
-            if (scheme === 'ws' || scheme === 'http') {
-                port = 80;
-            } else if (scheme === 'wss' || scheme === 'https') {
-                port = 443;
-            } else {
-                throw new URIError('URL scheme error: ' + scheme);
-            }
-        }
-        return {
-            'scheme': scheme,
-            'host': host,
-            'port': port
-        };
-    };
+    // var parse_url = function (url) {
+    //     var pos1 = url.indexOf('://');
+    //     if (pos1 < 0) {
+    //         throw new URIError('URl error: ' + url);
+    //     }
+    //     var scheme = url.substr(0, pos1);
+    //     var host, port;
+    //     pos1 += 3;
+    //     var pos2 = url.indexOf('/', pos1 + 4);
+    //     if (pos2 > pos1) {
+    //         // ignore the tail
+    //         url = url.substr(0, pos2);
+    //     }
+    //     pos2 = url.indexOf(':', pos1 + 4);
+    //     if (pos2 > pos1) {
+    //         host = url.substr(pos1, pos2 - pos1);
+    //         port = parseInt(url.substr(pos2 + 1));
+    //     } else {
+    //         host = url.substr(pos1);
+    //         if (scheme === 'ws' || scheme === 'http') {
+    //             port = 80;
+    //         } else if (scheme === 'wss' || scheme === 'https') {
+    //             port = 443;
+    //         } else {
+    //             throw new URIError('URL scheme error: ' + scheme);
+    //         }
+    //     }
+    //     return {
+    //         'scheme': scheme,
+    //         'host': host,
+    //         'port': port
+    //     };
+    // };
 
-    var Socket = function (url) {
+    var Socket = function () {
         Object.call(this);
         this.__packages = [];
         this.__connected = false;
         this.__closed = false;
-        if (url) {
-            var info = parse_url(url);
-            this.__host = info['host'];
-            this.__port = info['port'];
-            this.__ws = connect(url, this);
-        } else {
-            this.__host = null;
-            this.__port = null;
-            this.__ws = null;
-        }
+        this.__host = null;
+        this.__port = null;
+        this.__ws = null;
     };
     sys.Class(Socket, Object, null);
 
@@ -133,24 +128,6 @@
     };
     Socket.prototype.getPort = function () {
         return this.__port;
-    };
-
-    Socket.prototype.connect = function (host, port) {
-        this.close();
-        this.__ws = connect(build_url(host, port), this);
-    };
-    Socket.prototype.close = function () {
-        if (this.__ws) {
-            this.__ws.close();
-            this.__ws = null;
-        }
-    };
-
-    Socket.prototype.isConnected = function () {
-        return this.__connected;
-    };
-    Socket.prototype.isClosed = function () {
-        return this.__closed;
     };
 
     Socket.prototype.onConnected = function () {
@@ -165,10 +142,65 @@
         this.__packages.push(data);
     };
 
-    Socket.prototype.send = function (data) {
-        this.__ws.send(data);
+    // Override
+    Socket.prototype.configureBlocking = function () {
+        // do nothing
     };
-    Socket.prototype.receive = function () {
+
+    // Override
+    Socket.prototype.isBlocking = function () {
+        return false;
+    };
+
+    // Override
+    Socket.prototype.isOpen = function () {
+        return !this.__closed;
+    };
+
+    // Override
+    Socket.prototype.isConnected = function () {
+        return this.__connected;
+    };
+
+    // Override
+    Socket.prototype.isBound = function () {
+        return true;
+    };
+
+    // Override
+    Socket.prototype.isAlive = function () {
+        return this.isOpen() && (this.isConnected() || this.isBound());
+    };
+
+    // Override
+    Socket.prototype.bind = function (local) {
+        // do nothing
+    };
+
+    /**
+     *  Connect to remote address
+     *
+     * @param {SocketAddress} remote
+     */
+    // Override
+    Socket.prototype.connect = function (remote) {
+        this.close();
+        this.__host = remote.getHost();
+        this.__port = remote.getPort();
+        var url = build_url(this.__host, this.__port);
+        this.__ws = connect(url, this);
+    };
+
+    // Override
+    Socket.prototype.close = function () {
+        if (this.__ws) {
+            this.__ws.close();
+            this.__ws = null;
+        }
+    };
+
+    // Override
+    Socket.prototype.read = function (maxLen) {
         if (this.__packages.length > 0) {
             return this.__packages.shift();
         } else {
@@ -176,9 +208,25 @@
         }
     };
 
-    //-------- namespace --------
-    ns.Socket = Socket;
+    // Override
+    Socket.prototype.write = function (data) {
+        this.__ws.send(data);
+        return data.length;
+    };
 
-    ns.registers('Socket');
+    // Override
+    Socket.prototype.receive = function (maxLen) {
+        return this.read(maxLen);
+    };
+
+    // Override
+    Socket.prototype.send = function (data, remote) {
+        return this.write(data);
+    };
+
+    //-------- namespace --------
+    ns.ws.Socket = Socket;
+
+    ns.ws.registers('Socket');
 
 })(StarGate, MONKEY);

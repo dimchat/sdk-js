@@ -10,13 +10,15 @@ var g_variables = {};
 (function (ns, sys) {
     'use strict';
 
-    var ActiveConnection = ns.ActiveConnection;
-    var WSGate = ns.WSGate;
+    var ActiveConnection = ns.socket.ActiveConnection;
+    var InetSocketAddress = ns.type.InetSocketAddress;
+    var StarGate = ns.StarGate;
+    var StreamClientHub = ns.ws.StreamClientHub;
 
     var StarTrek = function (connection) {
-        WSGate.call(this, connection);
+        StarGate.call(this, connection);
     };
-    sys.Class(StarTrek, WSGate, null);
+    sys.Class(StarTrek, StarGate, null);
 
     StarTrek.createGate = function (host, port) {
         var conn = new ActiveConnection(host, port);
@@ -25,30 +27,22 @@ var g_variables = {};
         return gate;
     };
 
-    StarTrek.prototype.start = function () {
-        this.connection.start();
-        WSGate.prototype.start.call(this);
-    };
-
-    StarTrek.prototype.finish = function () {
-        WSGate.prototype.finish.call(this);
-        this.connection.stop();
-    };
-
     var test_connection = function () {
 
         var host = '127.0.0.1';
         // var host = '106.52.25.169';
         var port = 9394;
 
+        var remote = new InetSocketAddress(host, port);
+
         var gate = StarTrek.createGate(host, port);
-        gate.start();
+        // gate.start();
         g_variables['gate'] = gate;
 
         var text = 'PING';
         var data = sys.format.UTF8.encode(text);
         setTimeout(function () {
-            gate.send(data);
+            gate.sendData(data, remote, null);
         }, 2000);
     };
     sg_tests.push(test_connection);

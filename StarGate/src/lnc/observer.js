@@ -30,7 +30,6 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
 //! require 'namespace.js'
 
 (function (ns, sys) {
@@ -39,11 +38,9 @@
     /**
      *  Notification observer
      */
-    var Observer = function () {
-    };
+    var Observer = function () {};
     sys.Interface(Observer, null);
 
-    // noinspection JSUnusedLocalSymbols
     /**
      *  Callback when received notification
      *

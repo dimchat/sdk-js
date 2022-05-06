@@ -138,17 +138,15 @@
         } else {
             throw new URIError('IP data empty: ' + data + ', ' + ip + ', ' + port);
         }
-        Host.call(this, ip, port, data);
+        var string;
+        if (port === 0) {
+            string = ip;
+        } else {
+            string = '[' + ip + ']:' + port;
+        }
+        Host.call(this, string, ip, port, data);
     };
     sys.Class(IPv6, Host, null);
-
-    IPv6.prototype.valueOf = function () {
-        if (this.port === 0) {
-            return this.ip;
-        } else {
-            return '[' + this.ip + ']:' + this.port;
-        }
-    };
 
     IPv6.patten = /^\[?([0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(]:\d{1,5})?$/;
     IPv6.patten_compat = /^\[?([0-9A-Fa-f]{0,4}:){2,6}(\d{1,3}.){3}\d{1,3}(]:\d{1,5})?$/;

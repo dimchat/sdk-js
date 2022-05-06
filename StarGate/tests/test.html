@@ -10,16 +10,15 @@
     <script src="/Crypto/libs/runner.js"></script>
     <script src="/Crypto/libs/utils.js"></script>
 
-    <script src="/DIMP/dist/dimp.js"></script>
+    <script src="../../DIMP/dist/dimp.js"></script>
+    <script src="../../Plugins/dist/plugins.js"></script>
+    <script src="../../FSM/dist/fsm.js"></script>
+    <script src="../../StarTrek/dist/startrek.js"></script>
 
     <script>
         !function (ns) {
             var sources = [
                 'src/namespace.js',
-
-                'src/threading/thread.js',
-                'src/threading/handler.js',
-                'src/threading/runner.js',
 
                 'src/dos/storage.js',
 
@@ -27,40 +26,24 @@
                 'src/lnc/observer.js',
                 'src/lnc/center.js',
 
-                'src/fsm/delegate.js',
-                'src/fsm/transition.js',
-                'src/fsm/state.js',
-                'src/fsm/machine.js',
-                'src/fsm/auto.js',
-
-                'src/startrek/ship.js',
-                'src/startrek/starship.js',
-                'src/startrek/dock.js',
-                'src/startrek/docker.js',
-                'src/startrek/stardocker.js',
-                'src/startrek/gate.js',
-                'src/startrek/stargate.js',
-
-                'src/socket/pool.js',
-                'src/socket/mem.js',
-                'src/socket/socket.js',
-                'src/socket/connection.js',
-                'src/socket/base.js',
-                'src/socket/active.js',
-
                 'src/network/host.js',
                 'src/network/ipv4.js',
                 'src/network/ipv6.js',
 
-                'src/stargate/ship.js',
-                'src/stargate/docker.js',
-                'src/stargate/gate.js',
+                'src/ws/docker.js',
+                'src/ws/socket.js',
+                'src/ws/channel.js',
+                'src/ws/hub.js',
+                'src/ws/client.js',
                 null
             ];
 
             var dist = 'dist/stargate.js';
 
             var tests = [
+                '../../Crypto/tests/crypto_tests.js',
+                '../../FSM/tests/fsm_tests.js',
+                '../../StarTrek/tests/startrek_tests.js',
                 'tests/sg_tests.js',
                 null
             ];
@@ -81,12 +64,39 @@
         }(window);
 
         $(function () {
+            var runner = new Runner('crypto_tests');
+            runner.run(crypto_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('fsm_tests');
+            runner.run(fsm_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('startrek_tests');
+            runner.run(startrek_tests);
+        });
+
+        $(function () {
             var runner = new Runner('sg_tests');
             runner.run(sg_tests);
         });
     </script>
 </head>
 <body>
+
+<h2>Crypto Tests</h2>
+<div id="crypto_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>FiniteStateMachine Tests</h2>
+<div id="fsm_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>StarTrek Tests</h2>
+<div id="startrek_tests">Testing ...</div>
+<div>&nbsp;</div>
 
 <h2>StarGate Tests</h2>
 <div id="sg_tests">Testing ...</div>

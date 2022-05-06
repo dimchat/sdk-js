@@ -37,6 +37,7 @@
     "use strict";
 
     var Arrays = sys.type.Arrays;
+    var Dictionary = sys.type.Dictionary;
 
     var Notification = ns.Notification;
     var Observer = ns.Observer;
@@ -46,9 +47,9 @@
      */
     var Center = function () {
         Object.call(this);
-        this.__observers = {};
+        this.__observers = new Dictionary(); // str(name) => Observer[]
     };
-    sys.Class(Center, Object, null);
+    sys.Class(Center, Object, null, null);
 
     /**
      *  Add observer with notification name
@@ -57,7 +58,7 @@
      * @param {String} name
      */
     Center.prototype.addObserver = function (observer, name) {
-        var list = this.__observers[name];
+        var list = this.__observers.getValue(name);
         if (list) {
             if (list.indexOf(observer) >= 0) {
                 // already exists
@@ -65,7 +66,7 @@
             }
         } else {
             list = [];
-            this.__observers[name] = list;
+            this.__observers.setValue(name, list);
         }
         list.push(observer);
     };
@@ -79,13 +80,13 @@
     Center.prototype.removeObserver = function (observer, name) {
         if (name) {
             // Remove observer for notification name
-            var list = this.__observers[name];
+            var list = this.__observers.getValue(name);
             if (list/* instanceof Array*/) {
                 Arrays.remove(list, observer);
             }
         } else {
             // Remove observer from notification center, no mather what names
-            var names = Object.keys(this.__observers);
+            var names = this.__observers.allKeys();
             for (var i = 0; i < names.length; ++i) {
                 this.removeObserver(observer, names[i]);
             }
@@ -103,7 +104,7 @@
         if (typeof notification === 'string') {
             notification = new Notification(notification, sender, userInfo);
         }
-        var observers = this.__observers[notification.name];
+        var observers = this.__observers.getValue(notification.name);
         if (!observers) {
             return;
         }
@@ -114,7 +115,7 @@
             if (sys.Interface.conforms(obs, Observer)) {
                 obs.onReceiveNotification(notification);
             } else if (typeof obs === 'function') {
-                obs.call(notification);
+                obs.call(notification, notification.name, notification.sender, notification.userInfo);
             }
         }
     };
