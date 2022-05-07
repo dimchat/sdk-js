@@ -30,108 +30,17 @@
 // =============================================================================
 //
 
-//! require 'namespace.js'
-
-(function (ns, sys) {
-    "use strict";
-
-    var ArrivalShip = ns.ArrivalShip;
-
-    /**
-     *  Plain Arrival Ship
-     *  ~~~~~~~~~~~~~~~~~~
-     *
-     * @param {Uint8Array} data - data received
-     * @param {number|null} now - received time
-     */
-    var PlainArrival = function (data, now) {
-        ArrivalShip.call(this, now);
-        this.__data = data;
-    };
-    sys.Class(PlainArrival, ArrivalShip, null, null);
-
-    PlainArrival.prototype.getPackage = function () {
-        return this.__data;
-    };
-
-    // Override
-    PlainArrival.prototype.getSN = function () {
-        // plain ship has no SN
-        return null;
-    };
-
-    // Override
-    PlainArrival.prototype.assemble = function (arrival) {
-        console.assert(arrival === this, 'plain arrival error', arrival, this);
-        // plain arrival needs no assembling
-        return arrival;
-    };
-
-    //-------- namespace --------
-    ns.ws.PlainArrival = PlainArrival;
-
-    ns.ws.registers('PlainArrival');
-
-})(StarGate, MONKEY);
-
-(function (ns, sys) {
-    "use strict";
-
-    var DepartureShip = ns.DepartureShip;
-
-    /**
-     *  Plain Departure Ship
-     *  ~~~~~~~~~~~~~~~~~~~~
-     *
-     * @param {Uint8Array} data - data to be sent
-     * @param {int|null} prior  - priority
-     */
-    var PlainDeparture = function (data, prior) {
-        if (!prior) {
-            prior = 0;
-        }
-        DepartureShip.call(this, prior, DepartureShip.DISPOSABLE);
-        this.__completed = data;
-        this.__fragments = [data];
-    };
-    sys.Class(PlainDeparture, DepartureShip, null, null);
-
-    PlainDeparture.prototype.getPackage = function () {
-        return this.__completed;
-    };
-
-    // Override
-    PlainDeparture.prototype.getSN = function () {
-        // plain ship has no SN
-        return null;
-    };
-
-    // Override
-    PlainDeparture.prototype.getFragments = function () {
-        return this.__fragments;
-    };
-
-    // Override
-    PlainDeparture.prototype.checkResponse = function (arrival) {
-        // plain departure needs no response
-        return false;
-    };
-
-    //-------- namespace --------
-    ns.ws.PlainDeparture = PlainDeparture;
-
-    ns.ws.registers('PlainDeparture');
-
-})(StarGate, MONKEY);
+//! require 'arrival.js'
+//! require 'departure.js'
 
 (function (ns, sys) {
     "use strict";
 
     var UTF8 = sys.type.UTF8;
-    var StarDocker = ns.StarDocker;
     var Departure = ns.port.Departure;
-    var PlainArrival = ns.ws.PlainArrival;
-    var PlainDeparture = ns.ws.PlainDeparture;
+    var StarDocker = ns.StarDocker;
+    var PlainArrival = ns.PlainArrival;
+    var PlainDeparture = ns.PlainDeparture;
 
     /**
      *  Plain Docker
@@ -214,6 +123,7 @@
 
     var init_bytes = function () {
         if (typeof PING === 'string') {
+            // init once
             PING = UTF8.encode(PING);
             PONG = UTF8.encode(PONG);
             NOOP = UTF8.encode(NOOP);
@@ -224,8 +134,8 @@
     var NOOP = 'NOOP';
 
     //-------- namespace --------
-    ns.ws.PlainDocker = PlainDocker;
+    ns.PlainDocker = PlainDocker;
 
-    ns.ws.registers('PlainDocker');
+    ns.registers('PlainDocker');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

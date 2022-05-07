@@ -103,8 +103,8 @@
     };
 
     //-------- namespace --------
-    ns.Host = Host;
+    ns.network.Host = Host;
 
-    ns.registers('Host');
+    ns.network.registers('Host');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

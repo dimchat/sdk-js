@@ -47,4 +47,4 @@ var g_variables = {};
     };
     sg_tests.push(test_connection);
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

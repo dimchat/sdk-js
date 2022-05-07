@@ -1,9 +1,14 @@
 ;
 // license: https://mit-license.org
+//
+//  Web Socket
+//
+//                               Written in 2022 by Moky <albert.moky@gmail.com>
+//
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2022 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,28 +30,54 @@
 // =============================================================================
 //
 
-//! require <startrek.js>
-
-if (typeof LocalNotificationService !== 'object') {
-    LocalNotificationService = new MONKEY.Namespace();
-}
-
-if (typeof FileSystem !== 'object') {
-    FileSystem = new MONKEY.Namespace();
-}
+//! require 'namespace.js'
 
 (function (ns, sys) {
     "use strict";
 
-    //-------- namespace --------
-    if (typeof ns.network !== 'object') {
-        ns.network = new sys.Namespace();
-    }
-    if (typeof ns.ws !== 'object') {
-        ns.ws = new sys.Namespace();
-    }
+    var DepartureShip = ns.DepartureShip;
 
-    ns.registers('network');
-    ns.registers('ws');
+    /**
+     *  Plain Departure Ship
+     *  ~~~~~~~~~~~~~~~~~~~~
+     *
+     * @param {Uint8Array} data - data to be sent
+     * @param {int|null} prior  - priority
+     */
+    var PlainDeparture = function (data, prior) {
+        if (!prior) {
+            prior = 0;
+        }
+        DepartureShip.call(this, prior, DepartureShip.DISPOSABLE);
+        this.__completed = data;
+        this.__fragments = [data];
+    };
+    sys.Class(PlainDeparture, DepartureShip, null, null);
+
+    PlainDeparture.prototype.getPackage = function () {
+        return this.__completed;
+    };
+
+    // Override
+    PlainDeparture.prototype.getSN = function () {
+        // plain ship has no SN
+        return null;
+    };
+
+    // Override
+    PlainDeparture.prototype.getFragments = function () {
+        return this.__fragments;
+    };
+
+    // Override
+    PlainDeparture.prototype.checkResponse = function (arrival) {
+        // plain departure needs no response
+        return false;
+    };
+
+    //-------- namespace --------
+    ns.PlainDeparture = PlainDeparture;
+
+    ns.registers('PlainDeparture');
 
 })(StarTrek, MONKEY);

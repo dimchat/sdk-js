@@ -176,8 +176,8 @@
     };
 
     //-------- namespace --------
-    ns.IPv6 = IPv6;
+    ns.network.IPv6 = IPv6;
 
-    ns.registers('IPv6');
+    ns.network.registers('IPv6');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

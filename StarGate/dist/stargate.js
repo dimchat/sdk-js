@@ -13,16 +13,16 @@ if (typeof LocalNotificationService !== "object") {
 if (typeof FileSystem !== "object") {
     FileSystem = new MONKEY.Namespace();
 }
-if (typeof StarGate !== "object") {
-    StarGate = new MONKEY.Namespace();
-}
-(function (ns, base, sys) {
-    base.exports(ns);
-    if (typeof ns.ws !== "object") {
-        ns.ws = new MONKEY.Namespace();
+(function (ns, sys) {
+    if (typeof ns.network !== "object") {
+        ns.network = new sys.Namespace();
     }
+    if (typeof ns.ws !== "object") {
+        ns.ws = new sys.Namespace();
+    }
+    ns.registers("network");
     ns.registers("ws");
-})(StarGate, StarTrek, MONKEY);
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var JsON = sys.format.JSON;
     var Base64 = sys.format.Base64;
@@ -229,9 +229,9 @@ if (typeof StarGate !== "object") {
         }
         return array;
     };
-    ns.Host = Host;
-    ns.registers("Host");
-})(StarGate, MONKEY);
+    ns.network.Host = Host;
+    ns.network.registers("Host");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var Host = ns.Host;
     var IPv4 = function (ip, port, data) {
@@ -275,9 +275,9 @@ if (typeof StarGate !== "object") {
         }
         return new IPv4(ip, port);
     };
-    ns.IPv4 = IPv4;
-    ns.registers("IPv4");
-})(StarGate, MONKEY);
+    ns.network.IPv4 = IPv4;
+    ns.network.registers("IPv4");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var Host = ns.Host;
     var parse_v4 = function (data, array) {
@@ -391,9 +391,9 @@ if (typeof StarGate !== "object") {
         }
         return new IPv6(ip, port);
     };
-    ns.IPv6 = IPv6;
-    ns.registers("IPv6");
-})(StarGate, MONKEY);
+    ns.network.IPv6 = IPv6;
+    ns.network.registers("IPv6");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var ArrivalShip = ns.ArrivalShip;
     var PlainArrival = function (data, now) {
@@ -411,9 +411,9 @@ if (typeof StarGate !== "object") {
         console.assert(arrival === this, "plain arrival error", arrival, this);
         return arrival;
     };
-    ns.ws.PlainArrival = PlainArrival;
-    ns.ws.registers("PlainArrival");
-})(StarGate, MONKEY);
+    ns.PlainArrival = PlainArrival;
+    ns.registers("PlainArrival");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var DepartureShip = ns.DepartureShip;
     var PlainDeparture = function (data, prior) {
@@ -437,15 +437,15 @@ if (typeof StarGate !== "object") {
     PlainDeparture.prototype.checkResponse = function (arrival) {
         return false;
     };
-    ns.ws.PlainDeparture = PlainDeparture;
-    ns.ws.registers("PlainDeparture");
-})(StarGate, MONKEY);
+    ns.PlainDeparture = PlainDeparture;
+    ns.registers("PlainDeparture");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var UTF8 = sys.type.UTF8;
-    var StarDocker = ns.StarDocker;
     var Departure = ns.port.Departure;
-    var PlainArrival = ns.ws.PlainArrival;
-    var PlainDeparture = ns.ws.PlainDeparture;
+    var StarDocker = ns.StarDocker;
+    var PlainArrival = ns.PlainArrival;
+    var PlainDeparture = ns.PlainDeparture;
     var PlainDocker = function (connection) {
         StarDocker.call(this, connection);
     };
@@ -509,9 +509,9 @@ if (typeof StarGate !== "object") {
     var PING = "PING";
     var PONG = "PONG";
     var NOOP = "NOOP";
-    ns.ws.PlainDocker = PlainDocker;
-    ns.ws.registers("PlainDocker");
-})(StarGate, MONKEY);
+    ns.PlainDocker = PlainDocker;
+    ns.registers("PlainDocker");
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var SocketAddress = ns.type.SocketAddress;
     var connect = function (url, proxy) {
@@ -626,7 +626,7 @@ if (typeof StarGate !== "object") {
     };
     ns.ws.Socket = Socket;
     ns.ws.registers("Socket");
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var ChannelReader = ns.socket.ChannelReader;
     var ChannelWriter = ns.socket.ChannelWriter;
@@ -650,7 +650,7 @@ if (typeof StarGate !== "object") {
     ns.ws.StreamChannelWriter = StreamChannelWriter;
     ns.ws.registers("StreamChannelReader");
     ns.ws.registers("StreamChannelWriter");
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var BaseChannel = ns.socket.BaseChannel;
     var StreamChannelReader = ns.ws.StreamChannelReader;
@@ -668,9 +668,11 @@ if (typeof StarGate !== "object") {
     });
     ns.ws.StreamChannel = StreamChannel;
     ns.ws.registers("StreamChannel");
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var AddressPairMap = ns.type.AddressPairMap;
+    var BaseHub = ns.socket.BaseHub;
+    var StreamChannel = ns.ws.StreamChannel;
     var ChannelPool = function () {
         AddressPairMap.call(this);
     };
@@ -706,13 +708,6 @@ if (typeof StarGate !== "object") {
             return cached;
         }
     });
-    ns.ws.ChannelPool = ChannelPool;
-    ns.ws.registers("ChannelPool");
-})(StarGate, MONKEY);
-(function (ns, sys) {
-    var BaseHub = ns.socket.BaseHub;
-    var ChannelPool = ns.ws.ChannelPool;
-    var StreamChannel = ns.ws.StreamChannel;
     var StreamHub = function (delegate) {
         BaseHub.call(this, delegate);
         this.__channelPool = this.createChannelPool();
@@ -739,9 +734,11 @@ if (typeof StarGate !== "object") {
     StreamHub.prototype.open = function (remote, local) {
         return this.getChannel(remote, local);
     };
+    ns.ws.ChannelPool = ChannelPool;
     ns.ws.StreamHub = StreamHub;
+    ns.ws.registers("ChannelPool");
     ns.ws.registers("StreamHub");
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
 (function (ns, sys) {
     var ActiveConnection = ns.socket.ActiveConnection;
     var StreamHub = ns.ws.StreamHub;
@@ -795,4 +792,4 @@ if (typeof StarGate !== "object") {
     };
     ns.ws.StreamClientHub = StreamClientHub;
     ns.ws.registers("StreamClientHub");
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

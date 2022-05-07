@@ -93,8 +93,8 @@
     };
 
     //-------- namespace --------
-    ns.IPv4 = IPv4;
+    ns.network.IPv4 = IPv4;
 
-    ns.registers('IPv4');
+    ns.network.registers('IPv4');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

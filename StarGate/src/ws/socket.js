@@ -229,4 +229,4 @@
 
     ns.ws.registers('Socket');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);

@@ -23,8 +23,3 @@ if (typeof DIMSDK.startrek !== 'object') {
     DIMSDK.startrek = new MONKEY.Namespace();
 }
 StarTrek.exports(DIMSDK.startrek);
-
-if (typeof DIMSDK.stargate !== 'object') {
-    DIMSDK.stargate = new MONKEY.Namespace();
-}
-StarGate.exports(DIMSDK.stargate);

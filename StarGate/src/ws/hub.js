@@ -30,12 +30,15 @@
 // =============================================================================
 //
 
+//! require 'socket.js'
 //! require 'channel.js'
 
 (function (ns, sys) {
     "use strict";
 
     var AddressPairMap = ns.type.AddressPairMap;
+    var BaseHub = ns.socket.BaseHub;
+    var StreamChannel = ns.ws.StreamChannel;
 
     var ChannelPool = function () {
         AddressPairMap.call(this);
@@ -62,20 +65,6 @@
             return cached;
         }
     })
-
-    //-------- namespace --------
-    ns.ws.ChannelPool = ChannelPool;
-
-    ns.ws.registers('ChannelPool');
-
-})(StarGate, MONKEY);
-
-(function (ns, sys) {
-    "use strict";
-
-    var BaseHub = ns.socket.BaseHub;
-    var ChannelPool = ns.ws.ChannelPool;
-    var StreamChannel = ns.ws.StreamChannel;
 
     /**
      *  Stream Hub
@@ -136,8 +125,70 @@
     };
 
     //-------- namespace --------
+    ns.ws.ChannelPool = ChannelPool;
     ns.ws.StreamHub = StreamHub;
 
+    ns.ws.registers('ChannelPool');
     ns.ws.registers('StreamHub');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
+
+(function (ns, sys) {
+    "use strict";
+
+    var ActiveConnection = ns.socket.ActiveConnection;
+    var StreamHub = ns.ws.StreamHub;
+    var Socket = ns.ws.Socket;
+
+    var StreamClientHub = function (delegate) {
+        StreamHub.call(this, delegate);
+    };
+    sys.Class(StreamClientHub, StreamHub, null, {
+        // Override
+        createConnection: function (remote, local, channel) {
+            var conn = new ActiveConnection(remote, local, channel, this);
+            conn.setDelegate(this.getDelegate());  // gate
+            conn.start();  // start FSM
+            return conn;
+        },
+        open: function (remote, local) {
+            var channel = StreamHub.prototype.open.call(this, remote, local);
+            if (!channel) {
+                channel = createSocketChannel.call(this, remote, local);
+                if (channel) {
+                    this.setChannel(channel.getRemoteAddress(), channel.getLocalAddress(), channel);
+                }
+            }
+            return channel;
+        }
+    });
+
+    var createSocketChannel = function (remote, local) {
+        try {
+            var sock = createWebSocketClient(remote, local);
+            if (!local) {
+                local = sock.getLocalAddress();
+            }
+            return this.createChannel(remote, local, sock);
+        } catch (e) {
+            console.error('StreamClientHub::createSocketChannel()', e, remote, local);
+            return null;
+        }
+    };
+    var createWebSocketClient = function (remote, local) {
+        var sock = new Socket();
+        sock.configureBlocking(true);
+        if (local) {
+            sock.bind(local);
+        }
+        sock.connect(remote);
+        sock.configureBlocking(false);
+        return sock;
+    };
+
+    //-------- namespace --------
+    ns.ws.StreamClientHub = StreamClientHub;
+
+    ns.ws.registers('StreamClientHub');
+
+})(StarTrek, MONKEY);

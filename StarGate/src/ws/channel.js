@@ -79,7 +79,7 @@
     ns.ws.registers('StreamChannelReader');
     ns.ws.registers('StreamChannelWriter');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
 
 (function (ns, sys) {
     "use strict";
@@ -115,4 +115,4 @@
 
     ns.ws.registers('StreamChannel');
 
-})(StarGate, MONKEY);
+})(StarTrek, MONKEY);
