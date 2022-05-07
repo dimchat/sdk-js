@@ -36,7 +36,7 @@
 (function (ns, sys) {
     "use strict";
 
-    var UTF8 = sys.type.UTF8;
+    var UTF8 = sys.format.UTF8;
     var Departure = ns.port.Departure;
     var StarDocker = ns.StarDocker;
     var PlainArrival = ns.PlainArrival;
@@ -71,7 +71,7 @@
         // Override
         heartbeat: function () {
             init_bytes();
-            this.send(PING, Departure.SLOWER.valueOf());
+            this.send(PING, Departure.Priority.SLOWER.valueOf());
         },
 
         // Override

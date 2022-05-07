@@ -441,7 +441,7 @@ if (typeof FileSystem !== "object") {
     ns.registers("PlainDeparture");
 })(StarTrek, MONKEY);
 (function (ns, sys) {
-    var UTF8 = sys.type.UTF8;
+    var UTF8 = sys.format.UTF8;
     var Departure = ns.port.Departure;
     var StarDocker = ns.StarDocker;
     var PlainArrival = ns.PlainArrival;
@@ -459,7 +459,7 @@ if (typeof FileSystem !== "object") {
         },
         heartbeat: function () {
             init_bytes();
-            this.send(PING, Departure.SLOWER.valueOf());
+            this.send(PING, Departure.Priority.SLOWER.valueOf());
         },
         getArrival: function (data) {
             if (!data || data.length === 0) {
@@ -559,6 +559,8 @@ if (typeof FileSystem !== "object") {
         this.__host = null;
         this.__port = null;
         this.__ws = null;
+        this.__remote = null;
+        this.__local = null;
     };
     sys.Class(Socket, Object, null);
     Socket.prototype.getHost = function () {
@@ -593,8 +595,17 @@ if (typeof FileSystem !== "object") {
     Socket.prototype.isAlive = function () {
         return this.isOpen() && (this.isConnected() || this.isBound());
     };
-    Socket.prototype.bind = function (local) {};
+    Socket.prototype.getRemoteAddress = function () {
+        return this.__remote;
+    };
+    Socket.prototype.getLocalAddress = function () {
+        return this.__local;
+    };
+    Socket.prototype.bind = function (local) {
+        this.__local = local;
+    };
     Socket.prototype.connect = function (remote) {
+        this.__remote = null;
         this.close();
         this.__host = remote.getHost();
         this.__port = remote.getPort();
@@ -792,4 +803,154 @@ if (typeof FileSystem !== "object") {
     };
     ns.ws.StreamClientHub = StreamClientHub;
     ns.ws.registers("StreamClientHub");
+})(StarTrek, MONKEY);
+(function (ns, sys) {
+    var StarGate = ns.StarGate;
+    var BaseGate = function (delegate) {
+        StarGate.call(this, delegate);
+        this.__hub = null;
+    };
+    sys.Class(BaseGate, StarGate, null, {
+        setHub: function (hub) {
+            this.__hub = hub;
+        },
+        getHub: function () {
+            return this.__hub;
+        },
+        fetchDocker: function (remote, local, advanceParties) {
+            var docker = this.getDocker(remote, local);
+            if (!docker) {
+                var hub = this.getHub();
+                var conn = hub.connect(remote, local);
+                if (conn) {
+                    docker = this.createDocker(conn, advanceParties);
+                    this.setDocker(
+                        docker.getRemoteAddress(),
+                        docker.getLocalAddress(),
+                        docker
+                    );
+                }
+            }
+            return docker;
+        },
+        getDocker: function (remote, local) {
+            return StarGate.prototype.getDocker.call(this, remote, null);
+        },
+        setDocker: function (remote, local, docker) {
+            return StarGate.prototype.setDocker.call(this, remote, null, docker);
+        },
+        removeDocker: function (remote, local, docker) {
+            return StarGate.prototype.setDocker.removeDocker(
+                this,
+                remote,
+                null,
+                docker
+            );
+        },
+        cacheAdvanceParty: function (data, connection) {
+            var array = [];
+            if (data && data.length > 0) {
+                array.push(data);
+            }
+            return array;
+        },
+        clearAdvanceParty: function (connection) {}
+    });
+    ns.BaseGate = BaseGate;
+    ns.registers("BaseGate");
+})(StarTrek, MONKEY);
+(function (ns, sys) {
+    var Thread = sys.threading.Thread;
+    var BaseGate = ns.BaseGate;
+    var AutoGate = function (delegate) {
+        BaseGate.call(this, delegate);
+        this.__daemon = new Thread(this);
+    };
+    sys.Class(AutoGate, BaseGate, null, {
+        isRunning: function () {
+            return this.__daemon.isRunning();
+        },
+        start: function () {
+            this.stop();
+            this.__daemon.start();
+        },
+        stop: function () {
+            this.__daemon.stop();
+        },
+        run: function () {
+            this.process();
+            return true;
+        },
+        process: function () {
+            try {
+                var hub = this.getHub();
+                var incoming = hub.process();
+                var outgoing = BaseGate.prototype.process.call(this);
+                return incoming || outgoing;
+            } catch (e) {
+                console.error("AutoGate::process()", e);
+                return false;
+            }
+        }
+    });
+    ns.AutoGate = AutoGate;
+    ns.registers("AutoGate");
+})(StarTrek, MONKEY);
+(function (ns, sys) {
+    var AutoGate = ns.AutoGate;
+    var PlainDocker = ns.PlainDocker;
+    var WSGate = function (delegate) {
+        AutoGate.call(this, delegate);
+    };
+    sys.Class(WSGate, AutoGate, null, {
+        sendMessage: function (payload, remote, local) {
+            var docker = this.fetchDocker(remote, local, null);
+            if (!docker || !docker.isOpen()) {
+                return false;
+            }
+            return docker.sendData(payload);
+        },
+        createDocker: function (connection, advanceParties) {
+            var docker = new PlainDocker(connection);
+            docker.setDelegate(this.getDelegate());
+            return docker;
+        },
+        onConnectionStateChanged: function (previous, current, connection) {
+            AutoGate.prototype.onConnectionStateChanged.call(
+                this,
+                previous,
+                current,
+                connection
+            );
+            var remote = connection.getRemoteAddress();
+            if (remote) {
+                remote = remote.toString();
+            }
+            if (previous) {
+                previous = previous.toString();
+            }
+            if (current) {
+                current = current.toString();
+            }
+            console.info("connection state changed: ", previous, current, remote);
+        },
+        onConnectionFailed: function (error, data, connection) {
+            AutoGate.prototype.onConnectionFailed.call(this, error, data, connection);
+            var remote = connection.getRemoteAddress();
+            if (remote) {
+                remote = remote.toString();
+            }
+            console.info("connection failed: ", error, data, remote);
+        },
+        onConnectionError: function (error, connection) {
+            AutoGate.prototype.onConnectionError.call(this, error, connection);
+            var remote = connection.getRemoteAddress();
+            if (remote) {
+                remote = remote.toString();
+            }
+            console.info("connection error: ", error, remote);
+        }
+    });
+    ns.WSGate = WSGate;
+    ns.registers("WSGate");
 })(StarTrek, MONKEY);

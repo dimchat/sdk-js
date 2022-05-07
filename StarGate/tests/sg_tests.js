@@ -10,21 +10,75 @@ var g_variables = {};
 (function (ns, sys) {
     'use strict';
 
-    var ActiveConnection = ns.socket.ActiveConnection;
+    var UTF8 = sys.format.UTF8;
     var InetSocketAddress = ns.type.InetSocketAddress;
-    var StarGate = ns.StarGate;
+    var DockerDelegate = ns.port.DockerDelegate;
     var StreamClientHub = ns.ws.StreamClientHub;
+    var WSGate = ns.WSGate;
 
-    var StarTrek = function (connection) {
-        StarGate.call(this, connection);
+    var Client = function (remote, local) {
+        Object.call(this);
+        this.remoteAddress = remote;
+        this.localAddress = local;
+        var gate = new WSGate(this);
+        var hub = new StreamClientHub(gate);
+        gate.setHub(hub);
+        this.gate = gate;
     };
-    sys.Class(StarTrek, StarGate, null);
+    sys.Class(Client, Object, [DockerDelegate], null);
 
-    StarTrek.createGate = function (host, port) {
-        var conn = new ActiveConnection(host, port);
-        var gate = new StarTrek(conn);
-        conn.setDelegate(gate);
-        return gate;
+    Client.prototype.start = function () {
+        this.gate.start();
+    };
+
+    Client.prototype.stop = function () {
+        this.gate.stop();
+    };
+
+    Client.prototype.send = function (data) {
+        this.gate.sendMessage(data, this.remoteAddress, this.localAddress);
+    };
+
+    //
+    //  Docker Delegate
+    //
+
+    // Override
+    Client.prototype.onDockerStatusChanged = function (previous, current, docker) {
+        var remote = docker.getRemoteAddress();
+        if (remote) remote = remote.toString();
+        if (previous) previous = previous.toString();
+        if (current) current = current.toString();
+        console.info('!!! docker state changed: ', previous, current, remote);
+    };
+
+    // Override
+    Client.prototype.onDockerReceived = function (arrival, docker) {
+        var remote = docker.getRemoteAddress();
+        if (remote) remote = remote.toString();
+        var data = arrival.getPackage();
+        var text = UTF8.decode(data);
+        console.info('<<< docker received: ', data.length + ' bytes', text, remote);
+    };
+
+    // Override
+    Client.prototype.onDockerSent = function (departure, docker) {
+        // plain departure has no response,
+        // we would not know whether the task is success here
+    };
+
+    // Override
+    Client.prototype.onDockerFailed = function (error, departure, docker) {
+        var remote = docker.getRemoteAddress();
+        if (remote) remote = remote.toString();
+        console.error('!!! docker failed: ', error, departure, remote);
+    };
+
+    // Override
+    Client.prototype.onDockerError = function (error, departure, docker) {
+        var remote = docker.getRemoteAddress();
+        if (remote) remote = remote.toString();
+        console.error('!!! docker error: ', error, departure, remote);
     };
 
     var test_connection = function () {
@@ -35,14 +89,15 @@ var g_variables = {};
 
         var remote = new InetSocketAddress(host, port);
 
-        var gate = StarTrek.createGate(host, port);
-        // gate.start();
-        g_variables['gate'] = gate;
+        var client = new Client(remote, null);
+        client.start();
+
+        g_variables['client'] = client;
 
         var text = 'PING';
         var data = sys.format.UTF8.encode(text);
         setTimeout(function () {
-            gate.sendData(data, remote, null);
+            client.send(data);
         }, 2000);
     };
     sg_tests.push(test_connection);

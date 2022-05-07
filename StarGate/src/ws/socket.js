@@ -120,6 +120,8 @@
         this.__host = null;
         this.__port = null;
         this.__ws = null;
+        this.__remote = null;
+        this.__local = null;
     };
     sys.Class(Socket, Object, null);
 
@@ -173,7 +175,18 @@
     };
 
     // Override
+    Socket.prototype.getRemoteAddress = function () {
+        return this.__remote;
+    };
+
+    // Override
+    Socket.prototype.getLocalAddress = function () {
+        return this.__local;
+    };
+
+    // Override
     Socket.prototype.bind = function (local) {
+        this.__local = local;
         // do nothing
     };
 
@@ -184,6 +197,7 @@
      */
     // Override
     Socket.prototype.connect = function (remote) {
+        this.__remote = null;
         this.close();
         this.__host = remote.getHost();
         this.__port = remote.getPort();
