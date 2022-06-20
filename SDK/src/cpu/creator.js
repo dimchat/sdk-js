@@ -62,15 +62,28 @@
             if (ContentType.FORWARD.equals(type)) {
                 return new ns.cpu.ForwardContentProcessor(facebook, messenger);
             }
+            /*/
+            // application customized
+            if (ContentType.APPLICATION.equals(type)) {
+                return new ns.cpu.CustomizedContentProcessor(facebook, messenger);
+            } else if (ContentType.CUSTOMIZED.equals(type)) {
+                return new ns.cpu.CustomizedContentProcessor(facebook, messenger);
+            }
+            /*/
+
             // default commands
             if (ContentType.COMMAND.equals(type)) {
                 return new ns.cpu.BaseCommandProcessor(facebook, messenger);
             } else if (ContentType.HISTORY.equals(type)) {
                 return new ns.cpu.HistoryCommandProcessor(facebook, messenger);
             }
+            /*/
+            // default contents
             if (0 === type) {
+                // must return a default processor for type==0
                 return new ns.cpu.BaseContentProcessor(facebook, messenger);
             }
+            /*/
             // unknown
             return null;
         },
@@ -155,10 +168,12 @@
         }
         // content processor
         cpu = this.getContentProcessor(type);
+        /*/
         if (!cpu) {
             // default content processor
             cpu = this.getContentProcessor(0);
         }
+        /*/
         return cpu;
     };
 

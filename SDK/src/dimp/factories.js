@@ -40,10 +40,13 @@
 (function (ns) {
     'use strict';
 
+    var ContentType = ns.protocol.ContentType;
+    var Content = ns.protocol.Content;
     var Command = ns.protocol.Command;
     var MuteCommand = ns.protocol.MuteCommand;
     var BlockCommand = ns.protocol.BlockCommand;
     var StorageCommand = ns.protocol.StorageCommand;
+    var ContentFactory = ns.core.ContentFactory;
     var CommandFactory = ns.core.CommandFactory;
 
     /**
@@ -55,6 +58,12 @@
         //
         ns.core.registerContentFactories();
         ns.core.registerCommandFactories();
+
+        //
+        //  Register extended content factories
+        //
+        Content.setFactory(ContentType.CUSTOMIZED, new ContentFactory(ns.dkd.CustomizedContent));
+        Content.setFactory(ContentType.APPLICATION, new ContentFactory(ns.dkd.CustomizedContent));
 
         //
         //  Register extended command factories

@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Apr. 25, 2022
+ * @date      Jun. 20, 2022
  * @copyright (c) 2022 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
@@ -625,6 +625,20 @@ if (typeof DIMSDK !== "object") {
     });
     ns.dkd.BaseStorageCommand = BaseStorageCommand;
     ns.dkd.registers("BaseStorageCommand");
+})(DIMSDK);
+(function (ns) {
+    var BaseContent = ns.dkd.BaseContent;
+    var CustomizedContent = function (info) {};
+    ns.Class(CustomizedContent, [BaseContent], null, {
+        getApplication: function () {
+            return this.getValue("app");
+        },
+        getModule: function () {
+            return this.getValue("mod");
+        }
+    });
+    ns.dkd.CustomizedContent = CustomizedContent;
+    ns.dkd.registers("CustomizedContent");
 })(DIMSDK);
 (function (ns) {
     var BaseGroup = ns.mkm.BaseGroup;
@@ -1506,14 +1520,25 @@ if (typeof DIMSDK !== "object") {
     ns.registers("Messenger");
 })(DIMSDK);
 (function (ns) {
+    var ContentType = ns.protocol.ContentType;
+    var Content = ns.protocol.Content;
     var Command = ns.protocol.Command;
     var MuteCommand = ns.protocol.MuteCommand;
     var BlockCommand = ns.protocol.BlockCommand;
     var StorageCommand = ns.protocol.StorageCommand;
+    var ContentFactory = ns.core.ContentFactory;
     var CommandFactory = ns.core.CommandFactory;
     var registerAllFactories = function () {
         ns.core.registerContentFactories();
         ns.core.registerCommandFactories();
+        Content.setFactory(
+            ContentType.CUSTOMIZED,
+            new ContentFactory(ns.dkd.CustomizedContent)
+        );
+        Content.setFactory(
+            ContentType.APPLICATION,
+            new ContentFactory(ns.dkd.CustomizedContent)
+        );
         registerCommandFactories();
     };
     var registerCommandFactories = function () {
@@ -1650,9 +1675,6 @@ if (typeof DIMSDK !== "object") {
                     return new ns.cpu.HistoryCommandProcessor(facebook, messenger);
                 }
             }
-            if (0 === type) {
-                return new ns.cpu.BaseContentProcessor(facebook, messenger);
-            }
             return null;
         },
         createCommandProcessor: function (type, command) {
@@ -1729,9 +1751,6 @@ if (typeof DIMSDK !== "object") {
             }
         }
         cpu = this.getContentProcessor(type);
-        if (!cpu) {
-            cpu = this.getContentProcessor(0);
-        }
         return cpu;
     };
     ContentProcessorFactory.prototype.getContentProcessor = function (type) {
@@ -2203,4 +2222,66 @@ if (typeof DIMSDK !== "object") {
     });
     ns.cpu.group.QuitCommandProcessor = QuitCommandProcessor;
     ns.cpu.group.registers("QuitCommandProcessor");
+})(DIMSDK);
+(function (ns) {
+    var CustomizedContentHandler = function () {};
+    ns.Interface(CustomizedContentHandler, null);
+    CustomizedContentHandler.prototype.handle = function (
+        mod,
+        sender,
+        content,
+        rMsg
+    ) {
+        ns.assert(false, "implement me!");
+        return null;
+    };
+    ns.cpu.CustomizedContentHandler = CustomizedContentHandler;
+    ns.cpu.registers("CustomizedContentHandler");
+})(DIMSDK);
+(function (ns) {
+    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
+    var CustomizedContentHandler = ns.cpu.CustomizedContentHandler;
+    var CustomizedContentProcessor = function (facebook, messenger) {
+        BaseContentProcessor.call(this, facebook, messenger);
+    };
+    ns.Class(
+        CustomizedContentProcessor,
+        BaseContentProcessor,
+        [CustomizedContentHandler],
+        {
+            process: function (content, rMsg) {
+                var app = content.getApplication();
+                var res = this.filterApplication(app, content, rMsg);
+                if (res) {
+                    return res;
+                }
+                var mod = content.getModule();
+                var handler = this.fetchHandler(mod, content, rMsg);
+                if (!handler) {
+                    return null;
+                }
+                var sender = rMsg.getSender();
+                return handler.handle(mod, sender, content, rMsg);
+            },
+            filterApplication: function (app, content, rMsg) {
+                var text = "Customized Content (app: " + app + ") not support yet!";
+                return this.respondText(text, content.getGroup());
+            },
+            fetchHandler: function (mod, content, rMsg) {
+                return this;
+            },
+            handle: function (mod, sender, content, rMsg) {
+                var app = content.getApplication();
+                var text =
+                    "Customized Content (app: " +
+                    app +
+                    ", mod: " +
+                    mod +
+                    ") not support yet!";
+                return this.respondText(text, content.getGroup());
+            }
+        }
+    );
+    ns.cpu.CustomizedContentProcessor = CustomizedContentProcessor;
+    ns.cpu.registers("CustomizedContentProcessor");
 })(DIMSDK);
