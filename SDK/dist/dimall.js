@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Jun. 20, 2022
+ * @date      Jul. 5, 2022
  * @copyright (c) 2022 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
@@ -10095,13 +10095,12 @@ if (typeof FiniteStateMachine.assert !== "function") {
     ns.registers("BaseTransition");
 })(FiniteStateMachine, MONKEY);
 (function (ns, sys) {
-    var BaseObject = sys.type.BaseObject;
     var State = function () {};
-    sys.Interface(State, [sys.type.Object]);
-    State.prototype.onEnter = function (machine) {
+    sys.Interface(State, null);
+    State.prototype.onEnter = function (previous, machine) {
         ns.assert(false, "implement me!");
     };
-    State.prototype.onExit = function (machine) {
+    State.prototype.onExit = function (next, machine) {
         ns.assert(false, "implement me!");
     };
     State.prototype.onPause = function (machine) {
@@ -10115,16 +10114,18 @@ if (typeof FiniteStateMachine.assert !== "function") {
         return null;
     };
     var BaseState = function () {
-        BaseObject.call(this);
+        Object.call(this);
         this.__transitions = [];
     };
-    sys.Class(BaseState, BaseObject, [State], null);
+    sys.Class(BaseState, Object, [State], null);
+    BaseState.prototype.equals = function (other) {
+        return this === other;
+    };
     BaseState.prototype.addTransition = function (transition) {
-        if (this.__transitions.indexOf(transition) < 0) {
-            this.__transitions.push(transition);
-        } else {
+        if (this.__transitions.indexOf(transition) >= 0) {
             throw new Error("transition exists: " + transition);
         }
+        this.__transitions.push(transition);
     };
     BaseState.prototype.evaluate = function (machine) {
         var transition;
@@ -10227,7 +10228,8 @@ if (typeof FiniteStateMachine.assert !== "function") {
         return this.__stateMap[this.__default];
     };
     BaseMachine.prototype.getTargetState = function (transition) {
-        return this.__stateMap[transition.getTarget()];
+        var name = transition.getTarget();
+        return this.__stateMap[name];
     };
     BaseMachine.prototype.getCurrentState = function () {
         return this.__current;
@@ -10248,18 +10250,18 @@ if (typeof FiniteStateMachine.assert !== "function") {
         }
         var machine = this.getContext();
         var delegate = this.getDelegate();
+        if (oldState) {
+            oldState.onExit(newState, machine);
+        }
         if (delegate) {
             delegate.enterState(newState, machine);
-        }
-        if (newState) {
-            newState.onEnter(machine);
         }
         this.setCurrentState(newState);
         if (delegate) {
             delegate.exitState(oldState, machine);
         }
-        if (oldState) {
-            oldState.onExit(machine);
+        if (newState) {
+            newState.onEnter(oldState, machine);
         }
         return true;
     };
@@ -10275,20 +10277,22 @@ if (typeof FiniteStateMachine.assert !== "function") {
         var machine = this.getContext();
         var current = this.getCurrentState();
         var delegate = this.getDelegate();
+        if (current) {
+            current.onPause(machine);
+        }
+        this.__status = Status.Paused;
         if (delegate) {
             delegate.pauseState(current, machine);
         }
-        current.onPause(machine);
-        this.__status = Status.Paused;
     };
     BaseMachine.prototype.resume = function () {
         var machine = this.getContext();
         var current = this.getCurrentState();
-        this.__status = Status.Running;
         var delegate = this.getDelegate();
         if (delegate) {
             delegate.resumeState(current, machine);
         }
+        this.__status = Status.Running;
         current.onResume(machine);
     };
     BaseMachine.prototype.tick = function (now, delta) {
@@ -10691,10 +10695,10 @@ if (typeof StarTrek !== "object") {
     ConnectionState.prototype.getEnterTime = function () {
         return this.__enterTime;
     };
-    ConnectionState.prototype.onEnter = function (machine) {
+    ConnectionState.prototype.onEnter = function (previous, machine) {
         this.__enterTime = new Date().getTime();
     };
-    ConnectionState.prototype.onExit = function (machine) {
+    ConnectionState.prototype.onExit = function (next, machine) {
         this.__enterTime = 0;
     };
     ConnectionState.prototype.onPause = function (machine) {};
@@ -11141,7 +11145,7 @@ if (typeof StarTrek !== "object") {
         ERROR: -1,
         INIT: 0,
         PREPARING: 1,
-        READY: 1
+        READY: 2
     });
     DockerStatus.getStatus = function (state) {
         if (!state) {
@@ -11170,8 +11174,6 @@ if (typeof StarTrek !== "object") {
     ns.port.registers("DockerStatus");
 })(StarTrek, MONKEY);
 (function (ns, sys) {
-    var Docker = ns.port.Docker;
-    var DockerStatus = ns.port.DockerStatus;
     var DockerDelegate = function () {};
     sys.Interface(DockerDelegate, null);
     DockerDelegate.prototype.onDockerReceived = function (arrival, docker) {

@@ -74,6 +74,8 @@
         // TODO: check algorithm parameters
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
+
+        this.getData(); // make sure key data generated
     };
     ns.Class(AESKey, Dictionary, [SymmetricKey], {
 
