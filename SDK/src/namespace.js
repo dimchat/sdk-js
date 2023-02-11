@@ -32,29 +32,35 @@
 
 //! require <dimp.js>
 
-if (typeof DIMSDK !== "object") {
-    DIMSDK = new MingKeMing.Namespace();
-}
-
-(function (ns, base) {
+(function (ns) {
     'use strict';
-
-    // exports namespace from DaoKeDao
-    base.exports(ns);
-
-    if (typeof ns.assert !== 'function') {
-        ns.assert = console.assert;
-    }
 
     //-------- namespace --------
     if (typeof ns.cpu !== 'object') {
-        ns.cpu = new ns.Namespace();
-    }
-    if (typeof ns.cpu.group !== 'object') {
-        ns.cpu.group = new ns.Namespace();
+        ns.cpu = {};
     }
 
-    ns.registers('cpu');
-    ns.cpu.registers('group');
+})(DIMP);
 
-})(DIMSDK, DIMP);
+(function (ns) {
+    'use strict';
+
+    var TwinsHelper = function (facebook, messenger) {
+        Object.call(this);
+        this.__facebook = facebook;
+        this.__messenger = messenger;
+    };
+    ns.Class(TwinsHelper, Object, null, null);
+
+    TwinsHelper.prototype.getFacebook = function () {
+        return this.__facebook;
+    }
+
+    TwinsHelper.prototype.getMessenger = function () {
+        return this.__messenger;
+    }
+
+    //-------- namespace --------
+    ns.TwinsHelper = TwinsHelper;
+
+})(DIMP);

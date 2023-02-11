@@ -3,12 +3,12 @@
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
 //
-//                               Written in 2022 by Moky <albert.moky@gmail.com>
+//                               Written in 2020 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2022 Albert Moky
+// Copyright (c) 2020 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +30,43 @@
 // =============================================================================
 //
 
+//! require <dimp.js>
+
 (function (ns) {
     'use strict';
 
-    var TwinsHelper = function (facebook, messenger) {
-        Object.call(this);
-        this.__facebook = facebook;
-        this.__messenger = messenger;
+    var Interface = ns.type.Interface;
+
+    /**
+     *  Cipher Key Delegate
+     *  ~~~~~~~~~~~~~~~~~~~
+     */
+    var CipherKeyDelegate = Interface(null, null);
+
+    /**
+     *  Get cipher key for encrypt message from 'sender' to 'receiver'
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {boolean} generate - generate when key not exists
+     * @returns {SymmetricKey}
+     */
+    CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
+        throw new Error('NotImplemented');
     };
-    ns.Class(TwinsHelper, Object, null, null);
 
-    TwinsHelper.prototype.getFacebook = function () {
-        return this.__facebook;
-    }
-
-    TwinsHelper.prototype.getMessenger = function () {
-        return this.__messenger;
-    }
+    /**
+     *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {SymmetricKey} key
+     */
+    CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
+        throw new Error('NotImplemented');
+    };
 
     //-------- namespace --------
-    ns.TwinsHelper = TwinsHelper;
+    ns.CipherKeyDelegate = CipherKeyDelegate;
 
-    ns.registers('TwinsHelper');
-
-})(DIMSDK);
+})(DIMP);

@@ -40,18 +40,17 @@
 (function (ns) {
     'use strict';
 
-    var NetworkType = ns.protocol.NetworkType;
+    var Class = ns.type.Class;
+    var EntityType = ns.protocol.EntityType;
     var ID = ns.protocol.ID;
-
+    var Meta = ns.protocol.Meta;
     var BaseUser = ns.mkm.BaseUser;
-    var Robot = ns.mkm.Robot;
+    var Bot = ns.mkm.Bot;
     var Station = ns.mkm.Station;
     var BaseGroup = ns.mkm.BaseGroup;
-    var Polylogue = ns.mkm.Polylogue;
-    var Chatroom = ns.mkm.Chatroom;
     var ServiceProvider = ns.mkm.ServiceProvider;
 
-    var Barrack = ns.core.Barrack;
+    var Barrack = ns.Barrack;
 
     var Facebook = function() {
         Barrack.call(this);
@@ -59,7 +58,7 @@
         this.__users  = {};  // String -> User
         this.__groups = {};  // String -> Group
     };
-    ns.Class(Facebook, Barrack, null, {
+    Class(Facebook, Barrack, null, {
 
         /**
          *  Document checking
@@ -81,7 +80,7 @@
                 // check by owner
                 var owner = this.getOwner(identifier);
                 if (!owner) {
-                    if (NetworkType.POLYLOGUE.equals(identifier.getType())) {
+                    if (EntityType.GROUP.equals(identifier.getType())) {
                         // NOTICE: if this is a polylogue profile
                         //             verify it with the founder's meta.key
                         //             (which equals to the group's meta.key)
@@ -104,20 +103,13 @@
         isFounder: function (member, group) {
             // check member's public key with group's meta.key
             var gMeta = this.getMeta(group);
-            if (!gMeta) {
-                // throw new Error('failed to get meta for group: ' + group);
-                return false;
-            }
             var mMeta = this.getMeta(member);
-            if (!mMeta) {
-                // throw new Error('failed to get meta for member: ' + member);
-                return false;
-            }
-            return gMeta.matches(mMeta.key);
+            return Meta.matchKey(mMeta.getKey(), gMeta);
         },
 
         isOwner: function (member, group) {
-            if (NetworkType.POLYLOGUE.equals(group.getType())) {
+            if (EntityType.GROUP.equals(group.getType())) {
+                // this is a polylogue
                 return this.isFounder(member, group);
             }
             throw new Error('only Polylogue so far');
@@ -200,41 +192,6 @@
         }
     });
 
-    /**
-     *  Remove 1/2 objects from the dictionary
-     *  (Thanos can kill half lives of a world with a snap of the finger)
-     *
-     * @param {{}} map
-     * @param {Number} finger
-     * @returns {Number} number of survivors
-     */
-    var thanos = function (map, finger) {
-        var keys = Object.keys(map);
-        for (var i = 0; i < keys.length; ++i) {
-            var p = map[keys[i]];
-            if (typeof p === 'function') continue;
-            if ((++finger & 1) === 1) {
-                // kill it
-                delete map[p];
-            }
-            // let it go
-        }
-        return finger;
-    };
-
-    /**
-     *  Call it when received 'UIApplicationDidReceiveMemoryWarningNotification',
-     *  this will remove 50% of cached objects
-     *
-     * @returns {Number}
-     */
-    Facebook.prototype.reduceMemory = function () {
-        var finger = 0;
-        finger = thanos(this.__users, finger);
-        finger = thanos(this.__groups, finger);
-        return finger >> 1;
-    };
-
     //
     //  cache
     //
@@ -255,6 +212,19 @@
         return true;
     };
 
+    /**
+     * Call it when received 'UIApplicationDidReceiveMemoryWarningNotification',
+     * this will remove 50% of cached objects
+     *
+     * @return number of survivors
+     */
+    Facebook.prototype.reduceMemory = function () {
+        var finger = 0;
+        finger = ns.mkm.thanos(this.__users, finger);
+        finger = ns.mkm.thanos(this.__groups, finger);
+        return finger >> 1;
+    };
+
     // noinspection JSUnusedLocalSymbols
     /**
      *  Save meta for entity ID (must verify first)
@@ -264,8 +234,7 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveMeta = function (meta, identifier) {
-        ns.assert(false, 'implement me!');
-        return false;
+        throw new Error('NotImplemented');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -276,8 +245,7 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveDocument = function (doc) {
-        ns.assert(false, 'implement me!');
-        return false;
+        throw new Error('NotImplemented');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -289,8 +257,7 @@
      * @returns {boolean}
      */
     Facebook.prototype.saveMembers = function (members, identifier) {
-        ns.assert(false, 'implement me!');
-        return false;
+        throw new Error('NotImplemented');
     };
 
     // protected
@@ -299,18 +266,17 @@
             // create user 'anyone@anywhere'
             return new BaseUser(identifier);
         }
-        // check user type
+        // make sure meta exists
+        // TODO: make sure visa key exists before calling this
         var type = identifier.getType();
-        if (NetworkType.MAIN.equals(type) || NetworkType.BTC_MAIN.equals(type)) {
-            return new BaseUser(identifier);
-        }
-        if (NetworkType.ROBOT.equals(type)) {
-            return new Robot(identifier);
-        }
-        if (NetworkType.STATION.equals(type)) {
+        // check user type
+        if (EntityType.STATION.equals(type)) {
             return new Station(identifier);
+        } else if (EntityType.BOT.equals(type)) {
+            return new Bot(identifier);
         }
-        throw new TypeError('Unsupported user type: ' + type);
+        //assert(EntityType.USER.equals(type), "Unsupported user type: " + type);
+        return new BaseUser(identifier);
     };
 
     // protected
@@ -319,18 +285,14 @@
             // create group 'everyone@everywhere'
             return new BaseGroup(identifier);
         }
-        // check group type
+        // make sure meta exists
         var type = identifier.getType();
-        if (NetworkType.POLYLOGUE.equals(type)) {
-            return new Polylogue(identifier);
-        }
-        if (NetworkType.CHATROOM.equals(type)) {
-            return new Chatroom(identifier);
-        }
-        if (NetworkType.PROVIDER.equals(type)) {
+        // check group type
+        if (EntityType.ISP.equals(type)) {
             return new ServiceProvider(identifier);
         }
-        throw new TypeError('Unsupported group type: ' + type);
+        //assert(EntityType.GROUP.equals(type), "Unsupported group type: " + type);
+        return new BaseGroup(identifier);
     };
 
     /**
@@ -339,15 +301,11 @@
      * @return {User[]} users with private key
      */
     Facebook.prototype.getLocalUsers = function () {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
-    /**
-     *  Get current user (for signing and sending message)
-     *
-     * @returns {User}
-     */
+    /*/
+    // Get current user (for signing and sending message)
     Facebook.prototype.getCurrentUser = function () {
         var users = this.getLocalUsers();
         if (!users || users.length === 0) {
@@ -355,10 +313,9 @@
         }
         return users[0];
     };
+    /*/
 
     //-------- namespace --------
     ns.Facebook = Facebook;
 
-    ns.registers('Facebook');
-
-})(DIMSDK);
+})(DIMP);

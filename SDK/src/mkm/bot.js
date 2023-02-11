@@ -3,12 +3,12 @@
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
 //
-//                               Written in 2022 by Moky <albert.moky@gmail.com>
+//                               Written in 2020 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2022 Albert Moky
+// Copyright (c) 2020 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,35 +35,18 @@
 (function (ns) {
     'use strict';
 
-    var BaseContent = ns.dkd.BaseContent;
+    var Class = ns.type.Class;
+    var BaseUser = ns.mkm.BaseUser;
 
     /**
-     *  Application Customized message: {
-     *      type : 0xCC,
-     *      sn   : 123,
-     *
-     *      app   : "{APP_ID}",  // application (e.g.: 'chat.dim.sechat')
-     *      mod   : "{MODULE}",  // module name (e.g.: 'drift_bottle')
-     *      act   : "{ACTION}",  // action name (e.g.: 'throw')
-     *      extra : info         // action parameters
-     *  }
+     *  Robot User
      */
-    var CustomizedContent = function (info) {};
-    ns.Class(CustomizedContent, [BaseContent], null, {
-        getApplication: function () {
-            return this.getValue('app');
-        },
-        getModule: function () {
-            return this.getValue('mod');
-        }/*,
-        getAction: function () {
-            return this.getValue('act');
-        }*/
-    });
+    var Bot = function (identifier) {
+        BaseUser.call(this, identifier);
+    };
+    Class(Bot, BaseUser, null, null);
 
     //-------- namespace --------
-    ns.dkd.CustomizedContent = CustomizedContent;
+    ns.mkm.Bot = Bot;
 
-    ns.dkd.registers('CustomizedContent');
-
-})(DIMSDK);
+})(DIMP);

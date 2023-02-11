@@ -35,15 +35,17 @@
 (function (ns) {
     'use strict';
 
+    var Interface = ns.type.Interface;
+    var Class = ns.type.Class;
     var Command = ns.protocol.Command;
     var ReliableMessage = ns.protocol.ReliableMessage;
-    var Packer = ns.core.Packer;
+    var Packer = ns.Packer;
     var TwinsHelper = ns.TwinsHelper;
 
     var MessagePacker = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    ns.Class(MessagePacker, TwinsHelper, [Packer], {
+    Class(MessagePacker, TwinsHelper, [Packer], {
 
         // Override
         getOvertGroup: function (content) {
@@ -55,7 +57,7 @@
                 // broadcast message is always overt
                 return group;
             }
-            if (ns.Interface.conforms(content, Command)) {
+            if (Interface.conforms(content, Command)) {
                 // group command should be sent to each member directly, so
                 // don't expose group ID
                 return null;
@@ -259,6 +261,4 @@
     //-------- namespace --------
     ns.MessagePacker = MessagePacker;
 
-    ns.registers('MessagePacker');
-
-})(DIMSDK);
+})(DIMP);

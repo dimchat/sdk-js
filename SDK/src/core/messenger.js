@@ -36,29 +36,27 @@
 (function (ns) {
     'use strict';
 
-    var Transceiver = ns.core.Transceiver;
+    var Class = ns.type.Class;
+    var Transceiver = ns.Transceiver;
 
     var Messenger = function () {
         Transceiver.call(this);
     };
-    ns.Class(Messenger, Transceiver, null, null);
+    Class(Messenger, Transceiver, null, null);
 
     // protected
     Messenger.prototype.getCipherKeyDelegate = function () {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     // protected
     Messenger.prototype.getPacker = function () {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     // protected
     Messenger.prototype.getProcessor = function () {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     //
@@ -192,16 +190,15 @@
     };
 
     var is_broadcast = function (msg) {
-        var receiver = msg.getGroup();
-        if (!receiver) {
-            receiver = msg.getReceiver();
-        }
-        return receiver.isBroadcast();
+        // var receiver = msg.getGroup();
+        // if (!receiver) {
+        //     receiver = msg.getReceiver();
+        // }
+        // return receiver.isBroadcast();
+        return Transceiver.prototype.isBroadcast(msg);
     };
 
     //-------- namespace --------
     ns.Messenger = Messenger;
 
-    ns.registers('Messenger');
-
-})(DIMSDK);
+})(DIMP);

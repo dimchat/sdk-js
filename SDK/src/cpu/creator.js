@@ -30,15 +30,14 @@
 // =============================================================================
 //
 
-//! require 'helper.js'
 //! require 'content.js'
 
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var ContentType = ns.protocol.ContentType;
     var Command = ns.protocol.Command;
-    var GroupCommand = ns.protocol.GroupCommand;
     var ContentProcessor = ns.cpu.ContentProcessor;
     var TwinsHelper = ns.TwinsHelper;
 
@@ -52,7 +51,7 @@
     var ContentProcessorCreator = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    ns.Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
+    Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
 
         // Override
         createContentProcessor: function (type) {
@@ -74,8 +73,6 @@
             // default commands
             if (ContentType.COMMAND.equals(type)) {
                 return new ns.cpu.BaseCommandProcessor(facebook, messenger);
-            } else if (ContentType.HISTORY.equals(type)) {
-                return new ns.cpu.HistoryCommandProcessor(facebook, messenger);
             }
             /*/
             // default contents
@@ -98,20 +95,7 @@
             } else if (command === Command.DOCUMENT) {
                 return new ns.cpu.DocumentCommandProcessor(facebook, messenger);
             }
-            // group commands
-            if (command === 'group') {
-                return new ns.cpu.GroupCommandProcessor(facebook, messenger);
-            } else if (command === GroupCommand.INVITE) {
-                return new ns.cpu.InviteCommandProcessor(facebook, messenger);
-            } else if (command === GroupCommand.EXPEL) {
-                return new ns.cpu.ExpelCommandProcessor(facebook, messenger);
-            } else if (command === GroupCommand.QUIT) {
-                return new ns.cpu.QuitCommandProcessor(facebook, messenger);
-            } else if (command === GroupCommand.QUERY) {
-                return new ns.cpu.QueryCommandProcessor(facebook, messenger);
-            } else if (command === GroupCommand.RESET) {
-                return new ns.cpu.ResetCommandProcessor(facebook, messenger);
-            }
+
             // unknown
             return null;
         }
@@ -120,13 +104,13 @@
     //-------- namespace --------
     ns.cpu.ContentProcessorCreator = ContentProcessorCreator;
 
-    ns.cpu.registers('ContentProcessorCreator')
-
-})(DIMSDK);
+})(DIMP);
 
 (function (ns) {
     'use strict';
 
+    var Interface = ns.type.Interface;
+    var Class = ns.type.Class;
     var Command = ns.protocol.Command;
     var GroupCommand = ns.protocol.GroupCommand;
     var ContentProcessor = ns.cpu.ContentProcessor;
@@ -146,19 +130,19 @@
         this.__content_processors = {}  // uint => ContentProcessor
         this.__command_processors = {}  // string => ContentProcessor
     };
-    ns.Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory], null);
+    Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory], null);
 
     // Override
     ContentProcessorFactory.prototype.getProcessor = function (content) {
         var cpu;
         var type = content.getType();
-        if (ns.Interface.conforms(content, Command)) {
-            var name = content.getCommand();
+        if (Interface.conforms(content, Command)) {
+            var name = content.getCmd();
             // command processor
             cpu = this.getCommandProcessor(type, name);
             if (cpu) {
                 return cpu;
-            } else if (ns.Interface.conforms(content, GroupCommand)) {
+            } else if (Interface.conforms(content, GroupCommand)) {
                 // group command processor
                 cpu = this.getCommandProcessor(type, 'group');
                 if (cpu) {
@@ -167,14 +151,7 @@
             }
         }
         // content processor
-        cpu = this.getContentProcessor(type);
-        /*/
-        if (!cpu) {
-            // default content processor
-            cpu = this.getContentProcessor(0);
-        }
-        /*/
-        return cpu;
+        return this.getContentProcessor(type);
     };
 
     // Override
@@ -193,15 +170,15 @@
     };
 
     // Override
-    ContentProcessorFactory.prototype.getCommandProcessor = function (type, command) {
+    ContentProcessorFactory.prototype.getCommandProcessor = function (type, cmd) {
         // if (typeof type !== 'number') {
         //     type = type.valueOf();
         // }
-        var cpu = this.__command_processors[command];
+        var cpu = this.__command_processors[cmd];
         if (!cpu) {
-            cpu = this.__creator.createCommandProcessor(type, command);
+            cpu = this.__creator.createCommandProcessor(type, cmd);
             if (cpu) {
-                this.__command_processors[command] = cpu;
+                this.__command_processors[cmd] = cpu;
             }
         }
         return cpu;
@@ -210,6 +187,4 @@
     //-------- namespace --------
     ns.cpu.ContentProcessorFactory = ContentProcessorFactory;
 
-    ns.cpu.registers('ContentProcessorFactory')
-
-})(DIMSDK);
+})(DIMP);

@@ -35,38 +35,42 @@
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
+    var ForwardContent = ns.protocol.ForwardContent;
     var BaseContentProcessor = ns.cpu.BaseContentProcessor;
 
     var ForwardContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
-    ns.Class(ForwardContentProcessor, BaseContentProcessor, null, {
+    Class(ForwardContentProcessor, BaseContentProcessor, null, {
+
         // Override
         process: function (content, rMsg) {
-            var secret = content.getMessage();
+            var secrets = content.getSecrets();
+            if (!secrets) {
+                return null;
+            }
             // call messenger to process it
             var messenger = this.getMessenger();
-            // 1. verify message
-            var sMsg = messenger.verifyMessage(secret);
-            if (!sMsg) {
-                // waiting for sender's meta if not exists
-                return null;
+            var responses = [];  // List<Content>
+            var res;             // Content
+            var results;         // List<Content>
+            for (var i = 0; i < secrets.length; ++i) {
+                results = messenger.processReliableMessage(secrets[i]);
+                if (!results) {
+                    res = ForwardContent.create([]);
+                } else if (results.length === 1) {
+                    res = ForwardContent.create(results[0]);
+                } else {
+                    res = ForwardContent.create(results);
+                }
+                responses.push(res);
             }
-            // 2. decrypt message
-            var iMsg = messenger.decryptMessage(sMsg);
-            if (!iMsg) {
-                // NOTICE: decrypt failed, not for you?
-                //         it means you are asked to re-pack and forward this message
-                return null;
-            }
-            // 3. process message content
-            return messenger.processContent(iMsg.getContent(), secret);
+            return responses;
         }
     });
 
     //-------- namespace --------
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
 
-    ns.cpu.registers('ForwardContentProcessor');
-
-})(DIMSDK);
+})(DIMP);

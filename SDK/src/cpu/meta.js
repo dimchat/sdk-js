@@ -35,13 +35,15 @@
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var MetaCommand = ns.protocol.MetaCommand;
     var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
 
     var MetaCommandProcessor = function (facebook, messenger) {
         BaseCommandProcessor.call(this, facebook, messenger);
     };
-    ns.Class(MetaCommandProcessor, BaseCommandProcessor, null, {
+    Class(MetaCommandProcessor, BaseCommandProcessor, null, {
+
         // Override
         process: function (cmd, rMsg) {
             var identifier = cmd.getIdentifier();
@@ -66,11 +68,10 @@
         var facebook = this.getFacebook();
         var meta = facebook.getMeta(identifier);
         if (meta) {
-            // response
+            // OK
             var res = MetaCommand.response(identifier, meta);
-            return this.respondContent(res);
+            return [res];
         } else {
-            // meta not found
             var text = 'Sorry, meta not found for ID: ' + identifier;
             return this.respondText(text, null);
         }
@@ -81,19 +82,15 @@
         var text;
         var facebook = this.getFacebook();
         if (facebook.saveMeta(meta, identifier)) {
-            // response receipt
+            // OK
             text = 'Meta received: ' + identifier;
-            return this.respondReceipt(text);
         } else {
-            // save meta failed
-            text = 'Meta not accept: ' + identifier;
-            return this.respondText(text, null);
+            text = 'Meta not accepted: ' + identifier;
         }
+        return this.respondText(text, null);
     };
 
     //-------- namespace --------
     ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
 
-    ns.cpu.registers('MetaCommandProcessor');
-
-})(DIMSDK);
+})(DIMP);

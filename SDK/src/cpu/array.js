@@ -3,12 +3,12 @@
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2023 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2023 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,47 +30,47 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+//! require 'base.js'
 
 (function (ns) {
     'use strict';
 
-    /**
-     *  Cipher Key Delegate
-     *  ~~~~~~~~~~~~~~~~~~~
-     */
-    var CipherKeyDelegate = function () {};
-    ns.Interface(CipherKeyDelegate, null);
+    var Class = ns.type.Class;
+    var ArrayContent = ns.protocol.ArrayContent;
+    var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
 
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Get cipher key for encrypt message from 'sender' to 'receiver'
-     *
-     * @param {ID} from          - sender (user or contact ID)
-     * @param {ID} to            - receiver (contact or user/group ID)
-     * @param {boolean} generate - generate when key not exists
-     * @returns {SymmetricKey}
-     */
-    CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
-        ns.assert(false, 'implement me!');
-        return null;
+    var ArrayContentProcessor = function (facebook, messenger) {
+        BaseCommandProcessor.call(this, facebook, messenger);
     };
+    Class(ArrayContentProcessor, BaseCommandProcessor, null, {
 
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
-     *
-     * @param {ID} from          - sender (user or contact ID)
-     * @param {ID} to            - receiver (contact or user/group ID)
-     * @param {SymmetricKey} key
-     */
-    CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
-        ns.assert(false, 'implement me!');
-    };
+        // Override
+        process: function (content, rMsg) {
+            var array = content.getContents();
+            if (!array) {
+                return null;
+            }
+            // call messenger to process it
+            var messenger = this.getMessenger();
+            var responses = [];  // List<Content>
+            var res;             // Content
+            var results;         // List<Content>
+            for (var i = 0; i < array.length; ++i) {
+                results = messenger.processContent(array[i], rMsg);
+                if (!results) {
+                    res = ArrayContent.create([]);
+                } else if (results.length === 1) {
+                    res = results[0];
+                } else {
+                    res = ArrayContent.create(results);
+                }
+                responses.push(res);
+            }
+            return responses;
+        }
+    });
 
     //-------- namespace --------
-    ns.CipherKeyDelegate = CipherKeyDelegate;
+    ns.cpu.ArrayContentProcessor = ArrayContentProcessor;
 
-    ns.registers('CipherKeyDelegate');
-
-})(DIMSDK);
+})(DIMP);

@@ -30,17 +30,18 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+//! require 'namespace.js'
 
 (function (ns) {
     'use strict';
+
+    var Interface = ns.type.Interface;
 
     /**
      *  Content Processing Unit
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var ContentProcessor = function () {};
-    ns.Interface(ContentProcessor, null);
+    var ContentProcessor = Interface(null, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -51,16 +52,14 @@
      * @returns {Content[]} responses to sender
      */
     ContentProcessor.prototype.process = function (content, rMsg) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     /**
      *  CPU Creator
      *  ~~~~~~~~~~~
      */
-    var Creator = function () {};
-    ns.Interface(Creator, null);
+    var Creator = Interface(null, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -70,8 +69,7 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createContentProcessor = function (type) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -83,16 +81,14 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createCommandProcessor = function (type, command) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     /**
      *  CPU Factory
      *  ~~~~~~~~~~~
      */
-    var Factory = function () {};
-    ns.Interface(Factory, null);
+    var Factory = Interface(null, null);
 
     // noinspection JSUnusedLocalSymbols
     /**
@@ -102,8 +98,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getProcessor = function (content) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -114,8 +109,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getContentProcessor = function (type) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -127,8 +121,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getCommandProcessor = function (type, command) {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     ContentProcessor.Creator = Creator;
@@ -137,6 +130,4 @@
     //-------- namespace --------
     ns.cpu.ContentProcessor = ContentProcessor;
 
-    ns.cpu.registers('ContentProcessor')
-
-})(DIMSDK);
+})(DIMP);

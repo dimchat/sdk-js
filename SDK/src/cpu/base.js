@@ -30,12 +30,12 @@
 // =============================================================================
 //
 
-//! require 'helper.js'
 //! require 'content.js'
 
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var ContentProcessor = ns.cpu.ContentProcessor;
     var TwinsHelper = ns.TwinsHelper;
 
@@ -49,7 +49,7 @@
     var BaseContentProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    ns.Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
 
     // Override
     BaseContentProcessor.prototype.process = function (content, rMsg) {
@@ -66,33 +66,6 @@
         return [res];
     };
 
-    // protected
-    BaseContentProcessor.prototype.respondReceipt = function (text) {
-        var res = new ns.dkd.BaseReceiptCommand(text);
-        return [res];
-    };
-
-    // protected
-    BaseContentProcessor.prototype.respondContent = function (res) {
-        if (res) {
-            return [res];
-        } else {
-            return [];
-        }
-    };
-
-    //-------- namespace --------
-    ns.cpu.BaseContentProcessor = BaseContentProcessor;
-
-    ns.cpu.registers('BaseContentProcessor')
-
-})(DIMSDK);
-
-(function (ns) {
-    'use strict';
-
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-
     /**
      *  Command Processing Unit
      *  ~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,17 +76,16 @@
     var BaseCommandProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
-    ns.Class(BaseCommandProcessor, BaseContentProcessor, null, {
+    Class(BaseCommandProcessor, BaseContentProcessor, null, {
         // Override
         process: function (cmd, rMsg) {
-            var text = 'Command (name: ' + cmd.getCommand() + ') not support yet!';
+            var text = 'Command (name: ' + cmd.getCmd() + ') not support yet!';
             return this.respondText(text, cmd.getGroup());
         }
     });
 
     //-------- namespace --------
+    ns.cpu.BaseContentProcessor = BaseContentProcessor;
     ns.cpu.BaseCommandProcessor = BaseCommandProcessor;
 
-    ns.cpu.registers('BaseCommandProcessor');
-
-})(DIMSDK);
+})(DIMP);

@@ -35,40 +35,30 @@
 (function (ns) {
     'use strict';
 
-    var CustomizedContentHandler = function () {};
-    ns.Interface(CustomizedContentHandler, null);
+    var Interface = ns.type.Interface;
+    var Class = ns.type.Class;
+    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
+
+    var CustomizedContentHandler = Interface(null, null);
 
     /**
      *  Do your job
      *
-     * @param {String} mod                - module name
+     * @param {string} act                - action name
      * @param {ID} sender                 - user ID
      * @param {CustomizedContent} content - customized content
      * @param {ReliableMessage} rMsg      - network message
      * @return {Content[]} responses
      */
-    CustomizedContentHandler.prototype.handle = function (mod, sender, content, rMsg) {
-        ns.assert(false, 'implement me!');
-        return null;
+    CustomizedContentHandler.prototype.handleAction = function (act, sender, content, rMsg) {
+        throw new Error('NotImplemented');
     };
-
-    //-------- namespace --------
-    ns.cpu.CustomizedContentHandler = CustomizedContentHandler;
-
-    ns.cpu.registers('CustomizedContentHandler');
-
-})(DIMSDK);
-
-(function (ns) {
-    'use strict';
-
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-    var CustomizedContentHandler = ns.cpu.CustomizedContentHandler;
 
     var CustomizedContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
-    ns.Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], {
+    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], {
+
         // Override
         process: function (content, rMsg) {
             // 1. check app id
@@ -86,9 +76,11 @@
                 return null;
             }
             // 3. do the job
+            var act = rMsg.getAction();
             var sender = rMsg.getSender();
-            return handler.handle(mod, sender, content, rMsg);
+            return handler.handleAction(act, sender, content, rMsg);
         },
+
         /**
          *  Check App ID
          *
@@ -102,6 +94,7 @@
             var text = 'Customized Content (app: ' + app + ') not support yet!';
             return this.respondText(text, content.getGroup());
         },
+
         /**
          *  Check Module
          *
@@ -116,17 +109,18 @@
             // use different handler to do the jobs for each module.
             return this;
         },
+
         // Override
-        handle: function (mod, sender, content, rMsg) {
+        handleAction: function (act, sender, content, rMsg) {
             var app = content.getApplication();
-            var text = 'Customized Content (app: ' + app + ', mod: ' + mod + ') not support yet!';
+            var mod = content.getModule();
+            var text = 'Customized Content (app: ' + app + ', mod: ' + mod + ', act: ' + act + ') not support yet!';
             return this.respondText(text, content.getGroup());
         }
     });
 
     //-------- namespace --------
+    ns.cpu.CustomizedContentHandler = CustomizedContentHandler;
     ns.cpu.CustomizedContentProcessor = CustomizedContentProcessor;
 
-    ns.cpu.registers('CustomizedContentProcessor');
-
-})(DIMSDK);
+})(DIMP);

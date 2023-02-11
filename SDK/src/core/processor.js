@@ -35,16 +35,18 @@
 (function (ns) {
     'use strict';
 
+    var Interface = ns.type.Interface;
+    var Class = ns.type.Class;
     var Envelope = ns.protocol.Envelope;
     var InstantMessage = ns.protocol.InstantMessage;
-    var Processor = ns.core.Processor;
+    var Processor = ns.Processor;
     var TwinsHelper = ns.TwinsHelper;
 
     var MessageProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
         this.__factory = this.createFactory();
     };
-    ns.Class(MessageProcessor, TwinsHelper, [Processor], {
+    Class(MessageProcessor, TwinsHelper, [Processor], {
 
         // protected
         createFactory: function () {
@@ -182,6 +184,10 @@
                 }
                 env = Envelope.create(uid, sender, null);
                 msg = InstantMessage.create(env, res);
+                if (!msg) {
+                    // should not happen
+                    continue;
+                }
                 messages.push(msg);
             }
             return messages;
@@ -191,6 +197,10 @@
         processContent: function (content, rMsg) {
             // TODO: override to check group
             var cpu = this.getProcessor(content);
+            if (!cpu) {
+                // default content processor
+                cpu = this.getContentProcessor(0);
+            }
             return cpu.process(content, rMsg);
             // TODO: override to filter the response(s)
         }
@@ -211,6 +221,4 @@
     //-------- namespace --------
     ns.MessageProcessor = MessageProcessor;
 
-    ns.registers('MessageProcessor');
-
-})(DIMSDK);
+})(DIMP);

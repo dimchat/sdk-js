@@ -35,12 +35,13 @@
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var BaseGroup = ns.mkm.BaseGroup;
 
     var ServiceProvider = function (identifier) {
         BaseGroup.call(this, identifier);
     };
-    ns.Class(ServiceProvider, BaseGroup, null, {
+    Class(ServiceProvider, BaseGroup, null, {
 
         getStations: function () {
             return this.getMembers();
@@ -50,6 +51,4 @@
     //-------- namespace --------
     ns.mkm.ServiceProvider = ServiceProvider;
 
-    ns.mkm.registers('ServiceProvider');
-
-})(DIMSDK);
+})(DIMP);

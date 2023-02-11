@@ -35,48 +35,182 @@
 (function (ns) {
     'use strict';
 
+    var Class      = ns.type.Class;
+    var BaseObject = ns.type.BaseObject;
+
+    var ID       = ns.protocol.ID;
+    var Address  = ns.protocol.Address;
+    var User     = ns.mkm.User;
     var BaseUser = ns.mkm.BaseUser;
 
     /**
      *  Station for DIM network
+     *
+     *  Usages:
+     *      1. new Station(identifier);
+     *      2. new Station(host, port);
+     *      3. new Station(identifier, host, port);
      */
-    var Station = function (identifier, host, port) {
-        BaseUser.call(this, identifier);
-        this.host = host;
-        this.port = port;
+    var Station = function () {
+        BaseObject.call(this);
+        var user;
+        var host, port;
+        if (arguments.length === 1) {
+            // new Station(identifier);
+            user = new BaseUser(arguments[0]);
+            host = null;
+            port = 0;
+        } else if (arguments.length === 2) {
+            // new Station(host, port);
+            user = new BaseUser(Station.ANY);
+            host = arguments[0];
+            port = arguments[1];
+        } else if (arguments.length === 3) {
+            user = new BaseUser(arguments[0]);
+            host = arguments[1];
+            port = arguments[2];
+        }
+        this.__user = user;
+        this.__host = host;
+        this.__port = port;
     };
-    ns.Class(Station, BaseUser, null, {
+    Class(Station, BaseUser, [User], {
+
+        // Override
+        equals: function (other) {
+            if (this === other) {
+                return true;
+            } else if (!other) {
+                return false;
+            }
+            return this.__user.equals(other);
+        },
+
+        // Override
+        valueOf: function () {
+            return desc.call(this);
+        },
+
+        // Override
+        toString: function () {
+            return desc.call(this);
+        },
+
+        //-------- Entity
+
+        // Override
+        setDataSource: function (delegate) {
+            this.__user.setDataSource(delegate);
+        },
+        // Override
+        getDataSource: function () {
+            return this.__user.getDataSource();
+        },
+
+        // Override
+        getIdentifier: function () {
+            return this.__user.getIdentifier();
+        },
+
+        // Override
+        getType: function () {
+            return this.__user.getType();
+        },
+
+        // Override
+        getMeta: function () {
+            return this.__user.getMeta();
+        },
+
+        // Override
+        getDocument: function (type) {
+            return this.__user.getDocument(type);
+        },
+
+        //-------- User
+
+        // Override
+        getVisa: function () {
+            return this.__user.getVisa();
+        },
+
+        // Override
+        getContacts: function () {
+            return this.__user.getContacts();
+        },
+
+        // Override
+        verify: function (data, signature) {
+            return this.__user.verify(data, signature);
+        },
+
+        // Override
+        encrypt: function (plaintext) {
+            return this.__user.encrypt(plaintext);
+        },
+
+        // Override
+        sign: function (data) {
+            return this.__user.sign(data);
+        },
+
+        // Override
+        decrypt: function (ciphertext) {
+            return this.__user.decrypt(ciphertext);
+        },
+
+        // Override
+        signVisa: function (doc) {
+            return this.__user.signVisa(doc);
+        },
+
+        // Override
+        verifyVisa: function (doc) {
+            return this.__user.verifyVisa(doc);
+        },
+
+        //-------- Server
+
+        setIdentifier: function (identifier) {
+            var delegate = this.getDataSource();
+            var user = new BaseUser(identifier);
+            user.setDataSource(delegate);
+            this.__user = user;
+        },
 
         getHost: function () {
-            if (!this.host) {
+            if (this.__host === null) {
                 var doc = this.getDocument('*');
                 if (doc) {
-                    this.host = doc.getProperty('host');
-                }
-                if (!this.host) {
-                    this.host = '0.0.0.0';
+                    this.__host = doc.getProperty('host');
                 }
             }
-            return this.host;
+            return this.__host;
         },
 
         getPort: function () {
-            if (!this.port) {
+            if (this.__port === 0) {
                 var doc = this.getDocument('*');
                 if (doc) {
-                    this.port = doc.getProperty('port');
-                }
-                if (!this.port) {
-                    this.port = 9394;
+                    this.__port = doc.getProperty('port');
                 }
             }
-            return this.port;
+            return this.__port;
         }
     });
+
+    var desc = function () {
+        var clazz = Object.getPrototypeOf(this).constructor.name;
+        var id = this.getIdentifier();
+        var network = id.getAddress().getType();
+        return '<' + clazz + ' id="' + id.toString() + '" network="' + network +
+            '" host="' + this.getHost() + '" port=' + this.getPort() + ' />';
+    };
+
+    Station.ANY = ID.create('station', Address.ANYWHERE, null);
+    Station.EVERY = ID.create('stations', Address.EVERYWHERE, null);
 
     //-------- namespace --------
     ns.mkm.Station = Station;
 
-    ns.mkm.registers('Station');
-
-})(DIMSDK);
+})(DIMP);
