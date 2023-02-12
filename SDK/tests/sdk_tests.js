@@ -3,12 +3,13 @@
 !function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var Facebook = ns.Facebook;
 
     var ClientFacebook = function () {
         Facebook.call(this);
     };
-    ns.Class(ClientFacebook, Facebook, null, {
+    Class(ClientFacebook, Facebook, null, {
 
         // Override
         getMeta: function (identifier) {
@@ -18,11 +19,12 @@
 
     ns.ClientFacebook = ClientFacebook;
 
-}(DIMSDK);
+}(DIMP);
 
 !function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var Messenger = ns.Messenger;
     var MessagePacker = ns.MessagePacker;
     var MessageProcessor = ns.MessageProcessor;
@@ -34,7 +36,7 @@
         this.__packer = new MessagePacker(facebook, this);
         this.__processor = new MessageProcessor(facebook, this);
     };
-    ns.Class(ClientMessenger, Messenger, null, {
+    Class(ClientMessenger, Messenger, null, {
         // Override
         getEntityDelegate: function () {
             return this.__facebook;
@@ -57,7 +59,7 @@
 
     ns.registerAllFactories();
 
-}(DIMSDK);
+}(DIMP);
 
 //
 //  Test Cases
@@ -131,7 +133,7 @@ sdk_tests = [];
     };
     sdk_tests.push(test_messenger);
 
-}(DIMSDK);
+}(DIMP);
 
 !function (ns) {
     'use strict';
@@ -141,4 +143,4 @@ sdk_tests = [];
     };
     sdk_tests.push(test_cpu);
 
-}(DIMSDK);
+}(DIMP);
