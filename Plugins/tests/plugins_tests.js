@@ -156,6 +156,7 @@ plugins_tests = [];
 
         var meta = {
             "version": 1,
+            "type": 1,
             "seed": "chatroom-admin",
             "key": {
                 "algorithm": "RSA",

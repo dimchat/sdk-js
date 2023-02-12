@@ -44,14 +44,15 @@
  *      number  = uint(code);
  */
 
-//! require <crypto.js>
 //! require <mkm.js>
-//! require 'address.js'
+//! require 'btc.js'
+//! require 'eth.js'
 
 (function (ns) {
     'use strict';
 
-    var NetworkType = ns.protocol.NetworkType;
+    var Class = ns.type.Class;
+    var Enum = ns.type.Enum;
     var BTCAddress = ns.mkm.BTCAddress;
     var BaseMeta = ns.mkm.BaseMeta;
 
@@ -75,10 +76,11 @@
         // memory cache
         this.__addresses = {};  // uint -> Address
     };
-    ns.Class(DefaultMeta, BaseMeta, null, {
+    Class(DefaultMeta, BaseMeta, null, {
+
         // Override
         generateAddress: function (network) {
-            if (network instanceof NetworkType) {
+            if (Enum.isEnum(network)) {
                 network = network.valueOf();
             }
             // check cache
@@ -94,8 +96,6 @@
 
     //-------- namespace --------
     ns.mkm.DefaultMeta = DefaultMeta;
-
-    ns.mkm.registers('DefaultMeta');
 
 })(MingKeMing);
 
@@ -116,7 +116,8 @@
 (function (ns) {
     'use strict';
 
-    var NetworkType = ns.protocol.NetworkType;
+    var Class = ns.type.Class;
+    var Enum = ns.type.Enum;
     var BTCAddress = ns.mkm.BTCAddress;
     var BaseMeta = ns.mkm.BaseMeta;
 
@@ -144,15 +145,19 @@
         // memory cache
         this.__address = null;  // cached address
     };
-    ns.Class(BTCMeta, BaseMeta, null, {
+    Class(BTCMeta, BaseMeta, null, {
+
         // Override
         generateAddress: function (network) {
+            if (Enum.isEnum(network)) {
+                network = network.valueOf();
+            }
             // check cache
-            if (!this.__address) {
+            if (this.__address === null) {
                 // generate and cache it
                 var key = this.getKey();
                 var fingerprint = key.getData();
-                this.__address = BTCAddress.generate(fingerprint, NetworkType.BTC_MAIN);
+                this.__address = BTCAddress.generate(fingerprint, network);
             }
             return this.__address;
         }
@@ -160,8 +165,6 @@
 
     //-------- namespace --------
     ns.mkm.BTCMeta = BTCMeta;
-
-    ns.mkm.registers('BTCMeta');
 
 })(MingKeMing);
 
@@ -181,6 +184,7 @@
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var ETHAddress = ns.mkm.ETHAddress;
     var BaseMeta = ns.mkm.BaseMeta;
 
@@ -208,11 +212,12 @@
         // memory cache
         this.__address = null;  // cached address
     };
-    ns.Class(ETHMeta, BaseMeta, null, {
+    Class(ETHMeta, BaseMeta, null, {
+
         // Override
         generateAddress: function (network) {
             // check cache
-            if (!this.__address) {
+            if (this.__address === null) {
                 // generate and cache it
                 var key = this.getKey();
                 var fingerprint = key.getData();
@@ -224,7 +229,5 @@
 
     //-------- namespace --------
     ns.mkm.ETHMeta = ETHMeta;
-
-    ns.mkm.registers('ETHMeta');
 
 })(MingKeMing);

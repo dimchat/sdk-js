@@ -35,58 +35,10 @@
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
     var ConstantString = ns.type.ConstantString;
-    var NetworkType = ns.protocol.NetworkType;
+    var EntityType = ns.protocol.EntityType;
     var Address = ns.protocol.Address;
-
-    // https://eips.ethereum.org/EIPS/eip-55
-    var eip55 = function (hex) {
-        var sb = new Uint8Array(40);
-        var hash = ns.digest.KECCAK256.digest(ns.format.UTF8.encode(hex));
-        var ch;
-        var _9 = '9'.charCodeAt(0);
-        for (var i = 0; i < 40; ++i) {
-            ch = hex.charCodeAt(i);
-            if (ch > _9) {
-                // check for each 4 bits in the hash table
-                // if the first bit is '1',
-                //     change the character to uppercase
-                ch -= (hash[i >> 1] << (i << 2 & 4) & 0x80) >> 2;
-            }
-            sb[i] = ch;
-        }
-        return ns.format.UTF8.decode(sb);
-    };
-
-    var is_eth = function (address) {
-        if (address.length !== 42) {
-            return false;
-        } else if (address.charAt(0) !== '0' || address.charAt(1) !== 'x') {
-            return false;
-        }
-        var _0 = '0'.charCodeAt(0);
-        var _9 = '9'.charCodeAt(0);
-        var _A = 'A'.charCodeAt(0);
-        var _Z = 'Z'.charCodeAt(0);
-        var _a = 'a'.charCodeAt(0);
-        var _z = 'z'.charCodeAt(0);
-        var ch;
-        for (var i = 2; i < 42; ++i) {
-            ch = address.charCodeAt(i);
-            if (ch >= _0 && ch <= _9) {
-                continue;
-            }
-            if (ch >= _A && ch <= _Z) {
-                continue;
-            }
-            if (ch >= _a && ch <= _z) {
-                continue;
-            }
-            // unexpected character
-            return false;
-        }
-        return true;
-    };
 
     /**
      *  Address like Ethereum
@@ -101,10 +53,10 @@
     var ETHAddress = function (string) {
         ConstantString.call(this, string);
     };
-    ns.Class(ETHAddress, ConstantString, [Address], null);
+    Class(ETHAddress, ConstantString, [Address], null);
 
-    ETHAddress.prototype.getNetwork = function () {
-        return NetworkType.MAIN.valueOf();
+    ETHAddress.prototype.getType = function () {
+        return EntityType.USER.valueOf();
     };
 
     ETHAddress.prototype.isBroadcast = function () {
@@ -161,9 +113,56 @@
         return null;
     };
 
+    // https://eips.ethereum.org/EIPS/eip-55
+    var eip55 = function (hex) {
+        var sb = new Uint8Array(40);
+        var hash = ns.digest.KECCAK256.digest(ns.format.UTF8.encode(hex));
+        var ch;
+        var _9 = '9'.charCodeAt(0);
+        for (var i = 0; i < 40; ++i) {
+            ch = hex.charCodeAt(i);
+            if (ch > _9) {
+                // check for each 4 bits in the hash table
+                // if the first bit is '1',
+                //     change the character to uppercase
+                ch -= (hash[i >> 1] << (i << 2 & 4) & 0x80) >> 2;
+            }
+            sb[i] = ch;
+        }
+        return ns.format.UTF8.decode(sb);
+    };
+
+    var is_eth = function (address) {
+        if (address.length !== 42) {
+            return false;
+        } else if (address.charAt(0) !== '0' || address.charAt(1) !== 'x') {
+            return false;
+        }
+        var _0 = '0'.charCodeAt(0);
+        var _9 = '9'.charCodeAt(0);
+        var _A = 'A'.charCodeAt(0);
+        var _Z = 'Z'.charCodeAt(0);
+        var _a = 'a'.charCodeAt(0);
+        var _z = 'z'.charCodeAt(0);
+        var ch;
+        for (var i = 2; i < 42; ++i) {
+            ch = address.charCodeAt(i);
+            if (ch >= _0 && ch <= _9) {
+                continue;
+            }
+            if (ch >= _A && ch <= _Z) {
+                continue;
+            }
+            if (ch >= _a && ch <= _z) {
+                continue;
+            }
+            // unexpected character
+            return false;
+        }
+        return true;
+    };
+
     //-------- namespace --------
     ns.mkm.ETHAddress = ETHAddress;
-
-    ns.mkm.registers('ETHAddress');
 
 })(MingKeMing);

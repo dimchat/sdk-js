@@ -1,5 +1,10 @@
 ;
 // license: https://mit-license.org
+//
+//  MONKEY: Memory Object aNd KEYs
+//
+//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//
 // =============================================================================
 // The MIT License (MIT)
 //
@@ -25,32 +30,32 @@
 // =============================================================================
 //
 
-//! require <sha3.js> (https://github.com/emn178/js-sha3)
-
-//! require <crypto.js>
+//! require 'json2.js' (https://github.com/douglascrockford/JSON-js)
+//! require 'coder.js'
 
 (function (ns) {
     'use strict';
 
     var Class = ns.type.Class;
-    var DataDigester = ns.digest.DataDigester;
+    var ObjectCoder = ns.format.ObjectCoder;
 
-    //
-    //  KECCAK256
-    //
-    var hash = function () {
+    var JsonCoder = function () {
         Object.call(this);
     };
-    Class(hash, Object, [DataDigester], {
+    Class(JsonCoder, Object, [ObjectCoder], {
 
         // Override
-        digest: function (data) {
-            var array = window.keccak256.update(data).digest();
-            return new Uint8Array(array);
+        encode: function (object) {
+            return JSON.stringify(object);
+        },
+
+        // Override
+        decode: function (string) {
+            return JSON.parse(string);
         }
     });
 
-    //-------- namespace --------
-    ns.digest.KECCAK256.setDigester(new hash());
+    //-------- namespace --------//
+    ns.format.JSON.setCoder(new JsonCoder());
 
 })(MONKEY);

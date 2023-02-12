@@ -31,11 +31,15 @@
 //
 
 //! require <mkm.js>
+//! require 'network.js'
 
 (function (ns) {
     'use strict';
 
+    var Class = ns.type.Class;
+    var Enum = ns.type.Enum;
     var ConstantString = ns.type.ConstantString;
+    var EntityType = ns.protocol.EntityType;
     var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
@@ -55,14 +59,14 @@
      */
     var BTCAddress = function (string, network) {
         ConstantString.call(this, string);
-        if (network instanceof NetworkType) {
+        if (Enum.isEnum(network)) {
             network = network.valueOf();
         }
         this.__network = network;
     };
-    ns.Class(BTCAddress, ConstantString, [Address], null);
+    Class(BTCAddress, ConstantString, [Address], null);
 
-    BTCAddress.prototype.getNetwork = function () {
+    BTCAddress.prototype.getType = function () {
         return this.__network;
     };
 
@@ -70,10 +74,12 @@
         return false;
     };
     BTCAddress.prototype.isUser = function () {
-        return NetworkType.isUser(this.__network);
+        var type = NetworkType.getEntityType(this.__network)
+        return EntityType.isUser(type);
     };
     BTCAddress.prototype.isGroup = function () {
-        return NetworkType.isGroup(this.__network);
+        var type = NetworkType.getEntityType(this.__network)
+        return EntityType.isGroup(type);
     };
 
     /**
@@ -84,7 +90,7 @@
      * @returns {BTCAddress}
      */
     BTCAddress.generate = function (fingerprint, network) {
-        if (network instanceof NetworkType) {
+        if (Enum.isEnum(network)) {
             network = network.valueOf();
         }
         // 1. digest = ripemd160(sha256(fingerprint))
@@ -142,7 +148,5 @@
 
     //-------- namespace --------
     ns.mkm.BTCAddress = BTCAddress;
-
-    ns.mkm.registers('BTCAddress');
 
 })(MingKeMing);

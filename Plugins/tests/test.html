@@ -21,27 +21,31 @@
     <script src="/Crypto/libs/runner.js"></script>
     <script src="/Crypto/libs/utils.js"></script>
 
-    <script src="/Crypto/dist/crypto.js"></script>
-    <script src="/MingKeMing/dist/mkm.js"></script>
+    <script src="/DIMP/dist/dimp.js"></script>
 
     <script>
         !function (ns) {
             var sources = [
                 'src/format/base58.js',
                 'src/format/base64.js',
+                'src/format/hex.js',
                 'src/format/utf8.js',
+                'src/format/json.js',
 
                 'src/digest/md5.js',
                 'src/digest/sha256.js',
                 'src/digest/ripemd160.js',
                 'src/digest/keccak256.js',
 
+                'src/crypto/keys.js',
                 'src/crypto/pem.js',
                 'src/crypto/rsa.js',
                 'src/crypto/ecc.js',
                 'src/crypto/aes.js',
                 'src/crypto/pwd.js',
 
+                'src/mkm/network.js',
+                'src/mkm/eid.js',
                 'src/mkm/btc.js',
                 'src/mkm/eth.js',
                 'src/mkm/meta.js',
@@ -56,6 +60,8 @@
             var tests = [
                 '../Crypto/tests/crypto_tests.js',
                 '../MingKeMing/tests/mkm_tests.js',
+                '../DaoKeDao/tests/dkd_tests.js',
+                '../DIMP/tests/core_tests.js',
                 'tests/plugins_tests.js',
                 null
             ];
@@ -86,6 +92,16 @@
         });
 
         $(function () {
+            var runner = new Runner('dkd_tests');
+            runner.run(dkd_tests);
+        });
+
+        $(function () {
+            var runner = new Runner('core_tests');
+            runner.run(core_tests);
+        });
+
+        $(function () {
             var runner = new Runner('plugins_tests');
             runner.run(plugins_tests);
         });
@@ -99,6 +115,14 @@
 
 <h2>MingKeMing Tests</h2>
 <div id="mkm_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>DaoKeDao Tests</h2>
+<div id="dkd_tests">Testing ...</div>
+<div>&nbsp;</div>
+
+<h2>Core Tests</h2>
+<div id="core_tests">Testing ...</div>
 <div>&nbsp;</div>
 
 <h2>Plugins Tests</h2>

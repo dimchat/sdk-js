@@ -123,13 +123,15 @@
 
     //-------- PEM functions end --------
 
+    var Class = ns.type.Class;
+
     //
     //  PEM
     //
     var pem = function () {
         Object.call(this);
     };
-    ns.Class(pem, Object, null, null);
+    Class(pem, Object, null, null);
 
     pem.prototype.encodePublicKey = function (key) {
         return encode_public(key);
@@ -147,7 +149,5 @@
 
     //-------- namespace --------
     ns.format.PEM = new pem();
-
-    ns.format.registers('PEM');
 
 })(MONKEY);

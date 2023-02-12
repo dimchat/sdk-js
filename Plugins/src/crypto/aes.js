@@ -29,14 +29,13 @@
 //! require <crypto-js/cipher-core.js>
 //! require <crypto-js/aes.js>
 
-//! require <crypto.js>
+//! require 'keys.js'
 
 (function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
-    var CryptographyKey = ns.crypto.CryptographyKey;
-    var SymmetricKey = ns.crypto.SymmetricKey;
+    var Class = ns.type.Class;
+    var BaseSymmetricKey = ns.crypto.BaseSymmetricKey;
 
     var bytes2words = function (data) {
         var string = ns.format.Hex.encode(data);
@@ -70,20 +69,14 @@
      *      }
      */
     var AESKey = function (key) {
-        Dictionary.call(this, key);
+        BaseSymmetricKey.call(this, key);
         // TODO: check algorithm parameters
         // 1. check mode = 'CBC'
         // 2. check padding = 'PKCS7Padding'
 
         this.getData(); // make sure key data generated
     };
-    ns.Class(AESKey, Dictionary, [SymmetricKey], {
-
-        // Override
-        getAlgorithm: function () {
-            var dict = this.toMap();
-            return CryptographyKey.getAlgorithm(dict);
-        },
+    Class(AESKey, BaseSymmetricKey, null, {
 
         getSize: function () {
             var size = this.getValue('keySize');
@@ -175,17 +168,10 @@
             };
             var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
             return words2bytes(plaintext);
-        },
-
-        // Override
-        matches: function (pKey) {
-            return CryptographyKey.matches(pKey, this);
         }
     });
 
     //-------- namespace --------
     ns.crypto.AESKey = AESKey;
-
-    ns.crypto.registers('AESKey');
 
 })(MONKEY);

@@ -36,8 +36,6 @@
 (function (ns) {
     'use strict';
 
-    var DataCoder = ns.format.DataCoder;
-
     //-------- Base64 algorithm begin --------
     var base64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     var base64_values = new Int8Array(128);
@@ -150,23 +148,27 @@
     };
     //-------- Base64 algorithm end --------
 
+    var Class = ns.type.Class;
+    var DataCoder = ns.format.DataCoder;
+
     //
     //  Base64
     //
     var Base64Coder = function () {
         Object.call(this);
     };
-    ns.Class(Base64Coder, Object, [DataCoder], null);
+    Class(Base64Coder, Object, [DataCoder], {
 
-    // Override
-    Base64Coder.prototype.encode = function (data) {
-        return base64_encode(data);
-    };
+        // Override
+        encode: function (data) {
+            return base64_encode(data);
+        },
 
-    // Override
-    Base64Coder.prototype.decode = function (string) {
-        return base64_decode(string);
-    };
+        // Override
+        decode: function (string) {
+            return base64_decode(string);
+        }
+    });
 
     //-------- namespace --------
     ns.format.Base64.setCoder(new Base64Coder());

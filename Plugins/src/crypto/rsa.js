@@ -34,11 +34,8 @@
 (function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
-
-    var CryptographyKey = ns.crypto.CryptographyKey;
-    var AsymmetricKey = ns.crypto.AsymmetricKey;
-    var PublicKey = ns.crypto.PublicKey;
+    var Class = ns.type.Class;
+    var BasePublicKey = ns.crypto.BasePublicKey;
     var EncryptKey = ns.crypto.EncryptKey;
 
     /**
@@ -50,15 +47,9 @@
      *      }
      */
     var RSAPublicKey = function (key) {
-        Dictionary.call(this, key);
+        BasePublicKey.call(this, key);
     };
-    ns.Class(RSAPublicKey, Dictionary, [PublicKey, EncryptKey], {
-
-        // Override
-        getAlgorithm: function () {
-            var dict = this.toMap();
-            return CryptographyKey.getAlgorithm(dict);
-        },
+    Class(RSAPublicKey, BasePublicKey, [EncryptKey], {
 
         // Override
         getData: function () {
@@ -96,11 +87,6 @@
             //    return boolean
             //
             return cipher.verify(data, signature, CryptoJS.SHA256);
-        },
-
-        // Override
-        matches: function (sKey) {
-            return AsymmetricKey.matches(sKey, this);
         },
 
         // Override
@@ -152,19 +138,15 @@
     //-------- namespace --------
     ns.crypto.RSAPublicKey = RSAPublicKey;
 
-    ns.crypto.registers('RSAPublicKey');
-
 })(MONKEY);
 
 (function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
-
-    var CryptographyKey = ns.crypto.CryptographyKey;
-    var PrivateKey = ns.crypto.PrivateKey;
-    var DecryptKey = ns.crypto.DecryptKey;
+    var Class = ns.type.Class;
     var PublicKey = ns.crypto.PublicKey;
+    var DecryptKey = ns.crypto.DecryptKey;
+    var BasePrivateKey = ns.crypto.BasePrivateKey;
 
     /**
      *  RSA Private Key
@@ -176,15 +158,9 @@
      *      }
      */
     var RSAPrivateKey = function (key) {
-        Dictionary.call(this, key);
+        BasePrivateKey.call(this, key);
     };
-    ns.Class(RSAPrivateKey, Dictionary, [PrivateKey, DecryptKey], {
-
-        // Override
-        getAlgorithm: function () {
-            var dict = this.toMap();
-            return CryptographyKey.getAlgorithm(dict);
-        },
+    Class(RSAPrivateKey, BasePrivateKey, [DecryptKey], {
 
         // Override
         getData: function () {
@@ -265,11 +241,6 @@
             } else {
                 throw new Error('RSA decrypt error: ' + data);
             }
-        },
-
-        // Override
-        matches: function (pKey) {
-            return CryptographyKey.matches(pKey, this);
         }
     });
 
@@ -295,7 +266,5 @@
 
     //-------- namespace --------
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
-
-    ns.crypto.registers('RSAPrivateKey');
 
 })(MONKEY);

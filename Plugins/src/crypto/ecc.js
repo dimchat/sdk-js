@@ -35,11 +35,8 @@
 
     var Secp256k1 = window.Secp256k1;
 
-    var Dictionary = ns.type.Dictionary;
-
-    var CryptographyKey = ns.crypto.CryptographyKey;
-    var AsymmetricKey = ns.crypto.AsymmetricKey;
-    var PublicKey = ns.crypto.PublicKey;
+    var Class = ns.type.Class;
+    var BasePublicKey = ns.crypto.BasePublicKey;
 
     // var mem_set = function (buf, ch, len) {
     //     for (var i = 0; i < len; ++i) {
@@ -154,15 +151,9 @@
      *      }
      */
     var ECCPublicKey = function (key) {
-        Dictionary.call(this, key);
+        BasePublicKey.call(this, key);
     };
-    ns.Class(ECCPublicKey, Dictionary, [PublicKey], {
-
-        // Override
-        getAlgorithm: function () {
-            var dict = this.toMap();
-            return CryptographyKey.getAlgorithm(dict);
-        },
+    Class(ECCPublicKey, BasePublicKey, null, {
 
         // Override
         getData: function () {
@@ -213,11 +204,6 @@
             var sig_s = Secp256k1.uint256(sig.s, 16);
             var pub = decode_points(this.getData());
             return Secp256k1.ecverify(pub.x, pub.y, sig_r, sig_s, z);
-        },
-
-        // Override
-        matches: function (sKey) {
-            return AsymmetricKey.matches(sKey, this);
         }
     });
 
@@ -248,18 +234,14 @@
     //-------- namespace --------
     ns.crypto.ECCPublicKey = ECCPublicKey;
 
-    ns.crypto.registers('ECCPublicKey');
-
 })(MONKEY);
 
 (function (ns) {
     'use strict';
 
-    var Dictionary = ns.type.Dictionary;
-
-    var CryptographyKey = ns.crypto.CryptographyKey;
-    var PrivateKey = ns.crypto.PrivateKey;
+    var Class = ns.type.Class;
     var PublicKey = ns.crypto.PublicKey;
+    var BasePrivateKey = ns.crypto.BasePrivateKey;
 
     /**
      *  Refs:
@@ -335,18 +317,12 @@
      *      }
      */
     var ECCPrivateKey = function (key) {
-        Dictionary.call(this, key);
+        BasePrivateKey.call(this, key);
         var keyPair = get_key_pair.call(this);
         this.__privateKey = keyPair.privateKey;
         this.__publicKey = keyPair.publicKey;
     };
-    ns.Class(ECCPrivateKey, Dictionary, [PrivateKey], {
-
-        // Override
-        getAlgorithm: function () {
-            var dict = this.toMap();
-            return CryptographyKey.getAlgorithm(dict);
-        },
+    Class(ECCPrivateKey, BasePrivateKey, null, {
 
         // Override
         getData: function () {
@@ -424,7 +400,5 @@
 
     //-------- namespace --------
     ns.crypto.ECCPrivateKey = ECCPrivateKey;
-
-    ns.crypto.registers('ECCPrivateKey');
 
 })(MONKEY);
