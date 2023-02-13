@@ -76,11 +76,11 @@
     /**
      *  Create command processor with type & name
      *
-     * @param {uint} type      - content type
-     * @param {String} command - command name
+     * @param {uint} type  - content type
+     * @param {string} cmd - command name
      * @return {ContentProcessor}
      */
-    Creator.prototype.createCommandProcessor = function (type, command) {
+    Creator.prototype.createCommandProcessor = function (type, cmd) {
         throw new Error('NotImplemented');
     };
 
@@ -116,11 +116,11 @@
     /**
      *  Get command processor with type & name
      *
-     * @param {ContentType|uint} type - content type
-     * @param {String} command        - command name
+     * @param {uint} type  - content type
+     * @param {string} cmd - command name
      * @return {ContentProcessor}
      */
-    Factory.prototype.getCommandProcessor = function (type, command) {
+    Factory.prototype.getCommandProcessor = function (type, cmd) {
         throw new Error('NotImplemented');
     };
 

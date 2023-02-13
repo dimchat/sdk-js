@@ -31,7 +31,45 @@
 //
 
 //! require <dimp.js>
-//! require 'delegate.js'
+
+(function (ns) {
+    'use strict';
+
+    var Interface = ns.type.Interface;
+
+    /**
+     *  Cipher Key Delegate
+     *  ~~~~~~~~~~~~~~~~~~~
+     */
+    var CipherKeyDelegate = Interface(null, null);
+
+    /**
+     *  Get cipher key for encrypt message from 'sender' to 'receiver'
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {boolean} generate - generate when key not exists
+     * @returns {SymmetricKey}
+     */
+    CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
+        throw new Error('NotImplemented');
+    };
+
+    /**
+     *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
+     *
+     * @param {ID} from          - sender (user or contact ID)
+     * @param {ID} to            - receiver (contact or user/group ID)
+     * @param {SymmetricKey} key
+     */
+    CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
+        throw new Error('NotImplemented');
+    };
+
+    //-------- namespace --------
+    ns.CipherKeyDelegate = CipherKeyDelegate;
+
+})(DIMP);
 
 (function (ns) {
     'use strict';

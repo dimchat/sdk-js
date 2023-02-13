@@ -86,13 +86,13 @@
         },
 
         // Override
-        createCommandProcessor: function (type, command) {
+        createCommandProcessor: function (type, cmd) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();
             // meta command
-            if (command === Command.META) {
+            if (cmd === Command.META) {
                 return new ns.cpu.MetaCommandProcessor(facebook, messenger);
-            } else if (command === Command.DOCUMENT) {
+            } else if (cmd === Command.DOCUMENT) {
                 return new ns.cpu.DocumentCommandProcessor(facebook, messenger);
             }
 

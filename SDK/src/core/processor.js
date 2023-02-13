@@ -30,12 +30,11 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
+//! require 'namespace.js'
 
 (function (ns) {
     'use strict';
 
-    var Interface = ns.type.Interface;
     var Class = ns.type.Class;
     var Envelope = ns.protocol.Envelope;
     var InstantMessage = ns.protocol.InstantMessage;
@@ -214,8 +213,8 @@
         return this.__factory.getContentProcessor(type);
     };
 
-    MessageProcessor.prototype.getCommandProcessor = function (type, command) {
-        return this.__factory.getCommandProcessor(type, command);
+    MessageProcessor.prototype.getCommandProcessor = function (type, cmd) {
+        return this.__factory.getCommandProcessor(type, cmd);
     };
 
     //-------- namespace --------

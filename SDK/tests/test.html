@@ -33,14 +33,6 @@
                 'src/mkm/station.js',
                 'src/mkm/provider.js',
 
-                'src/core/ans.js',
-                'src/core/delegate.js',
-                'src/core/facebook.js',
-                'src/core/packer.js',
-                'src/core/processor.js',
-                'src/core/messenger.js',
-                'src/core/factory.js',
-
                 'src/cpu/content.js',
                 'src/cpu/base.js',
                 'src/cpu/creator.js',
@@ -49,6 +41,13 @@
                 'src/cpu/forward.js',
                 'src/cpu/array.js',
                 'src/cpu/customized.js',
+
+                'src/core/ans.js',
+                'src/core/facebook.js',
+                'src/core/packer.js',
+                'src/core/processor.js',
+                'src/core/messenger.js',
+                'src/core/factory.js',
                 null
             ];
 
@@ -162,12 +161,8 @@
             var text = 'cat' +
                 ' ../../core-js/DIMP/dist/dimp.js' +
                 ' ../Plugins/dist/plugins.js' +
-                ' dist/sdk.js' +
-                ' ../../../moky/FiniteStateMachine/fsm-js/FSM/dist/fsm.js' +
-                ' ../../../moky/wormhole/startrek-js/StarTrek/dist/startrek.js' +
-                ' ../StarGate/dist/stargate.js' +
-                ' ../StarGate/src/exports.js';
-            text += ' >> dist/dimall.js';
+                ' dist/sdk.js';
+            text += ' >> dist/dimsdk.js';
             document.writeln(text);
         }());
     </script>

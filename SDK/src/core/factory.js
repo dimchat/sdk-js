@@ -30,18 +30,7 @@
 // =============================================================================
 //
 
-//!require 'dkd/command.js'
-//!require 'dkd/document.js'
-//!require 'dkd/file.js'
-//!require 'dkd/files.js'
-//!require 'dkd/forward.js'
-//!require 'dkd/group.js'
-//!require 'dkd/groups.js'
-//!require 'dkd/history.js'
-//!require 'dkd/meta.js'
-//!require 'dkd/money.js'
-//!require 'dkd/page.js'
-//!require 'dkd/text.js'
+//!require <dimp.js>
 
 (function (ns) {
     'use strict';

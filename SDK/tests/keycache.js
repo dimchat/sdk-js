@@ -85,8 +85,7 @@
      * @returns {boolean}
      */
     KeyCache.prototype.saveKeys = function (map) {
-        ns.assert(false, 'implement me!');
-        return false;
+        throw new Error('NotImplemented');
     };
 
     /**
@@ -96,8 +95,7 @@
      * @returns {{}}
      */
     KeyCache.prototype.loadKeys = function () {
-        ns.assert(false, 'implement me!');
-        return null;
+        throw new Error('NotImplemented');
     };
 
     /**

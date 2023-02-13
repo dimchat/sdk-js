@@ -31,8 +31,7 @@
 //
 
 //! require <dimp.js>
-//! require 'mkm/polylogue.js'
-//! require 'mkm/chatroom.js'
+
 //! require 'mkm/robot.js'
 //! require 'mkm/station.js'
 //! require 'mkm/provider.js'
@@ -45,9 +44,9 @@
     var ID = ns.protocol.ID;
     var Meta = ns.protocol.Meta;
     var BaseUser = ns.mkm.BaseUser;
+    var BaseGroup = ns.mkm.BaseGroup;
     var Bot = ns.mkm.Bot;
     var Station = ns.mkm.Station;
-    var BaseGroup = ns.mkm.BaseGroup;
     var ServiceProvider = ns.mkm.ServiceProvider;
 
     var Barrack = ns.Barrack;
