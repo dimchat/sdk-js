@@ -35,8 +35,10 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var ChannelReader = ns.socket.ChannelReader;
     var ChannelWriter = ns.socket.ChannelWriter;
+    var BaseChannel = ns.socket.BaseChannel;
 
     /**
      *  Stream Channel Reader
@@ -47,7 +49,7 @@
     var StreamChannelReader = function (channel) {
         ChannelReader.call(this, channel);
     };
-    sys.Class(StreamChannelReader, ChannelReader, null, {
+    Class(StreamChannelReader, ChannelReader, null, {
         // Override
         receive: function (maxLen) {
             return this.read(maxLen);
@@ -63,7 +65,7 @@
     var StreamChannelWriter = function (channel) {
         ChannelWriter.call(this, channel);
     };
-    sys.Class(StreamChannelWriter, ChannelWriter, null, {
+    Class(StreamChannelWriter, ChannelWriter, null, {
         // Override
         send: function (data, target) {
             // TCP channel will be always connected,
@@ -71,22 +73,6 @@
             return this.write(data);
         }
     });
-
-    //-------- namespace --------
-    ns.ws.StreamChannelReader = StreamChannelReader;
-    ns.ws.StreamChannelWriter = StreamChannelWriter;
-
-    ns.ws.registers('StreamChannelReader');
-    ns.ws.registers('StreamChannelWriter');
-
-})(StarTrek, MONKEY);
-
-(function (ns, sys) {
-    "use strict";
-
-    var BaseChannel = ns.socket.BaseChannel;
-    var StreamChannelReader = ns.ws.StreamChannelReader;
-    var StreamChannelWriter = ns.ws.StreamChannelWriter;
 
     /**
      *  Stream Channel
@@ -99,7 +85,7 @@
     var StreamChannel = function (remote, local, sock) {
         BaseChannel.call(this, remote, local, sock);
     };
-    sys.Class(StreamChannel, BaseChannel, null, {
+    Class(StreamChannel, BaseChannel, null, {
         // Override
         createReader: function () {
             return new StreamChannelReader(this);
@@ -111,8 +97,8 @@
     });
 
     //-------- namespace --------
+    ns.ws.StreamChannelReader = StreamChannelReader;
+    ns.ws.StreamChannelWriter = StreamChannelWriter;
     ns.ws.StreamChannel = StreamChannel;
 
-    ns.ws.registers('StreamChannel');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

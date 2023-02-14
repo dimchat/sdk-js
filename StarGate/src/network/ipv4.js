@@ -35,7 +35,8 @@
 (function (ns, sys) {
     "use strict";
 
-    var Host = ns.Host;
+    var Class = sys.type.Class;
+    var Host = ns.network.Host;
 
     //
     //  IPv4
@@ -69,7 +70,7 @@
         }
         Host.call(this, string, ip, port, data);
     };
-    sys.Class(IPv4, Host, null);
+    Class(IPv4, Host, null);
 
     IPv4.patten = /^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/;  // 127.0.0.1:9527
 
@@ -95,6 +96,4 @@
     //-------- namespace --------
     ns.network.IPv4 = IPv4;
 
-    ns.network.registers('IPv4');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

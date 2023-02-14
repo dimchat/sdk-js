@@ -36,6 +36,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var AddressPairMap = ns.type.AddressPairMap;
     var BaseHub = ns.socket.BaseHub;
     var StreamChannel = ns.ws.StreamChannel;
@@ -43,7 +44,7 @@
     var ChannelPool = function () {
         AddressPairMap.call(this);
     };
-    sys.Class(ChannelPool, AddressPairMap, null, {
+    Class(ChannelPool, AddressPairMap, null, {
         // Override
         set: function (remote, local, value) {
             var old = this.get(remote, local);
@@ -75,7 +76,7 @@
         BaseHub.call(this, delegate);
         this.__channelPool = this.createChannelPool();
     };
-    sys.Class(StreamHub, BaseHub, null, null);
+    Class(StreamHub, BaseHub, null, null);
 
     // protected
     StreamHub.prototype.createChannelPool = function () {
@@ -101,7 +102,7 @@
 
     // Override
     StreamHub.prototype.allChannels = function () {
-        return this.__channelPool.allValues();
+        return this.__channelPool.values();
     };
 
     // protected
@@ -128,22 +129,20 @@
     ns.ws.ChannelPool = ChannelPool;
     ns.ws.StreamHub = StreamHub;
 
-    ns.ws.registers('ChannelPool');
-    ns.ws.registers('StreamHub');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var ActiveConnection = ns.socket.ActiveConnection;
     var StreamHub = ns.ws.StreamHub;
     var Socket = ns.ws.Socket;
 
-    var StreamClientHub = function (delegate) {
+    var ClientHub = function (delegate) {
         StreamHub.call(this, delegate);
     };
-    sys.Class(StreamClientHub, StreamHub, null, {
+    Class(ClientHub, StreamHub, null, {
         // Override
         createConnection: function (remote, local, channel) {
             var conn = new ActiveConnection(remote, local, channel, this);
@@ -153,7 +152,7 @@
         },
         open: function (remote, local) {
             var channel = StreamHub.prototype.open.call(this, remote, local);
-            if (!channel) {
+            if (!channel/* && remote*/) {
                 channel = createSocketChannel.call(this, remote, local);
                 if (channel) {
                     this.setChannel(channel.getRemoteAddress(), channel.getLocalAddress(), channel);
@@ -171,7 +170,7 @@
             }
             return this.createChannel(remote, local, sock);
         } catch (e) {
-            console.error('StreamClientHub::createSocketChannel()', e, remote, local);
+            console.error('ClientHub::createSocketChannel()', remote, local, e);
             return null;
         }
     };
@@ -187,8 +186,6 @@
     };
 
     //-------- namespace --------
-    ns.ws.StreamClientHub = StreamClientHub;
+    ns.ws.ClientHub = ClientHub;
 
-    ns.ws.registers('StreamClientHub');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

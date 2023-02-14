@@ -40,6 +40,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var SocketAddress = ns.type.SocketAddress;
 
     var connect = function (url, proxy) {
@@ -123,7 +124,7 @@
         this.__remote = null;
         this.__local = null;
     };
-    sys.Class(Socket, Object, null);
+    Class(Socket, Object, null);
 
     Socket.prototype.getHost = function () {
         return this.__host;
@@ -241,6 +242,4 @@
     //-------- namespace --------
     ns.ws.Socket = Socket;
 
-    ns.ws.registers('Socket');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

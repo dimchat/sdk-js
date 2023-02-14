@@ -1,29 +1,34 @@
 /**
- *  StarGate (v0.2.0)
+ *  StarGate (v0.2.2)
  *  (Interfaces for network connection)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      May. 7, 2022
- * @copyright (c) 2022 Albert Moky
+ * @date      Feb. 14, 2023
+ * @copyright (c) 2023 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
-if (typeof LocalNotificationService !== "object") {
-    LocalNotificationService = new MONKEY.Namespace();
+if (typeof StarGate !== "object") {
+    StarGate = StarTrek;
 }
-if (typeof FileSystem !== "object") {
-    FileSystem = new MONKEY.Namespace();
-}
-(function (ns, sys) {
+(function (ns) {
+    if (typeof ns.fsm !== "object") {
+        ns.fsm = FiniteStateMachine;
+    }
+    if (typeof ns.dos !== "object") {
+        ns.dos = {};
+    }
+    if (typeof ns.lnc !== "object") {
+        ns.lnc = {};
+    }
     if (typeof ns.network !== "object") {
-        ns.network = new sys.Namespace();
+        ns.network = {};
     }
     if (typeof ns.ws !== "object") {
-        ns.ws = new sys.Namespace();
+        ns.ws = {};
     }
-    ns.registers("network");
-    ns.registers("ws");
-})(StarTrek, MONKEY);
+})(StarGate);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var JsON = sys.format.JSON;
     var Base64 = sys.format.Base64;
     var Storage = function (storage, prefix) {
@@ -35,7 +40,7 @@ if (typeof FileSystem !== "object") {
             this.ROOT = "dim";
         }
     };
-    sys.Class(Storage, Object, null, null);
+    Class(Storage, Object, null, null);
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
     };
@@ -101,106 +106,197 @@ if (typeof FileSystem !== "object") {
         }
         return this.saveText(json, path);
     };
-    ns.LocalStorage = new Storage(window.localStorage, "dim.fs");
-    ns.SessionStorage = new Storage(window.sessionStorage, "dim.mem");
-    ns.registers("LocalStorage");
-    ns.registers("SessionStorage");
-})(FileSystem, MONKEY);
+    ns.dos.LocalStorage = new Storage(window.localStorage, "dim.fs");
+    ns.dos.SessionStorage = new Storage(window.sessionStorage, "dim.mem");
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var Notification = function (name, sender, userInfo) {
         Object.call(this);
         this.name = name;
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    sys.Class(Notification, Object, null, null);
-    ns.Notification = Notification;
-    ns.registers("Notification");
-})(LocalNotificationService, MONKEY);
+    Class(Notification, Object, null, null);
+    ns.lnc.Notification = Notification;
+})(StarGate, MONKEY);
 (function (ns, sys) {
-    var Observer = function () {};
-    sys.Interface(Observer, null);
+    var Interface = sys.type.Interface;
+    var Observer = Interface(null, null);
     Observer.prototype.onReceiveNotification = function (notification) {
-        console.assert(false, "implement me!");
+        throw new Error("NotImplemented");
     };
-    ns.Observer = Observer;
-    ns.registers("Observer");
-})(LocalNotificationService, MONKEY);
+    ns.lnc.Observer = Observer;
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var Arrays = sys.type.Arrays;
-    var Dictionary = sys.type.Dictionary;
-    var Notification = ns.Notification;
-    var Observer = ns.Observer;
-    var Center = function () {
+    var BaseCenter = function () {
         Object.call(this);
-        this.__observers = new Dictionary();
+        this.__observers = {};
     };
-    sys.Class(Center, Object, null, null);
-    Center.prototype.addObserver = function (observer, name) {
-        var list = this.__observers.getValue(name);
-        if (list) {
+    Class(BaseCenter, Object, null, null);
+    BaseCenter.prototype.addObserver = function (observer, name) {
+        var list = this.__observers[name];
+        if (!list) {
+            list = [];
+            this.__observers[name] = list;
+        } else {
             if (list.indexOf(observer) >= 0) {
                 return;
             }
-        } else {
-            list = [];
-            this.__observers.setValue(name, list);
         }
         list.push(observer);
     };
-    Center.prototype.removeObserver = function (observer, name) {
+    BaseCenter.prototype.removeObserver = function (observer, name) {
         if (name) {
-            var list = this.__observers.getValue(name);
-            if (list) {
-                Arrays.remove(list, observer);
-            }
+            remove.call(this, observer, name);
         } else {
-            var names = this.__observers.allKeys();
-            for (var i = 0; i < names.length; ++i) {
-                this.removeObserver(observer, names[i]);
+            var names = Object.keys(this.__observers);
+            for (var i = names.length - 1; i >= 0; --i) {
+                remove.call(this, observer, names[i]);
             }
         }
     };
-    Center.prototype.postNotification = function (
+    var remove = function (observer, name) {
+        var list = this.__observers[name];
+        if (list) {
+            Arrays.remove(list, observer);
+            if (list.length === 0) {
+                delete this.__observers[name];
+            }
+        }
+    };
+    var getObservers = function (name) {
+        var list = this.__observers[name];
+        if (list) {
+            return list.slice();
+        } else {
+            return [];
+        }
+    };
+    BaseCenter.prototype.postNotification = function (
         notification,
         sender,
         userInfo
     ) {
-        if (typeof notification === "string") {
-            notification = new Notification(notification, sender, userInfo);
-        }
-        var observers = this.__observers.getValue(notification.name);
-        if (!observers) {
-            return;
-        }
+        throw new Error("NotImplemented");
+    };
+    BaseCenter.prototype.post = function (notification) {
+        var name = notification.name;
+        var sender = notification.sender;
+        var userInfo = notification.userInfo;
+        var observers = getObservers.call(this, name);
         var obs;
-        for (var i = 0; i < observers.length; ++i) {
+        for (var i = observers.length - 1; i >= 0; --i) {
             obs = observers[i];
-            if (sys.Interface.conforms(obs, Observer)) {
-                obs.onReceiveNotification(notification);
-            } else {
+            try {
                 if (typeof obs === "function") {
-                    obs.call(
-                        notification,
-                        notification.name,
-                        notification.sender,
-                        notification.userInfo
-                    );
+                    obs.call(notification, name, sender, userInfo);
+                } else {
+                    obs.onReceiveNotification(notification);
                 }
+            } catch (e) {
+                console.error("DefaultCenter::post() error", notification, obs, e);
             }
         }
     };
-    var s_notification_center = null;
-    Center.getInstance = function () {
-        if (!s_notification_center) {
-            s_notification_center = new Center();
-        }
-        return s_notification_center;
-    };
-    ns.NotificationCenter = Center;
-    ns.registers("NotificationCenter");
-})(LocalNotificationService, MONKEY);
+    ns.lnc.BaseCenter = BaseCenter;
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
+    var BaseCenter = ns.lnc.BaseCenter;
+    var Notification = ns.lnc.Notification;
+    var DefaultCenter = function () {
+        BaseCenter.call(this);
+    };
+    Class(DefaultCenter, BaseCenter, null, {
+        postNotification: function (notification, sender, userInfo) {
+            if (typeof notification === "string") {
+                notification = new Notification(notification, sender, userInfo);
+            }
+            this.post(notification);
+        }
+    });
+    var NotificationCenter = {
+        addObserver: function (observer, name) {
+            this.defaultCenter.addObserver(observer, name);
+        },
+        removeObserver: function (observer, name) {
+            this.defaultCenter.removeObserver(observer, name);
+        },
+        postNotification: function (notification, sender, userInfo) {
+            this.defaultCenter.postNotification(notification, sender, userInfo);
+        },
+        getInstance: function () {
+            return this.defaultCenter;
+        },
+        defaultCenter: new DefaultCenter()
+    };
+    ns.lnc.DefaultCenter = DefaultCenter;
+    ns.lnc.NotificationCenter = NotificationCenter;
+})(StarGate, MONKEY);
+(function (ns, fsm, sys) {
+    var Class = sys.type.Class;
+    var Runnable = fsm.skywalker.Runnable;
+    var Thread = fsm.threading.Thread;
+    var BaseCenter = ns.lnc.BaseCenter;
+    var Notification = ns.lnc.Notification;
+    var AsyncCenter = function () {
+        BaseCenter.call(this);
+        this.__notifications = [];
+        this.__running = false;
+        this.__thread = null;
+    };
+    Class(AsyncCenter, BaseCenter, [Runnable], {
+        postNotification: function (notification, sender, userInfo) {
+            if (typeof notification === "string") {
+                notification = new Notification(notification, sender, userInfo);
+            }
+            this.__notifications.push(notification);
+        },
+        run: function () {
+            while (this.isRunning()) {
+                if (!this.process()) {
+                    return true;
+                }
+            }
+            return false;
+        },
+        process: function () {
+            var notification = this.__notifications.shift();
+            if (notification) {
+                this.post(notification);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    });
+    AsyncCenter.prototype.start = function () {
+        force_stop.call(this);
+        this.__running = true;
+        var thread = new Thread(this);
+        thread.start();
+        this.__thread = thread;
+    };
+    AsyncCenter.prototype.stop = function () {
+        force_stop.call(this);
+    };
+    var force_stop = function () {
+        var thread = this.__thread;
+        if (thread) {
+            this.__thread = null;
+            thread.stop();
+        }
+    };
+    AsyncCenter.prototype.isRunning = function () {
+        return this.__running;
+    };
+    ns.lnc.AsyncCenter = AsyncCenter;
+})(StarGate, FiniteStateMachine, MONKEY);
+(function (ns, sys) {
+    var Class = sys.type.Class;
     var ConstantString = sys.type.ConstantString;
     var Host = function (string, ip, port, data) {
         ConstantString.call(this, string);
@@ -208,7 +304,7 @@ if (typeof FileSystem !== "object") {
         this.port = port;
         this.data = data;
     };
-    sys.Class(Host, ConstantString, null, null);
+    Class(Host, ConstantString, null, null);
     Host.prototype.toArray = function (default_port) {
         var data = this.data;
         var port = this.port;
@@ -230,10 +326,10 @@ if (typeof FileSystem !== "object") {
         return array;
     };
     ns.network.Host = Host;
-    ns.network.registers("Host");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
-    var Host = ns.Host;
+    var Class = sys.type.Class;
+    var Host = ns.network.Host;
     var IPv4 = function (ip, port, data) {
         if (data) {
             if (!ip) {
@@ -261,7 +357,7 @@ if (typeof FileSystem !== "object") {
         }
         Host.call(this, string, ip, port, data);
     };
-    sys.Class(IPv4, Host, null);
+    Class(IPv4, Host, null);
     IPv4.patten = /^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$/;
     IPv4.parse = function (host) {
         if (!this.patten.test(host)) {
@@ -276,10 +372,10 @@ if (typeof FileSystem !== "object") {
         return new IPv4(ip, port);
     };
     ns.network.IPv4 = IPv4;
-    ns.network.registers("IPv4");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
-    var Host = ns.Host;
+    var Class = sys.type.Class;
+    var Host = ns.network.Host;
     var parse_v4 = function (data, array) {
         var item,
             index = data.byteLength;
@@ -372,7 +468,7 @@ if (typeof FileSystem !== "object") {
         }
         Host.call(this, string, ip, port, data);
     };
-    sys.Class(IPv6, Host, null);
+    Class(IPv6, Host, null);
     IPv6.patten = /^\[?([0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(]:\d{1,5})?$/;
     IPv6.patten_compat =
         /^\[?([0-9A-Fa-f]{0,4}:){2,6}(\d{1,3}.){3}\d{1,3}(]:\d{1,5})?$/;
@@ -392,127 +488,9 @@ if (typeof FileSystem !== "object") {
         return new IPv6(ip, port);
     };
     ns.network.IPv6 = IPv6;
-    ns.network.registers("IPv6");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
-    var ArrivalShip = ns.ArrivalShip;
-    var PlainArrival = function (data, now) {
-        ArrivalShip.call(this, now);
-        this.__data = data;
-    };
-    sys.Class(PlainArrival, ArrivalShip, null, null);
-    PlainArrival.prototype.getPackage = function () {
-        return this.__data;
-    };
-    PlainArrival.prototype.getSN = function () {
-        return null;
-    };
-    PlainArrival.prototype.assemble = function (arrival) {
-        console.assert(arrival === this, "plain arrival error", arrival, this);
-        return arrival;
-    };
-    ns.PlainArrival = PlainArrival;
-    ns.registers("PlainArrival");
-})(StarTrek, MONKEY);
-(function (ns, sys) {
-    var DepartureShip = ns.DepartureShip;
-    var PlainDeparture = function (data, prior) {
-        if (!prior) {
-            prior = 0;
-        }
-        DepartureShip.call(this, prior, DepartureShip.DISPOSABLE);
-        this.__completed = data;
-        this.__fragments = [data];
-    };
-    sys.Class(PlainDeparture, DepartureShip, null, null);
-    PlainDeparture.prototype.getPackage = function () {
-        return this.__completed;
-    };
-    PlainDeparture.prototype.getSN = function () {
-        return null;
-    };
-    PlainDeparture.prototype.getFragments = function () {
-        return this.__fragments;
-    };
-    PlainDeparture.prototype.checkResponse = function (arrival) {
-        return false;
-    };
-    ns.PlainDeparture = PlainDeparture;
-    ns.registers("PlainDeparture");
-})(StarTrek, MONKEY);
-(function (ns, sys) {
-    var UTF8 = sys.format.UTF8;
-    var Departure = ns.port.Departure;
-    var StarDocker = ns.StarDocker;
-    var PlainArrival = ns.PlainArrival;
-    var PlainDeparture = ns.PlainDeparture;
-    var PlainDocker = function (connection) {
-        StarDocker.call(this, connection);
-    };
-    sys.Class(PlainDocker, StarDocker, null, {
-        send: function (payload, priority) {
-            var ship = this.createDeparture(payload, priority);
-            return this.sendShip(ship);
-        },
-        sendData: function (payload) {
-            return this.send(payload, Departure.Priority.NORMAL.valueOf());
-        },
-        heartbeat: function () {
-            init_bytes();
-            this.send(PING, Departure.Priority.SLOWER.valueOf());
-        },
-        getArrival: function (data) {
-            if (!data || data.length === 0) {
-                return null;
-            }
-            return this.createArrival(data);
-        },
-        checkArrival: function (arrival) {
-            var data = arrival.getPackage();
-            if (data.length === 4) {
-                init_bytes();
-                if (bytes_equal(data, PING)) {
-                    this.send(PONG, Departure.Priority.SLOWER.valueOf());
-                } else {
-                    if (bytes_equal(data, PONG) || bytes_equal(data, NOOP)) {
-                        return null;
-                    }
-                }
-            }
-            return arrival;
-        }
-    });
-    PlainDocker.prototype.createArrival = function (data) {
-        return new PlainArrival(data, null);
-    };
-    PlainDocker.prototype.createDeparture = function (data, priority) {
-        return new PlainDeparture(data, priority);
-    };
-    var bytes_equal = function (data1, data2) {
-        if (data1.length !== data2.length) {
-            return false;
-        }
-        for (var i = data1.length - 1; i >= 0; --i) {
-            if (data1[i] !== data2[i]) {
-                return false;
-            }
-        }
-        return true;
-    };
-    var init_bytes = function () {
-        if (typeof PING === "string") {
-            PING = UTF8.encode(PING);
-            PONG = UTF8.encode(PONG);
-            NOOP = UTF8.encode(NOOP);
-        }
-    };
-    var PING = "PING";
-    var PONG = "PONG";
-    var NOOP = "NOOP";
-    ns.PlainDocker = PlainDocker;
-    ns.registers("PlainDocker");
-})(StarTrek, MONKEY);
-(function (ns, sys) {
+    var Class = sys.type.Class;
     var SocketAddress = ns.type.SocketAddress;
     var connect = function (url, proxy) {
         var ws = new WebSocket(url);
@@ -562,7 +540,7 @@ if (typeof FileSystem !== "object") {
         this.__remote = null;
         this.__local = null;
     };
-    sys.Class(Socket, Object, null);
+    Class(Socket, Object, null);
     Socket.prototype.getHost = function () {
         return this.__host;
     };
@@ -636,15 +614,16 @@ if (typeof FileSystem !== "object") {
         return this.write(data);
     };
     ns.ws.Socket = Socket;
-    ns.ws.registers("Socket");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var ChannelReader = ns.socket.ChannelReader;
     var ChannelWriter = ns.socket.ChannelWriter;
+    var BaseChannel = ns.socket.BaseChannel;
     var StreamChannelReader = function (channel) {
         ChannelReader.call(this, channel);
     };
-    sys.Class(StreamChannelReader, ChannelReader, null, {
+    Class(StreamChannelReader, ChannelReader, null, {
         receive: function (maxLen) {
             return this.read(maxLen);
         }
@@ -652,24 +631,15 @@ if (typeof FileSystem !== "object") {
     var StreamChannelWriter = function (channel) {
         ChannelWriter.call(this, channel);
     };
-    sys.Class(StreamChannelWriter, ChannelWriter, null, {
+    Class(StreamChannelWriter, ChannelWriter, null, {
         send: function (data, target) {
             return this.write(data);
         }
     });
-    ns.ws.StreamChannelReader = StreamChannelReader;
-    ns.ws.StreamChannelWriter = StreamChannelWriter;
-    ns.ws.registers("StreamChannelReader");
-    ns.ws.registers("StreamChannelWriter");
-})(StarTrek, MONKEY);
-(function (ns, sys) {
-    var BaseChannel = ns.socket.BaseChannel;
-    var StreamChannelReader = ns.ws.StreamChannelReader;
-    var StreamChannelWriter = ns.ws.StreamChannelWriter;
     var StreamChannel = function (remote, local, sock) {
         BaseChannel.call(this, remote, local, sock);
     };
-    sys.Class(StreamChannel, BaseChannel, null, {
+    Class(StreamChannel, BaseChannel, null, {
         createReader: function () {
             return new StreamChannelReader(this);
         },
@@ -677,17 +647,19 @@ if (typeof FileSystem !== "object") {
             return new StreamChannelWriter(this);
         }
     });
+    ns.ws.StreamChannelReader = StreamChannelReader;
+    ns.ws.StreamChannelWriter = StreamChannelWriter;
     ns.ws.StreamChannel = StreamChannel;
-    ns.ws.registers("StreamChannel");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var AddressPairMap = ns.type.AddressPairMap;
     var BaseHub = ns.socket.BaseHub;
     var StreamChannel = ns.ws.StreamChannel;
     var ChannelPool = function () {
         AddressPairMap.call(this);
     };
-    sys.Class(ChannelPool, AddressPairMap, null, {
+    Class(ChannelPool, AddressPairMap, null, {
         set: function (remote, local, value) {
             var old = this.get(remote, local);
             if (old && old !== value) {
@@ -723,7 +695,7 @@ if (typeof FileSystem !== "object") {
         BaseHub.call(this, delegate);
         this.__channelPool = this.createChannelPool();
     };
-    sys.Class(StreamHub, BaseHub, null, null);
+    Class(StreamHub, BaseHub, null, null);
     StreamHub.prototype.createChannelPool = function () {
         return new ChannelPool();
     };
@@ -731,7 +703,7 @@ if (typeof FileSystem !== "object") {
         return new StreamChannel(remote, local, sock);
     };
     StreamHub.prototype.allChannels = function () {
-        return this.__channelPool.allValues();
+        return this.__channelPool.values();
     };
     StreamHub.prototype.getChannel = function (remote, local) {
         return this.__channelPool.get(remote, local);
@@ -747,17 +719,16 @@ if (typeof FileSystem !== "object") {
     };
     ns.ws.ChannelPool = ChannelPool;
     ns.ws.StreamHub = StreamHub;
-    ns.ws.registers("ChannelPool");
-    ns.ws.registers("StreamHub");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
     var ActiveConnection = ns.socket.ActiveConnection;
     var StreamHub = ns.ws.StreamHub;
     var Socket = ns.ws.Socket;
-    var StreamClientHub = function (delegate) {
+    var ClientHub = function (delegate) {
         StreamHub.call(this, delegate);
     };
-    sys.Class(StreamClientHub, StreamHub, null, {
+    Class(ClientHub, StreamHub, null, {
         createConnection: function (remote, local, channel) {
             var conn = new ActiveConnection(remote, local, channel, this);
             conn.setDelegate(this.getDelegate());
@@ -787,7 +758,7 @@ if (typeof FileSystem !== "object") {
             }
             return this.createChannel(remote, local, sock);
         } catch (e) {
-            console.error("StreamClientHub::createSocketChannel()", e, remote, local);
+            console.error("ClientHub::createSocketChannel()", remote, local, e);
             return null;
         }
     };
@@ -801,16 +772,141 @@ if (typeof FileSystem !== "object") {
         sock.configureBlocking(false);
         return sock;
     };
-    ns.ws.StreamClientHub = StreamClientHub;
-    ns.ws.registers("StreamClientHub");
-})(StarTrek, MONKEY);
+    ns.ws.ClientHub = ClientHub;
+})(StarGate, MONKEY);
 (function (ns, sys) {
+    var Class = sys.type.Class;
+    var ArrivalShip = ns.ArrivalShip;
+    var PlainArrival = function (data, now) {
+        if (!now) {
+            now = new Date().getTime();
+        }
+        ArrivalShip.call(this, now);
+        this.__data = data;
+    };
+    Class(PlainArrival, ArrivalShip, null, null);
+    PlainArrival.prototype.getPackage = function () {
+        return this.__data;
+    };
+    PlainArrival.prototype.getSN = function () {
+        return null;
+    };
+    PlainArrival.prototype.assemble = function (arrival) {
+        console.assert(arrival === this, "plain arrival error", arrival, this);
+        return arrival;
+    };
+    ns.PlainArrival = PlainArrival;
+})(StarGate, MONKEY);
+(function (ns, sys) {
+    var Class = sys.type.Class;
+    var DepartureShip = ns.DepartureShip;
+    var PlainDeparture = function (data, prior) {
+        if (!prior) {
+            prior = 0;
+        }
+        DepartureShip.call(this, prior, 1);
+        this.__completed = data;
+        this.__fragments = [data];
+    };
+    Class(PlainDeparture, DepartureShip, null, null);
+    PlainDeparture.prototype.getPackage = function () {
+        return this.__completed;
+    };
+    PlainDeparture.prototype.getSN = function () {
+        return null;
+    };
+    PlainDeparture.prototype.getFragments = function () {
+        return this.__fragments;
+    };
+    PlainDeparture.prototype.checkResponse = function (arrival) {
+        return false;
+    };
+    PlainDeparture.prototype.isImportant = function (arrival) {
+        return false;
+    };
+    ns.PlainDeparture = PlainDeparture;
+})(StarGate, MONKEY);
+(function (ns, sys) {
+    var Class = sys.type.Class;
+    var UTF8 = sys.format.UTF8;
+    var Departure = ns.port.Departure;
+    var StarDocker = ns.StarDocker;
+    var PlainArrival = ns.PlainArrival;
+    var PlainDeparture = ns.PlainDeparture;
+    var PlainDocker = function (connection) {
+        StarDocker.call(this, connection);
+    };
+    Class(PlainDocker, StarDocker, null, {
+        send: function (payload, priority) {
+            var ship = this.createDeparture(payload, priority);
+            return this.sendShip(ship);
+        },
+        sendData: function (payload) {
+            return this.send(payload, Departure.Priority.NORMAL.valueOf());
+        },
+        heartbeat: function () {
+            init_bytes();
+            this.send(PING, Departure.Priority.SLOWER.valueOf());
+        },
+        getArrival: function (data) {
+            if (!data || data.length === 0) {
+                return null;
+            }
+            return this.createArrival(data);
+        },
+        checkArrival: function (arrival) {
+            var data = arrival.getPackage();
+            if (data.length === 4) {
+                init_bytes();
+                if (bytes_equal(data, PING)) {
+                    this.send(PONG, Departure.Priority.SLOWER.valueOf());
+                } else {
+                    if (bytes_equal(data, PONG) || bytes_equal(data, NOOP)) {
+                        return null;
+                    }
+                }
+            }
+            return arrival;
+        }
+    });
+    PlainDocker.prototype.createArrival = function (data) {
+        return new PlainArrival(data, null);
+    };
+    PlainDocker.prototype.createDeparture = function (data, priority) {
+        return new PlainDeparture(data, priority);
+    };
+    var bytes_equal = function (data1, data2) {
+        if (data1.length !== data2.length) {
+            return false;
+        }
+        for (var i = data1.length - 1; i >= 0; --i) {
+            if (data1[i] !== data2[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+    var init_bytes = function () {
+        if (typeof PING === "string") {
+            PING = UTF8.encode(PING);
+            PONG = UTF8.encode(PONG);
+            NOOP = UTF8.encode(NOOP);
+        }
+    };
+    var PING = "PING";
+    var PONG = "PONG";
+    var NOOP = "NOOP";
+    ns.PlainDocker = PlainDocker;
+})(StarGate, MONKEY);
+(function (ns, sys) {
+    var Class = sys.type.Class;
+    var ActiveConnection = ns.socket.ActiveConnection;
     var StarGate = ns.StarGate;
     var BaseGate = function (delegate) {
         StarGate.call(this, delegate);
         this.__hub = null;
     };
-    sys.Class(BaseGate, StarGate, null, {
+    Class(BaseGate, StarGate, null, {
         setHub: function (hub) {
             this.__hub = hub;
         },
@@ -840,12 +936,12 @@ if (typeof FileSystem !== "object") {
             return StarGate.prototype.setDocker.call(this, remote, null, docker);
         },
         removeDocker: function (remote, local, docker) {
-            return StarGate.prototype.setDocker.removeDocker(
-                this,
-                remote,
-                null,
-                docker
-            );
+            return StarGate.prototype.removeDocker.call(this, remote, null, docker);
+        },
+        heartbeat: function (connection) {
+            if (connection instanceof ActiveConnection) {
+                StarGate.prototype.heartbeat.call(this, connection);
+            }
         },
         cacheAdvanceParty: function (data, connection) {
             var array = [];
@@ -857,100 +953,51 @@ if (typeof FileSystem !== "object") {
         clearAdvanceParty: function (connection) {}
     });
     ns.BaseGate = BaseGate;
-    ns.registers("BaseGate");
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 (function (ns, sys) {
-    var Thread = sys.threading.Thread;
+    var Class = sys.type.Class;
     var BaseGate = ns.BaseGate;
-    var AutoGate = function (delegate) {
+    var CommonGate = function (delegate) {
         BaseGate.call(this, delegate);
-        this.__daemon = new Thread(this);
+        this.__running = false;
     };
-    sys.Class(AutoGate, BaseGate, null, {
+    Class(CommonGate, BaseGate, null, {
         isRunning: function () {
-            return this.__daemon.isRunning();
+            return this.__running;
         },
         start: function () {
-            this.stop();
-            this.__daemon.start();
+            this.__running = true;
         },
         stop: function () {
-            this.__daemon.stop();
+            this.__running = false;
         },
-        run: function () {
-            this.process();
-            return true;
+        getChannel: function (remote, local) {
+            var hub = this.getHub();
+            return hub.open(remote, local);
         },
-        process: function () {
-            try {
-                var hub = this.getHub();
-                var incoming = hub.process();
-                var outgoing = BaseGate.prototype.process.call(this);
-                return incoming || outgoing;
-            } catch (e) {
-                console.error("AutoGate::process()", e);
-                return false;
-            }
-        }
-    });
-    ns.AutoGate = AutoGate;
-    ns.registers("AutoGate");
-})(StarTrek, MONKEY);
-(function (ns, sys) {
-    var AutoGate = ns.AutoGate;
-    var PlainDocker = ns.PlainDocker;
-    var WSGate = function (delegate) {
-        AutoGate.call(this, delegate);
-    };
-    sys.Class(WSGate, AutoGate, null, {
         sendMessage: function (payload, remote, local) {
             var docker = this.fetchDocker(remote, local, null);
             if (!docker || !docker.isOpen()) {
                 return false;
             }
             return docker.sendData(payload);
-        },
+        }
+    });
+    ns.CommonGate = CommonGate;
+})(StarGate, MONKEY);
+(function (ns, sys) {
+    var Class = sys.type.Class;
+    var CommonGate = ns.CommonGate;
+    var PlainDocker = ns.PlainDocker;
+    var WSClientGate = function (delegate) {
+        CommonGate.call(this, delegate);
+    };
+    Class(WSClientGate, CommonGate, null, {
         createDocker: function (connection, advanceParties) {
             var docker = new PlainDocker(connection);
             docker.setDelegate(this.getDelegate());
             return docker;
-        },
-        onConnectionStateChanged: function (previous, current, connection) {
-            AutoGate.prototype.onConnectionStateChanged.call(
-                this,
-                previous,
-                current,
-                connection
-            );
-            var remote = connection.getRemoteAddress();
-            if (remote) {
-                remote = remote.toString();
-            }
-            if (previous) {
-                previous = previous.toString();
-            }
-            if (current) {
-                current = current.toString();
-            }
-            console.info("connection state changed: ", previous, current, remote);
-        },
-        onConnectionFailed: function (error, data, connection) {
-            AutoGate.prototype.onConnectionFailed.call(this, error, data, connection);
-            var remote = connection.getRemoteAddress();
-            if (remote) {
-                remote = remote.toString();
-            }
-            console.info("connection failed: ", error, data, remote);
-        },
-        onConnectionError: function (error, connection) {
-            AutoGate.prototype.onConnectionError.call(this, error, connection);
-            var remote = connection.getRemoteAddress();
-            if (remote) {
-                remote = remote.toString();
-            }
-            console.info("connection error: ", error, remote);
         }
     });
-    ns.WSGate = WSGate;
-    ns.registers("WSGate");
-})(StarTrek, MONKEY);
+    ns.WSClientGate = WSClientGate;
+})(StarGate, MONKEY);

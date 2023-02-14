@@ -36,102 +36,162 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var Arrays = sys.type.Arrays;
-    var Dictionary = sys.type.Dictionary;
 
-    var Notification = ns.Notification;
-    var Observer = ns.Observer;
-
-    /**
-     *  Notification center
-     */
-    var Center = function () {
+    var BaseCenter = function () {
         Object.call(this);
-        this.__observers = new Dictionary(); // str(name) => Observer[]
+        this.__observers = {}; // str(name) => Set<Observer>
     };
-    sys.Class(Center, Object, null, null);
+    Class(BaseCenter, Object, null, null);
 
-    /**
-     *  Add observer with notification name
-     *
-     * @param {Observer|Function} observer
-     * @param {String} name
-     */
-    Center.prototype.addObserver = function (observer, name) {
-        var list = this.__observers.getValue(name);
-        if (list) {
-            if (list.indexOf(observer) >= 0) {
-                // already exists
-                return;
-            }
-        } else {
+    BaseCenter.prototype.addObserver = function (observer, name) {
+        var list = this.__observers[name];
+        if (!list) {
+            // new set
             list = [];
-            this.__observers.setValue(name, list);
+            this.__observers[name] = list;
+        } else if (list.indexOf(observer) >= 0) {
+            // already exists
+            return;
         }
         list.push(observer);
     };
 
-    /**
-     *  Remove observer from notification center
-     *
-     * @param {Observer|Function} observer
-     * @param {String} name - OPTIONAL
-     */
-    Center.prototype.removeObserver = function (observer, name) {
+    BaseCenter.prototype.removeObserver = function (observer, name) {
         if (name) {
-            // Remove observer for notification name
-            var list = this.__observers.getValue(name);
-            if (list/* instanceof Array*/) {
-                Arrays.remove(list, observer);
-            }
+            remove.call(this, observer, name);
         } else {
             // Remove observer from notification center, no mather what names
-            var names = this.__observers.allKeys();
-            for (var i = 0; i < names.length; ++i) {
-                this.removeObserver(observer, names[i]);
+            var names = Object.keys(this.__observers);
+            for (var i = names.length - 1; i >= 0; --i) {
+                remove.call(this, observer, names[i]);
+            }
+        }
+    };
+    var remove = function (observer, name) {
+        // Remove observer for notification name
+        var list = this.__observers[name];
+        if (list/* instanceof Array*/) {
+            Arrays.remove(list, observer);
+            if (list.length === 0) {
+                delete this.__observers[name];
             }
         }
     };
 
-    /**
-     *  Post a notification
-     *
-     * @param {Notification|String} notification - notification or name
-     * @param {Object} sender - OPTIONAL
-     * @param {{}} userInfo - OPTIONAL
-     */
-    Center.prototype.postNotification = function (notification, sender, userInfo) {
-        if (typeof notification === 'string') {
-            notification = new Notification(notification, sender, userInfo);
+    var getObservers = function (name) {
+        var list = this.__observers[name];
+        if (list) {
+            return list.slice();
+        } else {
+            return [];
         }
-        var observers = this.__observers.getValue(notification.name);
-        if (!observers) {
-            return;
-        }
+    };
+
+    BaseCenter.prototype.postNotification = function (notification, sender, userInfo) {
+        throw new Error('NotImplemented');
+    };
+
+    // protected
+    BaseCenter.prototype.post = function (notification) {
+        var name = notification.name;
+        var sender = notification.sender;
+        var userInfo = notification.userInfo;
         // send to all observers with this notification name
+        var observers = getObservers.call(this, name);
         var obs;
-        for (var i = 0; i < observers.length; ++i) {
+        for (var i = observers.length - 1; i >= 0; --i) {
             obs = observers[i];
-            if (sys.Interface.conforms(obs, Observer)) {
-                obs.onReceiveNotification(notification);
-            } else if (typeof obs === 'function') {
-                obs.call(notification, notification.name, notification.sender, notification.userInfo);
+            try {
+                if (typeof obs === 'function') {
+                    obs.call(notification, name, sender, userInfo);
+                } else {
+                    obs.onReceiveNotification(notification);
+                }
+            } catch (e) {
+                console.error('DefaultCenter::post() error', notification, obs, e);
             }
         }
-    };
-
-    //-------- singleton --------
-    var s_notification_center = null;
-    Center.getInstance = function () {
-        if (!s_notification_center) {
-            s_notification_center = new Center();
-        }
-        return s_notification_center;
     };
 
     //-------- namespace --------
-    ns.NotificationCenter = Center;
+    ns.lnc.BaseCenter = BaseCenter;
 
-    ns.registers('NotificationCenter');
+})(StarGate, MONKEY);
 
-})(LocalNotificationService, MONKEY);
+(function (ns, sys) {
+    "use strict";
+
+    var Class = sys.type.Class;
+    var BaseCenter = ns.lnc.BaseCenter;
+    var Notification = ns.lnc.Notification;
+
+    /**
+     *  Default Notification Center
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     *
+     *  call for each observers immediately
+     */
+    var DefaultCenter = function () {
+        BaseCenter.call(this);
+    };
+    Class(DefaultCenter, BaseCenter, null, {
+        
+        // Override
+        postNotification: function (notification, sender, userInfo) {
+            if (typeof notification === 'string') {
+                notification = new Notification(notification, sender, userInfo);
+            }
+            this.post(notification);
+        }
+    });
+
+    /**
+     *  Singleton
+     *  ~~~~~~~~~
+     */
+    var NotificationCenter = {
+
+        /**
+         *  Add observer with notification name
+         *
+         * @param {Observer|Function} observer
+         * @param {string} name
+         */
+        addObserver: function (observer, name) {
+            this.defaultCenter.addObserver(observer, name);
+        },
+
+        /**
+         *  Remove observer from notification center
+         *
+         * @param {Observer|Function} observer
+         * @param {string} name - OPTIONAL
+         */
+        removeObserver: function (observer, name) {
+            this.defaultCenter.removeObserver(observer, name);
+        },
+
+        /**
+         *  Post notification with name
+         *
+         * @param {Notification|string} notification - notification or name
+         * @param {*} sender
+         * @param {{}} userInfo - OPTIONAL
+         */
+        postNotification: function (notification, sender, userInfo) {
+            this.defaultCenter.postNotification(notification, sender, userInfo);
+        },
+
+        getInstance: function () {
+            return this.defaultCenter;
+        },
+        defaultCenter: new DefaultCenter()
+    };
+
+    //-------- namespace --------
+    ns.lnc.DefaultCenter = DefaultCenter;
+    ns.lnc.NotificationCenter = NotificationCenter;
+
+})(StarGate, MONKEY);

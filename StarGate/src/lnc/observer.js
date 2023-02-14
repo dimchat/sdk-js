@@ -35,11 +35,12 @@
 (function (ns, sys) {
     "use strict";
 
+    var Interface = sys.type.Interface;
+
     /**
      *  Notification observer
      */
-    var Observer = function () {};
-    sys.Interface(Observer, null);
+    var Observer = Interface(null, null);
 
     /**
      *  Callback when received notification
@@ -47,12 +48,10 @@
      * @param {Notification} notification
      */
     Observer.prototype.onReceiveNotification = function (notification) {
-        console.assert(false, 'implement me!');
+        throw new Error('NotImplemented');
     };
 
     //-------- namespace --------
-    ns.Observer = Observer;
+    ns.lnc.Observer = Observer;
 
-    ns.registers('Observer');
-
-})(LocalNotificationService, MONKEY);
+})(StarGate, MONKEY);

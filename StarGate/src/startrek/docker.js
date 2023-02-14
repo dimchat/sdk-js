@@ -36,6 +36,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var UTF8 = sys.format.UTF8;
     var Departure = ns.port.Departure;
     var StarDocker = ns.StarDocker;
@@ -51,7 +52,7 @@
     var PlainDocker = function (connection) {
         StarDocker.call(this, connection);
     };
-    sys.Class(PlainDocker, StarDocker, null, {
+    Class(PlainDocker, StarDocker, null, {
         /**
          *  Send data with priority
          *
@@ -136,6 +137,4 @@
     //-------- namespace --------
     ns.PlainDocker = PlainDocker;
 
-    ns.registers('PlainDocker');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

@@ -35,6 +35,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var DepartureShip = ns.DepartureShip;
 
     /**
@@ -48,11 +49,11 @@
         if (!prior) {
             prior = 0;
         }
-        DepartureShip.call(this, prior, DepartureShip.DISPOSABLE);
+        DepartureShip.call(this, prior, 1);
         this.__completed = data;
         this.__fragments = [data];
     };
-    sys.Class(PlainDeparture, DepartureShip, null, null);
+    Class(PlainDeparture, DepartureShip, null, null);
 
     PlainDeparture.prototype.getPackage = function () {
         return this.__completed;
@@ -75,9 +76,13 @@
         return false;
     };
 
+    // Override
+    PlainDeparture.prototype.isImportant = function (arrival) {
+        // plain departure needs no response
+        return false;
+    };
+
     //-------- namespace --------
     ns.PlainDeparture = PlainDeparture;
 
-    ns.registers('PlainDeparture');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

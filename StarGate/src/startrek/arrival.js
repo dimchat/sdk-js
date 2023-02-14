@@ -35,6 +35,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var ArrivalShip = ns.ArrivalShip;
 
     /**
@@ -45,10 +46,13 @@
      * @param {number|null} now - received time
      */
     var PlainArrival = function (data, now) {
+        if (!now) {
+            now = (new Date()).getTime();
+        }
         ArrivalShip.call(this, now);
         this.__data = data;
     };
-    sys.Class(PlainArrival, ArrivalShip, null, null);
+    Class(PlainArrival, ArrivalShip, null, null);
 
     PlainArrival.prototype.getPackage = function () {
         return this.__data;
@@ -70,6 +74,4 @@
     //-------- namespace --------
     ns.PlainArrival = PlainArrival;
 
-    ns.registers('PlainArrival');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

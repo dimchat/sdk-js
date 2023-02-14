@@ -35,7 +35,8 @@
 (function (ns, sys) {
     "use strict";
 
-    var Host = ns.Host;
+    var Class = sys.type.Class;
+    var Host = ns.network.Host;
 
     //
     //  IPv6
@@ -146,7 +147,7 @@
         }
         Host.call(this, string, ip, port, data);
     };
-    sys.Class(IPv6, Host, null);
+    Class(IPv6, Host, null);
 
     IPv6.patten = /^\[?([0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(]:\d{1,5})?$/;
     IPv6.patten_compat = /^\[?([0-9A-Fa-f]{0,4}:){2,6}(\d{1,3}.){3}\d{1,3}(]:\d{1,5})?$/;
@@ -178,6 +179,4 @@
     //-------- namespace --------
     ns.network.IPv6 = IPv6;
 
-    ns.network.registers('IPv6');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

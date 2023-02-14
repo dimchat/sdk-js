@@ -30,19 +30,21 @@
 // =============================================================================
 //
 
-//! require 'startrek/docker.js'
+//! require <startrek.js>
 //! require 'hub.js'
 
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
+    var ActiveConnection = ns.socket.ActiveConnection;
     var StarGate = ns.StarGate;
 
     var BaseGate = function (delegate) {
         StarGate.call(this, delegate);
         this.__hub = null;
     };
-    sys.Class(BaseGate, StarGate, null, {
+    Class(BaseGate, StarGate, null, {
         //
         //  Hub
         //
@@ -77,17 +79,15 @@
         },
         // Override
         removeDocker: function (remote, local, docker) {
-            return StarGate.prototype.setDocker.removeDocker(this, remote, null, docker);
+            return StarGate.prototype.removeDocker.call(this, remote, null, docker);
         },
-        /*/
         // Override
         heartbeat: function (connection) {
             // let the client to do the job
             if (connection instanceof ActiveConnection) {
-                super.heartbeat(connection);
+                StarGate.prototype.heartbeat.call(this, connection);
             }
         },
-        /*/
         // Override
         cacheAdvanceParty: function (data, connection) {
             // TODO: cache the advance party before decide which docker to user
@@ -106,72 +106,34 @@
     //-------- namespace --------
     ns.BaseGate = BaseGate;
 
-    ns.registers('BaseGate');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
 
 (function (ns, sys) {
     "use strict";
 
-    var Thread = sys.threading.Thread;
+    var Class = sys.type.Class;
     var BaseGate = ns.BaseGate;
 
-    var AutoGate = function (delegate) {
+    var CommonGate = function (delegate) {
         BaseGate.call(this, delegate);
-        this.__daemon = new Thread(this);
+        this.__running = false;
     };
-    sys.Class(AutoGate, BaseGate, null, {
-        //
-        //  Threading
-        //
+    Class(CommonGate, BaseGate, null, {
         isRunning: function () {
-            return this.__daemon.isRunning();
+            return this.__running;
         },
         start: function () {
-            this.stop();
-            this.__daemon.start();
+            this.__running = true;
         },
         stop: function () {
-            this.__daemon.stop();
+            this.__running = false;
         },
 
-        // Override
-        run: function () {
-            this.process();
-            return true;
+        getChannel: function (remote, local) {
+            var hub = this.getHub();
+            return hub.open(remote, local);
         },
 
-        // Override
-        process: function () {
-            try {
-                var hub = this.getHub();
-                var incoming = hub.process();
-                var outgoing = BaseGate.prototype.process.call(this);
-                return incoming || outgoing;
-            } catch (e) {
-                console.error('AutoGate::process()', e);
-                return false;
-            }
-        }
-    });
-
-    //-------- namespace --------
-    ns.AutoGate = AutoGate;
-
-    ns.registers('AutoGate');
-
-})(StarTrek, MONKEY);
-
-(function (ns, sys) {
-    "use strict";
-
-    var AutoGate = ns.AutoGate;
-    var PlainDocker = ns.PlainDocker;
-
-    var WSGate = function (delegate) {
-        AutoGate.call(this, delegate);
-    };
-    sys.Class(WSGate, AutoGate, null, {
         /**
          *  Send payload to remote address
          *
@@ -186,7 +148,25 @@
                 return false;
             }
             return docker.sendData(payload);
-        },
+        }
+    });
+
+    //-------- namespace --------
+    ns.CommonGate = CommonGate;
+
+})(StarGate, MONKEY);
+
+(function (ns, sys) {
+    "use strict";
+
+    var Class = sys.type.Class;
+    var CommonGate = ns.CommonGate;
+    var PlainDocker = ns.PlainDocker;
+
+    var WSClientGate = function (delegate) {
+        CommonGate.call(this, delegate);
+    };
+    Class(WSClientGate, CommonGate, null, {
 
         //
         //  Docker
@@ -198,42 +178,10 @@
             var docker = new PlainDocker(connection);
             docker.setDelegate(this.getDelegate());
             return docker;
-        },
-
-        //
-        //  Connection Delegate
-        //
-
-        // Override
-        onConnectionStateChanged: function (previous, current, connection) {
-            AutoGate.prototype.onConnectionStateChanged.call(this, previous, current, connection);
-            var remote = connection.getRemoteAddress();
-            if (remote) remote = remote.toString();
-            if (previous) previous = previous.toString();
-            if (current) current = current.toString();
-            console.info('connection state changed: ', previous, current, remote);
-        },
-
-        // Override
-        onConnectionFailed: function (error, data, connection) {
-            AutoGate.prototype.onConnectionFailed.call(this, error, data, connection);
-            var remote = connection.getRemoteAddress();
-            if (remote) remote = remote.toString();
-            console.info('connection failed: ', error, data, remote);
-        },
-
-        // Override
-        onConnectionError: function (error, connection) {
-            AutoGate.prototype.onConnectionError.call(this, error, connection);
-            var remote = connection.getRemoteAddress();
-            if (remote) remote = remote.toString();
-            console.info('connection error: ', error, remote);
         }
     });
 
     //-------- namespace --------
-    ns.WSGate = WSGate;
+    ns.WSClientGate = WSClientGate;
 
-    ns.registers('WSGate');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);

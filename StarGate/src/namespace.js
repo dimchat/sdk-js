@@ -25,28 +25,32 @@
 // =============================================================================
 //
 
+//! require <crypto.js>
+//! require <fsm.js>
 //! require <startrek.js>
 
-if (typeof LocalNotificationService !== 'object') {
-    LocalNotificationService = new MONKEY.Namespace();
+if (typeof StarGate !== 'object') {
+    StarGate = StarTrek;
 }
 
-if (typeof FileSystem !== 'object') {
-    FileSystem = new MONKEY.Namespace();
-}
-
-(function (ns, sys) {
+(function (ns) {
     "use strict";
 
     //-------- namespace --------
+    if (typeof ns.fsm !== 'object') {
+        ns.fsm = FiniteStateMachine;
+    }
+    if (typeof ns.dos !== 'object') {
+        ns.dos = {};
+    }
+    if (typeof ns.lnc !== 'object') {
+        ns.lnc = {};
+    }
     if (typeof ns.network !== 'object') {
-        ns.network = new sys.Namespace();
+        ns.network = {};
     }
     if (typeof ns.ws !== 'object') {
-        ns.ws = new sys.Namespace();
+        ns.ws = {};
     }
 
-    ns.registers('network');
-    ns.registers('ws');
-
-})(StarTrek, MONKEY);
+})(StarGate);

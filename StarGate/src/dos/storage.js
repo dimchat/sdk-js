@@ -35,6 +35,7 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
     var JsON = sys.format.JSON;
     var Base64 = sys.format.Base64;
 
@@ -49,7 +50,7 @@
             this.ROOT = 'dim';
         }
     };
-    sys.Class(Storage, Object, null, null);
+    Class(Storage, Object, null, null);
 
     Storage.prototype.getItem = function (key) {
         return this.storage.getItem(key);
@@ -182,10 +183,7 @@
     };
 
     //-------- namespace --------
-    ns.LocalStorage = new Storage(window.localStorage, 'dim.fs');
-    ns.SessionStorage = new Storage(window.sessionStorage, 'dim.mem');
+    ns.dos.LocalStorage = new Storage(window.localStorage, 'dim.fs');
+    ns.dos.SessionStorage = new Storage(window.sessionStorage, 'dim.mem');
 
-    ns.registers('LocalStorage');
-    ns.registers('SessionStorage');
-
-})(FileSystem, MONKEY);
+})(StarGate, MONKEY);

@@ -10,22 +10,23 @@ var g_variables = {};
 (function (ns, sys) {
     'use strict';
 
+    var Class = sys.type.Class;
     var UTF8 = sys.format.UTF8;
     var InetSocketAddress = ns.type.InetSocketAddress;
     var DockerDelegate = ns.port.DockerDelegate;
-    var StreamClientHub = ns.ws.StreamClientHub;
-    var WSGate = ns.WSGate;
+    var ClientHub = ns.ws.ClientHub;
+    var WSClientGate = ns.WSClientGate;
 
     var Client = function (remote, local) {
         Object.call(this);
         this.remoteAddress = remote;
         this.localAddress = local;
-        var gate = new WSGate(this);
-        var hub = new StreamClientHub(gate);
+        var gate = new WSClientGate(this);
+        var hub = new ClientHub(gate);
         gate.setHub(hub);
         this.gate = gate;
     };
-    sys.Class(Client, Object, [DockerDelegate], null);
+    Class(Client, Object, [DockerDelegate], null);
 
     Client.prototype.start = function () {
         this.gate.start();

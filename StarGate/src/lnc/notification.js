@@ -35,13 +35,14 @@
 (function (ns, sys) {
     "use strict";
 
+    var Class = sys.type.Class;
+
     /**
      *  Notification object with name, sender and extra info
      *
-     * @param {String} name
-     * @param {Object} sender
+     * @param {string} name
+     * @param {*} sender
      * @param {{}} userInfo
-     * @constructor
      */
     var Notification = function (name, sender, userInfo) {
         Object.call(this);
@@ -49,11 +50,9 @@
         this.sender = sender;
         this.userInfo = userInfo;
     };
-    sys.Class(Notification, Object, null, null);
+    Class(Notification, Object, null, null);
 
     //-------- namespace --------
-    ns.Notification = Notification;
+    ns.lnc.Notification = Notification;
 
-    ns.registers('Notification');
-
-})(LocalNotificationService, MONKEY);
+})(StarGate, MONKEY);

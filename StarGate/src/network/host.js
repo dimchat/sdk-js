@@ -30,7 +30,8 @@
 // =============================================================================
 //
 
-//! require 'namespace.js'
+//! require <crypto.js>
+//! require <startrek.js>
 
 (function (ns, sys) {
     "use strict";
@@ -51,6 +52,7 @@
     //          [X:X:X:X:X:X:127.0.0.1]:9527
     //
 
+    var Class = sys.type.Class;
     var ConstantString = sys.type.ConstantString;
 
     /**
@@ -71,7 +73,7 @@
         // ip data array
         this.data = data;
     };
-    sys.Class(Host, ConstantString, null, null);
+    Class(Host, ConstantString, null, null);
 
     /**
      *  Convert host info to data array
@@ -105,6 +107,4 @@
     //-------- namespace --------
     ns.network.Host = Host;
 
-    ns.network.registers('Host');
-
-})(StarTrek, MONKEY);
+})(StarGate, MONKEY);
