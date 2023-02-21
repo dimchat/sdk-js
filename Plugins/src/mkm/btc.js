@@ -38,6 +38,9 @@
 
     var Class = ns.type.Class;
     var Enum = ns.type.Enum;
+    var Base58 = ns.format.Base58;
+    var SHA256 = ns.digest.SHA256;
+    var RIPEMD160 = ns.digest.RIPEMD160;
     var ConstantString = ns.type.ConstantString;
     var EntityType = ns.protocol.EntityType;
     var NetworkType = ns.protocol.NetworkType;
@@ -94,18 +97,24 @@
             network = network.valueOf();
         }
         // 1. digest = ripemd160(sha256(fingerprint))
-        var digest = ns.digest.RIPEMD160.digest(ns.digest.SHA256.digest(fingerprint));
+        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         // 2. head = network + digest
         var head = [];
         head.push(network);
-        head.push(digest);
+        for (var i = 0; i < digest.length; ++i) {
+            head.push(digest[i]);
+        }
         // 3. cc = sha256(sha256(head)).prefix(4)
         var cc = check_code(Uint8Array.from(head));
         // 4. data = base58_encode(head + cc)
         var data = [];
-        data.push(head);
-        data.push(cc);
-        return new BTCAddress(ns.format.Base58.encode(Uint8Array.from(data)), network);
+        for (var j = 0; j < head.length; ++j) {
+            data.push(head[j]);
+        }
+        for (var k = 0; k < cc.length; ++k) {
+            data.push(cc[k]);
+        }
+        return new BTCAddress(Base58.encode(Uint8Array.from(data)), network);
     };
 
     /**
@@ -120,7 +129,7 @@
             return null;
         }
         // decode
-        var data = ns.format.Base58.decode(string);
+        var data = Base58.decode(string);
         if (data.length !== 25) {
             throw new RangeError('address length error: ' + string);
         }
@@ -142,7 +151,7 @@
      * @return {Uint8Array}
      */
     var check_code = function (data) {
-        var sha256d = ns.digest.SHA256.digest(ns.digest.SHA256.digest(data));
+        var sha256d = SHA256.digest(SHA256.digest(data));
         return sha256d.subarray(0, 4);
     };
 

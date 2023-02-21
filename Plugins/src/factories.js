@@ -446,7 +446,7 @@
     };
 
     var general_factory = function () {
-        var man = ns.dkd.FactoryManager;
+        var man = ns.mkm.FactoryManager;
         return man.generalFactory;
     };
 

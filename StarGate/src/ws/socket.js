@@ -198,7 +198,7 @@
      */
     // Override
     Socket.prototype.connect = function (remote) {
-        this.__remote = null;
+        this.__remote = remote;
         this.close();
         this.__host = remote.getHost();
         this.__port = remote.getPort();

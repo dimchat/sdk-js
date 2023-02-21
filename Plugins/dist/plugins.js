@@ -1322,6 +1322,9 @@
 (function (ns) {
     var Class = ns.type.Class;
     var Enum = ns.type.Enum;
+    var Base58 = ns.format.Base58;
+    var SHA256 = ns.digest.SHA256;
+    var RIPEMD160 = ns.digest.RIPEMD160;
     var ConstantString = ns.type.ConstantString;
     var EntityType = ns.protocol.EntityType;
     var NetworkType = ns.protocol.NetworkType;
@@ -1352,27 +1355,28 @@
         if (Enum.isEnum(network)) {
             network = network.valueOf();
         }
-        var digest = ns.digest.RIPEMD160.digest(
-            ns.digest.SHA256.digest(fingerprint)
-        );
+        var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         var head = [];
         head.push(network);
-        head.push(digest);
+        for (var i = 0; i < digest.length; ++i) {
+            head.push(digest[i]);
+        }
         var cc = check_code(Uint8Array.from(head));
         var data = [];
-        data.push(head);
-        data.push(cc);
-        return new BTCAddress(
-            ns.format.Base58.encode(Uint8Array.from(data)),
-            network
-        );
+        for (var j = 0; j < head.length; ++j) {
+            data.push(head[j]);
+        }
+        for (var k = 0; k < cc.length; ++k) {
+            data.push(cc[k]);
+        }
+        return new BTCAddress(Base58.encode(Uint8Array.from(data)), network);
     };
     BTCAddress.parse = function (string) {
         var len = string.length;
         if (len < 26) {
             return null;
         }
-        var data = ns.format.Base58.decode(string);
+        var data = Base58.decode(string);
         if (data.length !== 25) {
             throw new RangeError("address length error: " + string);
         }
@@ -1386,7 +1390,7 @@
         }
     };
     var check_code = function (data) {
-        var sha256d = ns.digest.SHA256.digest(ns.digest.SHA256.digest(data));
+        var sha256d = SHA256.digest(SHA256.digest(data));
         return sha256d.subarray(0, 4);
     };
     ns.mkm.BTCAddress = BTCAddress;
@@ -1892,7 +1896,7 @@
         }
     };
     var general_factory = function () {
-        var man = ns.dkd.FactoryManager;
+        var man = ns.mkm.FactoryManager;
         return man.generalFactory;
     };
     Document.setFactory("*", new GeneralDocumentFactory("*"));

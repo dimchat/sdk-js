@@ -3,7 +3,7 @@
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Feb. 13, 2023
+ * @date      Feb. 21, 2023
  * @copyright (c) 2023 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
@@ -69,7 +69,7 @@
         this.__host = host;
         this.__port = port;
     };
-    Class(Station, BaseUser, [User], {
+    Class(Station, BaseObject, [User], {
         equals: function (other) {
             if (this === other) {
                 return true;

@@ -74,7 +74,7 @@
         this.__host = host;
         this.__port = port;
     };
-    Class(Station, BaseUser, [User], {
+    Class(Station, BaseObject, [User], {
 
         // Override
         equals: function (other) {
