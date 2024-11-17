@@ -153,13 +153,16 @@
                 network = network.valueOf();
             }
             // check cache
-            if (this.__address === null) {
-                // generate and cache it
-                var key = this.getKey();
+            var address = this.__address;
+            if (!address || address.getType() !== network) {
+                // TODO: compress public key?
+                var key = this.getPublicKey();
                 var fingerprint = key.getData();
-                this.__address = BTCAddress.generate(fingerprint, network);
+                // generate and cache it
+                address = BTCAddress.generate(fingerprint, network);
+                this.__address = address;
             }
-            return this.__address;
+            return address;
         }
     });
 
@@ -217,17 +220,119 @@
         // Override
         generateAddress: function (network) {
             // check cache
-            if (this.__address === null) {
-                // generate and cache it
-                var key = this.getKey();
+            var address = this.__address;
+            if (!address/* || address.getType() !== network*/) {
+                // 64 bytes key data without prefix 0x04
+                var key = this.getPublicKey();
                 var fingerprint = key.getData();
-                this.__address = ETHAddress.generate(fingerprint);
+                // generate and cache it
+                address = ETHAddress.generate(fingerprint);
+                this.__address = address;
             }
-            return this.__address;
+            return address;
         }
     });
 
     //-------- namespace --------
     ns.mkm.ETHMeta = ETHMeta;
+
+})(MingKeMing);
+
+(function (ns) {
+    'use strict';
+
+    var Class             = ns.type.Class;
+    var TransportableData = ns.format.TransportableData;
+    var MetaType          = ns.protocol.MetaType;
+    var Meta              = ns.protocol.Meta;
+    var DefaultMeta       = ns.mkm.DefaultMeta;
+    var BTCMeta           = ns.mkm.BTCMeta;
+    var ETHMeta           = ns.mkm.ETHMeta;
+
+    /**
+     *  General Meta factory
+     *  ~~~~~~~~~~~~~~~~~~~~
+     */
+    var GeneralMetaFactory = function (version) {
+        Object.call(this);
+        this.__type = version;
+    };
+    Class(GeneralMetaFactory, Object, [Meta.Factory], null);
+
+    // Override
+    GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
+        if (MetaType.MKM.equals(this.__type)) {
+            // MKM
+            return new DefaultMeta(this.__type, key, seed, fingerprint);
+        } else if (MetaType.BTC.equals(this.__type)) {
+            // BTC
+            return new BTCMeta(this.__type, key);
+        } else if (MetaType.ExBTC.equals(this.__type)) {
+            // ExBTC
+            return new BTCMeta(this.__type, key, seed, fingerprint);
+        } else if (MetaType.ETH.equals(this.__type)) {
+            // ETH
+            return new ETHMeta(this.__type, key);
+        } else if (MetaType.ExETH.equals(this.__type)) {
+            // ExETH
+            return new ETHMeta(this.__type, key, seed, fingerprint);
+        } else {
+            // unknown type
+            return null;
+        }
+    };
+
+    // Override
+    GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
+        var fingerprint = null;
+        if (seed && seed.length > 0) {
+            var sig = sKey.sign(ns.format.UTF8.encode(seed));
+            fingerprint = TransportableData.create(sig);
+        }
+        var pKey = sKey.getPublicKey();
+        return this.createMeta(pKey, seed, fingerprint);
+    };
+
+    // Override
+    GeneralMetaFactory.prototype.parseMeta = function(meta) {
+        var out;
+        var gf = general_factory();
+        var type = gf.getMetaType(meta, 0);
+        if (MetaType.MKM.equals(type)) {
+            // MKM
+            out = new DefaultMeta(meta);
+        } else if (MetaType.BTC.equals(type)) {
+            // BTC
+            out = new BTCMeta(meta);
+        } else if (MetaType.ExBTC.equals(type)) {
+            // ExBTC
+            out = new BTCMeta(meta);
+        } else if (MetaType.ETH.equals(type)) {
+            // ETH
+            out = new ETHMeta(meta);
+        } else if (MetaType.ExETH.equals(type)) {
+            // ExETH
+            out = new ETHMeta(meta);
+        } else {
+            // unknown type
+            throw TypeError('unknown meta type: ' + type);
+        }
+        return out.isValid() ? out : null;
+    };
+
+    var general_factory = function () {
+        var man = ns.mkm.AccountFactoryManager;
+        return man.generalFactory;
+    };
+
+    /**
+     *  Register meta factories
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
+    Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
+    Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
+    Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
+    Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
 
 })(MingKeMing);

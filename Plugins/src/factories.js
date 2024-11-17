@@ -232,7 +232,7 @@
 
     var Class = ns.type.Class;
     var Address = ns.protocol.Address;
-    var AddressFactory = ns.mkm.AddressFactory;
+    var BaseAddressFactory = ns.mkm.BaseAddressFactory;
     var BTCAddress = ns.mkm.BTCAddress;
     var ETHAddress = ns.mkm.ETHAddress;
 
@@ -241,9 +241,9 @@
      *  ~~~~~~~~~~~~~~~
      */
     var GeneralAddressFactory = function () {
-        AddressFactory.call(this);
+        BaseAddressFactory.call(this);
     };
-    Class(GeneralAddressFactory, AddressFactory, null, null);
+    Class(GeneralAddressFactory, BaseAddressFactory, null, null);
 
     // Override
     GeneralAddressFactory.prototype.createAddress = function(address) {
@@ -251,10 +251,14 @@
             throw new ReferenceError('address empty');
         }
         var len = address.length;
-        if (len === 8 && address.toLowerCase() === 'anywhere') {
-            return Address.ANYWHERE;
-        } else if (len === 10 && address.toLowerCase() === 'everywhere') {
-            return Address.EVERYWHERE;
+        if (len === 8) {
+            if (address.toLowerCase() === 'anywhere') {
+                return Address.ANYWHERE;
+            }
+        } else if (len === 10) {
+            if (address.toLowerCase() === 'everywhere') {
+                return Address.EVERYWHERE;
+            }
         } else if (len === 42) {
             return ETHAddress.parse(address);
         } else if (26 <= len && len <= 35) {
@@ -268,195 +272,5 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~~
      */
     Address.setFactory(new GeneralAddressFactory());
-
-})(MingKeMing);
-
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var MetaType = ns.protocol.MetaType;
-    var Meta = ns.protocol.Meta;
-    var DefaultMeta = ns.mkm.DefaultMeta;
-    var BTCMeta = ns.mkm.BTCMeta;
-    var ETHMeta = ns.mkm.ETHMeta;
-
-    /**
-     *  Meta factory
-     *  ~~~~~~~~~~~~
-     */
-    var GeneralMetaFactory = function (type) {
-        Object.call(this);
-        this.__type = type;
-    };
-    Class(GeneralMetaFactory, Object, [Meta.Factory], null);
-
-    // Override
-    GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
-        if (MetaType.MKM.equals(this.__type)) {
-            // MKM
-            return new DefaultMeta(this.__type, key, seed, fingerprint);
-        } else if (MetaType.BTC.equals(this.__type)) {
-            // BTC
-            return new BTCMeta(this.__type, key);
-        } else if (MetaType.ExBTC.equals(this.__type)) {
-            // ExBTC
-            return new BTCMeta(this.__type, key, seed, fingerprint);
-        } else if (MetaType.ETH.equals(this.__type)) {
-            // ETH
-            return new ETHMeta(this.__type, key);
-        } else if (MetaType.ExETH.equals(this.__type)) {
-            // ExETH
-            return new ETHMeta(this.__type, key, seed, fingerprint);
-        } else {
-            // unknown type
-            return null;
-        }
-    };
-
-    // Override
-    GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
-        var fingerprint = null;
-        if (seed && seed.length > 0) {
-            fingerprint = sKey.sign(ns.format.UTF8.encode(seed));
-        }
-        return this.createMeta(sKey.getPublicKey(), seed, fingerprint);
-    };
-
-    // Override
-    GeneralMetaFactory.prototype.parseMeta = function(meta) {
-        var out;
-        var gf = general_factory();
-        var type = gf.getMetaType(meta);
-        if (MetaType.MKM.equals(type)) {
-            // MKM
-            out = new DefaultMeta(meta);
-        } else if (MetaType.BTC.equals(type)) {
-            // BTC
-            out = new BTCMeta(meta);
-        } else if (MetaType.ExBTC.equals(type)) {
-            // ExBTC
-            out = new BTCMeta(meta);
-        } else if (MetaType.ETH.equals(type)) {
-            // ETH
-            out = new ETHMeta(meta);
-        } else if (MetaType.ExETH.equals(type)) {
-            // ExETH
-            out = new ETHMeta(meta);
-        } else {
-            // unknown type
-            throw TypeError('unknown meta type: ' + type);
-        }
-        return Meta.check(out) ? out : null;
-    };
-
-    var general_factory = function () {
-        var man = ns.mkm.FactoryManager;
-        return man.generalFactory;
-    };
-
-    /**
-     *  Register meta factories
-     *  ~~~~~~~~~~~~~~~~~~~~~~~
-     */
-    Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
-    Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
-    Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
-    Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
-    Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
-
-})(MingKeMing);
-
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var ID = ns.protocol.ID;
-    var Document = ns.protocol.Document;
-    var BaseDocument = ns.mkm.BaseDocument;
-    var BaseBulletin = ns.mkm.BaseBulletin;
-    var BaseVisa = ns.mkm.BaseVisa;
-
-    var doc_type = function (type, identifier) {
-        if (type === '*') {
-            if (identifier.isGroup()) {
-                return Document.BULLETIN;
-            } else if (identifier.isUser()) {
-                return Document.VISA;
-            } else {
-                return Document.PROFILE;
-            }
-        } else {
-            return type;
-        }
-    };
-
-    /**
-     *  Document factory
-     *  ~~~~~~~~~~~~~~~~
-     */
-    var GeneralDocumentFactory = function (type) {
-        Object.call(this);
-        this.__type = type;
-    };
-    Class(GeneralDocumentFactory, Object, [Document.Factory], null);
-
-    // Override
-    GeneralDocumentFactory.prototype.createDocument = function(identifier, data, signature) {
-        var type = doc_type(this.__type, identifier);
-        if (type === Document.VISA) {
-            if (data && signature) {
-                return new BaseVisa(identifier, data, signature)
-            } else {
-                return new BaseVisa(identifier)
-            }
-        } else if (type === Document.BULLETIN) {
-            if (data && signature) {
-                return new BaseBulletin(identifier, data, signature)
-            } else {
-                return new BaseBulletin(identifier)
-            }
-        } else {
-            if (data && signature) {
-                return new BaseDocument(identifier, data, signature)
-            } else {
-                return new BaseDocument(identifier)
-            }
-        }
-    };
-
-    // Override
-    GeneralDocumentFactory.prototype.parseDocument = function(doc) {
-        var identifier = ID.parse(doc['ID']);
-        if (!identifier) {
-            return null;
-        }
-        var gf = general_factory();
-        var type = gf.getDocumentType(doc);
-        if (!type) {
-            type = doc_type('*', identifier);
-        }
-        if (type === Document.VISA) {
-            return new BaseVisa(doc);
-        } else if (type === Document.BULLETIN) {
-            return new BaseBulletin(doc);
-        } else {
-            return new BaseDocument(doc);
-        }
-    };
-
-    var general_factory = function () {
-        var man = ns.mkm.FactoryManager;
-        return man.generalFactory;
-    };
-
-    /**
-     *  Register document factories
-     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     */
-    Document.setFactory('*', new GeneralDocumentFactory('*'));
-    Document.setFactory(Document.VISA, new GeneralDocumentFactory(Document.VISA));
-    Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
-    Document.setFactory(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
 
 })(MingKeMing);

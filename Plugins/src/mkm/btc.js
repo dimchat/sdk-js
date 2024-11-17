@@ -43,7 +43,6 @@
     var RIPEMD160 = ns.digest.RIPEMD160;
     var ConstantString = ns.type.ConstantString;
     var EntityType = ns.protocol.EntityType;
-    var NetworkType = ns.protocol.NetworkType;
     var Address = ns.protocol.Address;
 
     /**
@@ -77,19 +76,17 @@
         return false;
     };
     BTCAddress.prototype.isUser = function () {
-        var type = NetworkType.getEntityType(this.__network)
-        return EntityType.isUser(type);
+        return EntityType.isUser(this.__network);
     };
     BTCAddress.prototype.isGroup = function () {
-        var type = NetworkType.getEntityType(this.__network)
-        return EntityType.isGroup(type);
+        return EntityType.isGroup(this.__network);
     };
 
     /**
      *  Generate address with fingerprint and network ID
      *
      * @param {Uint8Array} fingerprint
-     * @param {NetworkType|Number|char|*} network
+     * @param {uint|Enum} network
      * @returns {BTCAddress}
      */
     BTCAddress.generate = function (fingerprint, network) {
@@ -125,13 +122,14 @@
      */
     BTCAddress.parse = function (string) {
         var len = string.length;
-        if (len < 26/* || len > 34*/) {
+        if (len < 26 || len > 35) {
             return null;
         }
         // decode
         var data = Base58.decode(string);
-        if (data.length !== 25) {
-            throw new RangeError('address length error: ' + string);
+        if (!data || data.length !== 25) {
+            // throw new RangeError('address length error: ' + string);
+            return null;
         }
         // check code
         var prefix = data.subarray(0, 21);

@@ -174,7 +174,7 @@ plugins_tests = [];
 
         var ciphertext;
         for (var i = 0; i < 10000; ++i) {
-            ciphertext = meta.getKey().encrypt(data);
+            ciphertext = meta.getPublicKey().encrypt(data);
             if (ciphertext.length !== 128) {
                 throw new Error('encrypt error');
             }

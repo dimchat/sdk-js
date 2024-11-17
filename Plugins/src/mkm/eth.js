@@ -70,11 +70,12 @@
     };
 
     ETHAddress.getValidateAddress = function (address) {
-        if (is_eth(address)) {
-            var lower = address.substr(2).toLowerCase();
-            return '0x' + eip55(lower);
+        if (!is_eth(address)) {
+            // not an ETH address
+            return null;
         }
-        return null;
+        var lower = address.substr(2).toLowerCase();
+        return '0x' + eip55(lower);
     };
     ETHAddress.isValidate = function (address) {
         return address === this.getValidateAddress(address);
@@ -107,10 +108,11 @@
      * @return null on error
      */
     ETHAddress.parse = function (address) {
-        if (is_eth(address)) {
-            return new ETHAddress(address);
+        if (!is_eth(address)) {
+            // not an ETH address
+            return null;
         }
-        return null;
+        return new ETHAddress(address);
     };
 
     // https://eips.ethereum.org/EIPS/eip-55
