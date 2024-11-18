@@ -3,6 +3,13 @@
 !function (ns) {
     'use strict';
 
+    ns.registerAllFactories();
+
+}(DIMP);
+
+!function (ns) {
+    'use strict';
+
     var Class = ns.type.Class;
     var Facebook = ns.Facebook;
 

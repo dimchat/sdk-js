@@ -39,6 +39,9 @@
     if (typeof ns.cpu !== 'object') {
         ns.cpu = {};
     }
+    if (typeof ns.utils !== 'object') {
+        ns.utils = {};
+    }
 
 })(DIMP);
 
@@ -46,6 +49,7 @@
     'use strict';
 
     var Class = ns.type.Class;
+    var ReceiptCommand = ns.protocol.ReceiptCommand;
 
     var TwinsHelper = function (facebook, messenger) {
         Object.call(this);
@@ -61,6 +65,40 @@
     TwinsHelper.prototype.getMessenger = function () {
         return this.__messenger;
     }
+
+    //
+    //  Convenient responding
+    //
+
+    TwinsHelper.prototype.respondReceipt = function (text, envelope, content, extra) {
+        var res = TwinsHelper.createReceipt(text, envelope, content, extra);
+        return [res];
+    }
+
+    /**
+     *  Receipt command with text, original envelope, serial number & group
+     *
+     * @param {string} text     - respond message
+     * @param {Envelope} envelope - original message envelope
+     * @param {Content} content  - original message content
+     * @param {*} extra    - extra info
+     * @return {ReceiptCommand}
+     */
+    TwinsHelper.createReceipt = function (text, envelope, content, extra) {
+        // create base receipt command with text, original envelope, serial number & group ID
+        var res = ReceiptCommand.create(text, envelope, content);
+        if (extra) {
+            // add extra key-values
+            var keys = Object.keys(extra);
+            var name, value;
+            for (var i = 0; i < keys.length; ++i) {
+                name = keys[i];
+                value = extra[name];
+                res.setValue(name, value);
+            }
+        }
+        return res;
+    };
 
     //-------- namespace --------
     ns.TwinsHelper = TwinsHelper;

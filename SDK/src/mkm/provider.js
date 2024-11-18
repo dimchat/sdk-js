@@ -35,18 +35,76 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var BaseGroup = ns.mkm.BaseGroup;
+    var Class          = ns.type.Class;
+    var BaseGroup      = ns.mkm.BaseGroup;
+    var DocumentHelper = ns.mkm.DocumentHelper;
 
+    /**
+     *  DIM Station Owner
+     *  ~~~~~~~~~~~~~~~~~
+     */
     var ServiceProvider = function (identifier) {
         BaseGroup.call(this, identifier);
     };
     Class(ServiceProvider, BaseGroup, null, {
 
+        // Provider Document
+        getProfile: function () {
+            var docs = this.getDocuments();
+            return DocumentHelper.lastDocument(docs);
+        },
+
         getStations: function () {
-            return this.getMembers();
+            var doc = this.getProfile();
+            if (doc) {
+                var stations = doc.getProperty('stations');
+                if (stations instanceof Array) {
+                    return stations;
+                }
+            }
+            // TODO: load from local storage
+            return [];
+            // return this.getMembers();
         }
     });
+
+    //
+    //  Comparison
+    //
+
+    ServiceProvider.sameStation = function (a, b) {
+        if (a === b) {
+            // same object
+            return true;
+        }
+        return checkIdentifiers(a.getIdentifier(), b.getIdentifier())
+            && checkHosts(a.getHost(), b.getHost())
+            && checkPorts(a.getPort(), b.getPort());
+    };
+
+    var checkIdentifiers = function (a, b) {
+        if (a === b) {
+            // same object
+            return true;
+        } else if (a.isBroadcast() || b.isBroadcast()) {
+            return true;
+        }
+        return a.equals(b);
+    };
+
+    var checkHosts = function (a, b) {
+        if (!a || !b) {
+            return true;
+        }
+        return a === b;
+    };
+
+    var checkPorts = function (a, b) {
+        if (!a || !b) {
+            return true;
+        }
+        return a === b;
+    };
 
     //-------- namespace --------
     ns.mkm.ServiceProvider = ServiceProvider;

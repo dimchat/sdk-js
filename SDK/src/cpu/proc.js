@@ -131,3 +131,82 @@
     ns.cpu.ContentProcessor = ContentProcessor;
 
 })(DIMP);
+
+(function (ns) {
+    'use strict';
+
+    var Interface = ns.type.Interface;
+    var Class     = ns.type.Class;
+    var Command      = ns.protocol.Command;
+    var GroupCommand = ns.protocol.GroupCommand;
+    var ContentProcessor = ns.cpu.ContentProcessor;
+    var TwinsHelper = ns.TwinsHelper;
+
+    /**
+     *  General ContentProcessor Factory
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var ContentProcessorFactory = function (facebook, messenger, creator) {
+        TwinsHelper.call(this, facebook, messenger);
+        this.__creator = creator;
+        this.__content_processors = {}  // uint => ContentProcessor
+        this.__command_processors = {}  // string => ContentProcessor
+    };
+    Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory], null);
+
+    // Override
+    ContentProcessorFactory.prototype.getProcessor = function (content) {
+        var cpu;
+        var type = content.getType();
+        if (Interface.conforms(content, Command)) {
+            var name = content.getCmd();
+            // command processor
+            cpu = this.getCommandProcessor(type, name);
+            if (cpu) {
+                return cpu;
+            } else if (Interface.conforms(content, GroupCommand)) {
+                // group command processor
+                cpu = this.getCommandProcessor(type, 'group');
+                if (cpu) {
+                    return cpu;
+                }
+            }
+        }
+        // content processor
+        return this.getContentProcessor(type);
+    };
+
+    // Override
+    ContentProcessorFactory.prototype.getContentProcessor = function (type) {
+        // if (typeof type !== 'number') {
+        //     type = type.valueOf();
+        // }
+        var cpu = this.__content_processors[type];
+        if (!cpu) {
+            cpu = this.__creator.createContentProcessor(type);
+            if (cpu) {
+                this.__content_processors[type] = cpu;
+            }
+        }
+        return cpu;
+    };
+
+    // Override
+    ContentProcessorFactory.prototype.getCommandProcessor = function (type, cmd) {
+        // if (typeof type !== 'number') {
+        //     type = type.valueOf();
+        // }
+        var cpu = this.__command_processors[cmd];
+        if (!cpu) {
+            cpu = this.__creator.createCommandProcessor(type, cmd);
+            if (cpu) {
+                this.__command_processors[cmd] = cpu;
+            }
+        }
+        return cpu;
+    };
+
+    //-------- namespace --------
+    ns.cpu.ContentProcessorFactory = ContentProcessorFactory;
+
+})(DIMP);

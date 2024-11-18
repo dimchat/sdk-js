@@ -49,22 +49,19 @@
     var BaseContentProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], {
 
-    // Override
-    BaseContentProcessor.prototype.process = function (content, rMsg) {
-        var text = 'Content (type: ' + content.getType() + ') not support yet!';
-        return this.respondText(text, content.getGroup());
-    };
-
-    // protected
-    BaseContentProcessor.prototype.respondText = function (text, group) {
-        var res = new ns.dkd.BaseTextContent(text);
-        if (group) {
-            res.setGroup(group);
+        // Override
+        process: function (content, rMsg) {
+            var text = 'Content not support.';
+            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                'template': 'Content (type: ${type}) not support yet!',
+                'replacements': {
+                    'type': content.getType()
+                }
+            });
         }
-        return [res];
-    };
+    });
 
     /**
      *  Command Processing Unit
@@ -77,10 +74,16 @@
         BaseContentProcessor.call(this, facebook, messenger);
     };
     Class(BaseCommandProcessor, BaseContentProcessor, null, {
+
         // Override
-        process: function (cmd, rMsg) {
-            var text = 'Command (name: ' + cmd.getCmd() + ') not support yet!';
-            return this.respondText(text, cmd.getGroup());
+        process: function (content, rMsg) {
+            var text = 'Command not support.';
+            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                'template': 'Command (name: ${command}) not support yet!',
+                'replacements': {
+                    'command': content.getCmd()
+                }
+            });
         }
     });
 

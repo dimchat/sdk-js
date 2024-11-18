@@ -37,6 +37,7 @@
 
     var Class = ns.type.Class;
     var ForwardContent = ns.protocol.ForwardContent;
+    var ArrayContent   = ns.protocol.ArrayContent;
     var BaseContentProcessor = ns.cpu.BaseContentProcessor;
 
     var ForwardContentProcessor = function (facebook, messenger) {
@@ -54,7 +55,7 @@
             var messenger = this.getMessenger();
             var responses = [];  // List<Content>
             var res;             // Content
-            var results;         // List<Content>
+            var results;         // List<ReliableMessage>
             for (var i = 0; i < secrets.length; ++i) {
                 results = messenger.processReliableMessage(secrets[i]);
                 if (!results) {
@@ -70,7 +71,39 @@
         }
     });
 
+    var ArrayContentProcessor = function (facebook, messenger) {
+        BaseContentProcessor.call(this, facebook, messenger);
+    };
+    Class(ArrayContentProcessor, BaseContentProcessor, null, {
+
+        // Override
+        process: function (content, rMsg) {
+            var array = content.getContents();
+            if (!array) {
+                return null;
+            }
+            // call messenger to process it
+            var messenger = this.getMessenger();
+            var responses = [];  // List<Content>
+            var res;             // Content
+            var results;         // List<Content>
+            for (var i = 0; i < array.length; ++i) {
+                results = messenger.processContent(array[i], rMsg);
+                if (!results) {
+                    res = ArrayContent.create([]);
+                } else if (results.length === 1) {
+                    res = results[0];
+                } else {
+                    res = ArrayContent.create(results);
+                }
+                responses.push(res);
+            }
+            return responses;
+        }
+    });
+
     //-------- namespace --------
     ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
+    ns.cpu.ArrayContentProcessor = ArrayContentProcessor;
 
 })(DIMP);

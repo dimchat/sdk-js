@@ -1,14 +1,14 @@
 ;
 // license: https://mit-license.org
 //
-//  DIM-SDK : Decentralized Instant Messaging Software Development Kit
+//  DIMP : Decentralized Instant Messaging Protocol
 //
-//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//                               Written in 2024 by Moky <albert.moky@gmail.com>
 //
 // =============================================================================
 // The MIT License (MIT)
 //
-// Copyright (c) 2020 Albert Moky
+// Copyright (c) 2024 Albert Moky
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,37 +35,55 @@
 (function (ns) {
     'use strict';
 
-    var Class    = ns.type.Class;
-    var ID       = ns.protocol.ID;
-    var BaseUser = ns.mkm.BaseUser;
+    var Interface = ns.type.Interface;
+    var Meta      = ns.protocol.Meta;
+    var Document  = ns.protocol.Document;
+    var Visa      = ns.protocol.Visa;
 
     /**
-     *  Bot User
-     *  ~~~~~~~~
+     *  Sender's Meta
+     *  ~~~~~~~~~~~~~
+     *  Extends for the first message package of 'Handshake' protocol.
+     *
+     * @param {Meta} meta
+     * @param {Message|Mapper} msg
      */
-    var Bot = function (identifier) {
-        BaseUser.call(this, identifier);
+    var setMeta = function (meta, msg) {
+        msg.setMap('meta', meta);
     };
-    Class(Bot, BaseUser, null, {
+    var getMeta = function (msg) {
+        var meta = msg.getValue('meta');
+        return Meta.parse(meta);
+    };
 
-        // Bot Document
-        getProfile: function () {
-            return this.getVisa();
-        },
-
-        // ICP ID, bot group
-        getProvider: function () {
-            var doc = this.getProfile();
-            if (doc) {
-                var icp = doc.getProperty('ICP');
-                return ID.parse(icp);
-            }
-            return null;
+    /**
+     *  Sender's Visa
+     *  ~~~~~~~~~~~~~
+     *  Extends for the first message package of 'Handshake' protocol.
+     *
+     * @param {Visa} visa document
+     * @param {Message|Mapper} msg
+     */
+    var setVisa = function (visa, msg) {
+        msg.setMap('visa', visa);
+    };
+    var getVisa = function (msg) {
+        var visa = msg.getValue('visa');
+        var doc = Document.parse(visa);
+        if (Interface.conforms(doc, Visa)) {
+            return doc;
         }
-
-    });
+        return null;
+    };
 
     //-------- namespace --------
-    ns.mkm.Bot = Bot;
+    ns.msg.MessageHelper = {
+
+        getMeta: getMeta,
+        setMeta: setMeta,
+
+        getVisa: getVisa,
+        setVisa: setVisa
+    };
 
 })(DIMP);

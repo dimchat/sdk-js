@@ -39,6 +39,10 @@
     var Class = ns.type.Class;
     var BaseContentProcessor = ns.cpu.BaseContentProcessor;
 
+    /**
+     *  Handler for Customized Content
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     var CustomizedContentHandler = Interface(null, null);
 
     /**
@@ -50,10 +54,12 @@
      * @param {ReliableMessage} rMsg      - network message
      * @return {Content[]} responses
      */
-    CustomizedContentHandler.prototype.handleAction = function (act, sender, content, rMsg) {
-        throw new Error('NotImplemented');
-    };
+    CustomizedContentHandler.prototype.handleAction = function (act, sender, content, rMsg) {};
 
+    /**
+     *  Customized Content Processing Unit
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     var CustomizedContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
@@ -84,22 +90,27 @@
         /**
          *  Check App ID
          *
-         * @param {String} app                  - App ID
-         * @param {CustomizedContent|*} content - customized content
-         * @param {ReliableMessage} rMsg        - network message
+         * @param {string} app                   - App ID
+         * @param {CustomizedContent} content    - customized content
+         * @param {ReliableMessage|Message} rMsg - network message
          * @return {Content[]} responses when app not match
          */
         // protected: override for your application
         filterApplication: function (app, content, rMsg) {
-            var text = 'Customized Content (app: ' + app + ') not support yet!';
-            return this.respondText(text, content.getGroup());
+            var text = 'Content not support.';
+            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                'template': 'Customized content (app: ${app}) not support yet!',
+                'replacements': {
+                    'app': app
+                }
+            });
         },
 
         /**
          *  Check Module
          *
-         * @param {String} mod                  - module name
-         * @param {CustomizedContent|*} content - customized content
+         * @param {string} mod                  - module name
+         * @param {CustomizedContent} content - customized content
          * @param {ReliableMessage} rMsg        - network message
          * @return {CustomizedContentHandler} handler
          */
@@ -110,12 +121,19 @@
             return this;
         },
 
-        // Override
+        // Override: override for customized actions
         handleAction: function (act, sender, content, rMsg) {
             var app = content.getApplication();
             var mod = content.getModule();
-            var text = 'Customized Content (app: ' + app + ', mod: ' + mod + ', act: ' + act + ') not support yet!';
-            return this.respondText(text, content.getGroup());
+            var text = 'Content not support.';
+            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
+                'replacements': {
+                    'app': app,
+                    'mod': mod,
+                    'act': act
+                }
+            });
         }
     });
 

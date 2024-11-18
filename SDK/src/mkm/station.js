@@ -37,11 +37,14 @@
 
     var Class      = ns.type.Class;
     var BaseObject = ns.type.BaseObject;
+    var Converter  = ns.type.Converter;
 
-    var ID       = ns.protocol.ID;
-    var Address  = ns.protocol.Address;
-    var User     = ns.mkm.User;
-    var BaseUser = ns.mkm.BaseUser;
+    var ID      = ns.protocol.ID;
+    var Address = ns.protocol.Address;
+
+    var User           = ns.mkm.User;
+    var BaseUser       = ns.mkm.BaseUser;
+    var DocumentHelper = ns.mkm.DocumentHelper;
 
     /**
      *  Station for DIM network
@@ -73,6 +76,7 @@
         this.__user = user;
         this.__host = host;
         this.__port = port;
+        this.__isp = null;
     };
     Class(Station, BaseObject, [User], {
 
@@ -82,6 +86,8 @@
                 return true;
             } else if (!other) {
                 return false;
+            } else if (other instanceof Station) {
+                return ns.mkm.ServiceProvider.sameStation(other, this);
             }
             return this.__user.equals(other);
         },
@@ -123,8 +129,8 @@
         },
 
         // Override
-        getDocument: function (type) {
-            return this.__user.getDocument(type);
+        getDocuments: function () {
+            return this.__user.getDocuments();
         },
 
         //-------- User
@@ -179,23 +185,50 @@
         },
 
         getHost: function () {
-            if (this.__host === null) {
-                var doc = this.getDocument('*');
-                if (doc) {
-                    this.__host = doc.getProperty('host');
-                }
+            if (!this.__host) {
+                this.reload();
             }
             return this.__host;
         },
 
         getPort: function () {
-            if (this.__port === 0) {
-                var doc = this.getDocument('*');
-                if (doc) {
-                    this.__port = doc.getProperty('port');
-                }
+            if (!this.__port) {
+                this.reload();
             }
             return this.__port;
+        },
+
+        getProvider: function () {
+            if (!this.__isp) {
+                this.reload();
+            }
+            return this.__isp;
+        },
+
+        getProfile: function () {
+            var docs = this.getDocuments();
+            return DocumentHelper.lastDocument(docs);
+        },
+
+        reload: function () {
+            var doc = this.getProfile();
+            if (doc) {
+                var host = doc.getProperty('host');
+                host = Converter.getString(host, null);
+                if (host) {
+                    this.__host = host;
+                }
+                var port = doc.getProperty('port');
+                port = Converter.getInt(port, 0);
+                if (port > 0) {
+                    this.__port = port;
+                }
+                var isp = doc.getProperty('ISP');
+                isp = ID.parse(isp);
+                if (isp) {
+                    this.__isp = isp;
+                }
+            }
         }
     });
 
