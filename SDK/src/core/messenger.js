@@ -35,66 +35,30 @@
 (function (ns) {
     'use strict';
 
-    var Interface = ns.type.Interface;
-
-    /**
-     *  Cipher Key Delegate
-     *  ~~~~~~~~~~~~~~~~~~~
-     */
-    var CipherKeyDelegate = Interface(null, null);
-
-    /**
-     *  Get cipher key for encrypt message from 'sender' to 'receiver'
-     *
-     * @param {ID} from          - sender (user or contact ID)
-     * @param {ID} to            - receiver (contact or user/group ID)
-     * @param {boolean} generate - generate when key not exists
-     * @returns {SymmetricKey}
-     */
-    CipherKeyDelegate.prototype.getCipherKey = function (from, to, generate) {
-        throw new Error('NotImplemented');
-    };
-
-    /**
-     *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
-     *
-     * @param {ID} from          - sender (user or contact ID)
-     * @param {ID} to            - receiver (contact or user/group ID)
-     * @param {SymmetricKey} key
-     */
-    CipherKeyDelegate.prototype.cacheCipherKey = function (from, to, key) {
-        throw new Error('NotImplemented');
-    };
-
-    //-------- namespace --------
-    ns.CipherKeyDelegate = CipherKeyDelegate;
-
-})(DIMP);
-
-(function (ns) {
-    'use strict';
-
     var Class = ns.type.Class;
+    var Packer = ns.Packer;
+    var Processor = ns.Processor;
+    var CipherKeyDelegate = ns.CipherKeyDelegate;
     var Transceiver = ns.Transceiver;
 
     var Messenger = function () {
         Transceiver.call(this);
     };
-    Class(Messenger, Transceiver, null, null);
+    Class(Messenger, Transceiver, [Packer, Processor], null);
 
     // protected
     Messenger.prototype.getCipherKeyDelegate = function () {
-        throw new Error('NotImplemented');
+        throw new Error('Messenger::getCipherKeyDelegate');
     };
 
     // protected
     Messenger.prototype.getPacker = function () {
-        throw new Error('NotImplemented');
+        throw new Error('Messenger::getPacker');
     };
 
     // protected
     Messenger.prototype.getProcessor = function () {
-        throw new Error('NotImplemented');
+        throw new Error('Messenger::getProcessor');
     };
 
     //
@@ -102,26 +66,32 @@
     //
 
     // Override
-    Messenger.prototype.getCipherKey = function (from, to, generate) {
+    Messenger.prototype.getEncryptKey = function (iMsg) {
+        var sender = iMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(iMsg);
         var delegate = this.getCipherKeyDelegate();
-        return delegate.getCipherKey(from, to, generate);
+        return delegate.getCipherKey(sender, target, true);
     };
 
     // Override
-    Messenger.prototype.cacheCipherKey = function (from, to, key) {
+    Messenger.prototype.getDecryptKey = function (sMsg) {
+        var sender = sMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
         var delegate = this.getCipherKeyDelegate();
-        return delegate.cacheCipherKey(from, to, key);
+        return delegate.getCipherKey(sender, target, false);
+    };
+
+    // Override
+    Messenger.prototype.cacheDecryptKey = function (key, sMsg) {
+        var sender = sMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
+        var delegate = this.getCipherKeyDelegate();
+        return delegate.cacheCipherKey(sender, target, key);
     };
 
     //
     //  Interfaces for Packing Message
     //
-
-    // Override
-    Messenger.prototype.getOvertGroup = function (content) {
-        var packer = this.getPacker();
-        return packer.getOvertGroup(content);
-    };
 
     // Override
     Messenger.prototype.encryptMessage = function (iMsg) {
@@ -198,42 +168,29 @@
     //
 
     // Override
-    Messenger.prototype.deserializeKey = function (data, sender, receiver, sMsg) {
+    Messenger.prototype.deserializeKey = function (data, sMsg) {
         if (!data) {
-            // get key fro cache
-            return this.getCipherKey(sender, receiver, false);
+            // get key from cache with direction: sender -> receiver(group)
+            return this.getDecryptKey(sMsg);
         }
-        return Transceiver.prototype.deserializeKey.call(this, data, sender, receiver, sMsg);
+        return Transceiver.prototype.deserializeKey.call(this, data, sMsg);
     };
 
     // Override
     Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
         var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
-        if (!is_broadcast(sMsg)) {
-            // check and cache key for reuse
-            var group = this.getOvertGroup(content);
-            if (group) {
-                // group message (excludes group command)
-                // cache the key with direction (sender => group)
-                this.cacheCipherKey(sMsg.getSender(), group, pwd);
-            } else {
-                // personal message or (group) command
-                // cache key with direction (sender => receiver)
-                this.cacheCipherKey(sMsg.getSender(), sMsg.getReceiver(), pwd);
-            }
+
+        // cache decrypt key when success
+        if (!content) {
+            // assert(false, 'content error: ${data.length}');
+        } else {
+            // cache the key with direction: sender -> receiver(group)
+            this.cacheDecryptKey(pwd, sMsg);
         }
+
         // NOTICE: check attachment for File/Image/Audio/Video message content
         //         after deserialize content, this job should be do in subclass
         return content;
-    };
-
-    var is_broadcast = function (msg) {
-        // var receiver = msg.getGroup();
-        // if (!receiver) {
-        //     receiver = msg.getReceiver();
-        // }
-        // return receiver.isBroadcast();
-        return Transceiver.prototype.isBroadcast(msg);
     };
 
     //-------- namespace --------

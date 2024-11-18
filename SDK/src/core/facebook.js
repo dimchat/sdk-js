@@ -43,6 +43,7 @@
     var EntityType = ns.protocol.EntityType;
     var ID = ns.protocol.ID;
     var Meta = ns.protocol.Meta;
+    var DocumentHelper = ns.mkm.DocumentHelper;
     var BaseUser = ns.mkm.BaseUser;
     var BaseGroup = ns.mkm.BaseGroup;
     var Bot = ns.mkm.Bot;
@@ -53,68 +54,64 @@
 
     var Facebook = function() {
         Barrack.call(this);
-        // memory caches
-        this.__users  = {};  // String -> User
-        this.__groups = {};  // String -> Group
     };
     Class(Facebook, Barrack, null, {
 
-        /**
-         *  Document checking
-         *
-         * @param {Document|TAI} doc - entity document
-         * @return {boolean} true on accepted
-         */
-        checkDocument: function (doc) {
-            var identifier = doc.getIdentifier();
-            if (!identifier) {
-                return false;
-            }
-            // NOTICE: if this is a group profile,
-            //             verify it with each member's meta.key
-            //         else (this is a user profile)
-            //             verify it with the user's meta.key
-            var meta;
-            if (identifier.isGroup()) {
-                // check by owner
-                var owner = this.getOwner(identifier);
-                if (!owner) {
-                    if (EntityType.GROUP.equals(identifier.getType())) {
-                        // NOTICE: if this is a polylogue profile
-                        //             verify it with the founder's meta.key
-                        //             (which equals to the group's meta.key)
-                        meta = this.getMeta(identifier);
-                    } else {
-                        // FIXME: owner not found for this group
-                        return false;
-                    }
-                } else {
-                    meta = this.getMeta(owner);
+        getArchivist: function () {
+            throw Error('Facebook::getArchivist');
+        },
+
+        // Override
+        createUser: function (identifier) {
+            // check visa key
+            if (!identifier.isBroadcast()) {
+                var pKey = this.getPublicKeyForEncryption(identifier);
+                if (!pKey) {
+                    // visa.key not found
+                    return null;
                 }
-            } else {
-                meta = this.getMeta(identifier);
+                // NOTICE: if visa.key exists, then visa & meta must exist too.
             }
-            return meta && doc.verify(meta.getKey());
-        },
-
-        //-------- group membership
-
-        isFounder: function (member, group) {
-            // check member's public key with group's meta.key
-            var gMeta = this.getMeta(group);
-            var mMeta = this.getMeta(member);
-            return Meta.matchKey(mMeta.getKey(), gMeta);
-        },
-
-        isOwner: function (member, group) {
-            if (EntityType.GROUP.equals(group.getType())) {
-                // this is a polylogue
-                return this.isFounder(member, group);
+            var network = identifier.getType();
+            // check user type
+            if (EntityType.STATION.equals(network)) {
+                return new Station(identifier);
+            } else if (EntityType.BOT.equals(network)) {
+                return new Bot(identifier);
             }
-            throw new Error('only Polylogue so far');
+            // general user, or 'anyone@anywhere'
+            return new BaseUser(identifier);
         },
 
-        //-------- EntityDelegate --------
+        // Override
+        createGroup: function (identifier) {
+            // check members
+            if (!identifier.isBroadcast()) {
+                var members = this.getMembers(identifier);
+                if (!members || members.length === 0) {
+                    // group members not found
+                    return null;
+                }
+                // NOTICE: if members exist, then owner (founder) must exist,
+                //         and bulletin & meta must exist too.
+            }
+            var network = identifier.getType();
+            // check group type
+            if (EntityType.ISP.equals(network)) {
+                return new ServiceProvider(identifier);
+            }
+            // general group, or 'everyone@everywhere'
+            return new BaseGroup(identifier);
+        },
+
+        /**
+         *  Get all local users (for decrypting received message)
+         *
+         * @return {User[]} users with private key
+         */
+        getLocalUsers: function () {
+            throw new Error('Facebook::getLocalUsers');
+        },
 
         // Override
         selectLocalUser: function (receiver) {
@@ -160,159 +157,94 @@
             return null;
         },
 
-        //-------- Entity Delegate
+        /**
+         *  Save meta for entity ID (must verify first)
+         *
+         * @param {Meta} meta
+         * @param {ID} identifier
+         * @returns {boolean}
+         */
+        saveMeta: function (meta, identifier) {
+            if (meta.isValid() && meta.matchIdentifier(identifier)) {
+                // meta ok
+            } else {
+                // meta not valid
+                return false;
+            }
+            // check old meta
+            var old = this.getMeta(identifier);
+            if (old) {
+                return true;
+            }
+            // meta not exists yet, save it
+            var archivist = this.getArchivist();
+            return archivist.saveMeta(meta, identifier);
+        },
 
-        // Override
-        getUser: function (identifier) {
-            // 1. get from user cache
-            var user = this.__users[identifier.toString()];
-            if (!user) {
-                // 2. create user and cache it
-                user = this.createUser(identifier);
-                if (user) {
-                    cacheUser.call(this, user);
+        /**
+         *  Save profile with entity ID (must verify first)
+         *
+         * @param {Document|TAI} doc
+         * @returns {boolean}
+         */
+        saveDocument: function (doc) {
+            var identifier = doc.getIdentifier();
+            if (!identifier) {
+                // document error
+                return false;
+            }
+            if (!doc.isValid()) {
+                // try to verify
+                var meta = this.getMeta(identifier);
+                if (!meta) {
+                    // ERROR: meta not found
+                    return false;
+                } else if (doc.verify(meta.getPublicKey())) {
+                    // document ok
+                } else {
+                    // failed to verify document
+                    return false;
                 }
             }
-            return user;
+            var type = doc.getType();
+            if (!type) {
+                type = '*';
+            }
+            // check old documents with type
+            var documents = this.getDocuments(identifier);
+            var old = DocumentHelper.lastDocument(documents, type);
+            if (old && DocumentHelper.isExpired(doc, old)) {
+                // drop expired document
+                return false;
+            }
+            var archivist = this.getArchivist();
+            return archivist.saveDocument(doc);
         },
 
         // Override
-        getGroup: function (identifier) {
-            // 1. get from group cache
-            var group = this.__groups[identifier.toString()];
-            if (!group) {
-                // 2. create group and cache it
-                group = this.createGroup(identifier);
-                if (group) {
-                    cacheGroup.call(this, group);
-                }
-            }
-            return group;
+        getMeta: function (identifier) {
+            // if (identifier.isBroadcast()) {
+            //     // broadcast ID has no meta
+            //     return null;
+            // }
+            var archivist = this.getArchivist();
+            var meta = archivist.getMeta(identifier);
+            archivist.checkMeta(identifier, meta);
+            return meta;
+        },
+
+        // Override
+        getDocuments: function (identifier) {
+            // if (identifier.isBroadcast()) {
+            //     // broadcast ID has no documents
+            //     return null;
+            // }
+            var archivist = this.getArchivist();
+            var docs = archivist.getDocuments(identifier);
+            archivist.checkDocuments(identifier, docs);
+            return docs;
         }
     });
-
-    //
-    //  cache
-    //
-
-    var cacheUser = function (user) {
-        if (!user.getDataSource()) {
-            user.setDataSource(this);
-        }
-        this.__users[user.getIdentifier().toString()] = user;
-        return true;
-    };
-
-    var cacheGroup = function (group) {
-        if (!group.getDataSource()) {
-            group.setDataSource(this);
-        }
-        this.__groups[group.getIdentifier().toString()] = group;
-        return true;
-    };
-
-    /**
-     * Call it when received 'UIApplicationDidReceiveMemoryWarningNotification',
-     * this will remove 50% of cached objects
-     *
-     * @return number of survivors
-     */
-    Facebook.prototype.reduceMemory = function () {
-        var finger = 0;
-        finger = ns.mkm.thanos(this.__users, finger);
-        finger = ns.mkm.thanos(this.__groups, finger);
-        return finger >> 1;
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save meta for entity ID (must verify first)
-     *
-     * @param {Meta} meta
-     * @param {ID} identifier
-     * @returns {boolean}
-     */
-    Facebook.prototype.saveMeta = function (meta, identifier) {
-        throw new Error('NotImplemented');
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save profile with entity ID (must verify first)
-     *
-     * @param {Document} doc
-     * @returns {boolean}
-     */
-    Facebook.prototype.saveDocument = function (doc) {
-        throw new Error('NotImplemented');
-    };
-
-    // noinspection JSUnusedLocalSymbols
-    /**
-     *  Save members of group
-     *
-     * @param {ID[]} members - member ID list
-     * @param {ID} identifier - group ID
-     * @returns {boolean}
-     */
-    Facebook.prototype.saveMembers = function (members, identifier) {
-        throw new Error('NotImplemented');
-    };
-
-    // protected
-    Facebook.prototype.createUser = function (identifier) {
-        if (identifier.isBroadcast()) {
-            // create user 'anyone@anywhere'
-            return new BaseUser(identifier);
-        }
-        // make sure meta exists
-        // TODO: make sure visa key exists before calling this
-        var type = identifier.getType();
-        // check user type
-        if (EntityType.STATION.equals(type)) {
-            return new Station(identifier);
-        } else if (EntityType.BOT.equals(type)) {
-            return new Bot(identifier);
-        }
-        //assert(EntityType.USER.equals(type), "Unsupported user type: " + type);
-        return new BaseUser(identifier);
-    };
-
-    // protected
-    Facebook.prototype.createGroup = function (identifier) {
-        if (identifier.isBroadcast()) {
-            // create group 'everyone@everywhere'
-            return new BaseGroup(identifier);
-        }
-        // make sure meta exists
-        var type = identifier.getType();
-        // check group type
-        if (EntityType.ISP.equals(type)) {
-            return new ServiceProvider(identifier);
-        }
-        //assert(EntityType.GROUP.equals(type), "Unsupported group type: " + type);
-        return new BaseGroup(identifier);
-    };
-
-    /**
-     *  Get all local users (for decrypting received message)
-     *
-     * @return {User[]} users with private key
-     */
-    Facebook.prototype.getLocalUsers = function () {
-        throw new Error('NotImplemented');
-    };
-
-    /*/
-    // Get current user (for signing and sending message)
-    Facebook.prototype.getCurrentUser = function () {
-        var users = this.getLocalUsers();
-        if (!users || users.length === 0) {
-            return null;
-        }
-        return users[0];
-    };
-    /*/
 
     //-------- namespace --------
     ns.Facebook = Facebook;

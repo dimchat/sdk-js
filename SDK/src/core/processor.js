@@ -63,7 +63,19 @@
             return new ns.cpu.ContentProcessorCreator(facebook, messenger);
         },
 
-        //-------- Processor
+        getProcessor: function (content) {
+            return this.__factory.getProcessor(content);
+        },
+        getContentProcessor: function (type) {
+            return this.__factory.getContentProcessor(type);
+        },
+        getCommandProcessor: function (type, cmd) {
+            return this.__factory.getCommandProcessor(type, cmd);
+        },
+
+        //
+        //  Processing Message
+        //
 
         // Override
         processPackage: function (data) {
@@ -72,17 +84,17 @@
             var rMsg = messenger.deserializeMessage(data);
             if (!rMsg) {
                 // no valid message received
-                return null;
+                return [];
             }
             // 2. process message
             var responses = messenger.processReliableMessage(rMsg);
-            if (!responses) {
+            if (!responses || responses.length === 0) {
                 // nothing to respond
-                return null;
+                return [];
             }
             // 3. serialize messages
-            var packages = [];
-            var pack;
+            var packages = [];  // Uint8Array[]
+            var pack;           // Uint8Array
             for (var i = 0; i < responses.length; ++i) {
                 pack = messenger.serializeMessage(responses[i]);
                 if (!pack) {
@@ -102,17 +114,17 @@
             var sMsg = messenger.verifyMessage(rMsg);
             if (!sMsg) {
                 // waiting for sender's meta if not exists
-                return null;
+                return [];
             }
             // 2. process message
             var responses = messenger.processSecureMessage(sMsg, rMsg);
-            if (!responses) {
+            if (!responses || responses.length === 0) {
                 // nothing to respond
-                return null;
+                return [];
             }
             // 3. sign messages
-            var messages = [];
-            var msg;
+            var messages = [];  // ReliableMessage[]
+            var msg;            // ReliableMessage
             for (var i = 0; i < responses.length; ++i) {
                 msg = messenger.signMessage(responses[i]);
                 if (!msg) {
@@ -133,17 +145,17 @@
             if (!iMsg) {
                 // cannot decrypt this message, not for you?
                 // delivering message to other receiver?
-                return null;
+                return [];
             }
             // 2. process message
             var responses = messenger.processInstantMessage(iMsg, rMsg);
-            if (!responses) {
+            if (!responses || responses.length === 0) {
                 // nothing to respond
-                return null;
+                return [];
             }
             // 3. encrypt message
-            var messages = [];
-            var msg;
+            var messages = [];  // SecureMessage[]
+            var msg;            // SecureMessage
             for (var i = 0; i < responses.length; ++i) {
                 msg = messenger.encryptMessage(responses[i]);
                 if (!msg) {
@@ -160,21 +172,26 @@
             var messenger = this.getMessenger();
             // 1. process content
             var responses = messenger.processContent(iMsg.getContent(), rMsg);
-            if (!responses) {
+            if (!responses || responses.length === 0) {
                 // nothing to respond
-                return null;
+                return [];
             }
 
             // 2. select a local user to build message
             var sender = iMsg.getSender();
             var receiver = iMsg.getReceiver();
+
             var facebook = this.getFacebook();
             var user = facebook.selectLocalUser(receiver);
+            if (!user) {
+                // receiver error
+                return [];
+            }
             var uid = user.getIdentifier();
 
             // 3. pack messages
-            var messages = [];
-            var res, env, msg;
+            var messages = [];  // InstantMessage[]
+            var res, env, msg;  // Content, Envelope, InstantMessage
             for (var i = 0; i < responses.length; ++i) {
                 res = responses[i];
                 if (!res) {
@@ -204,18 +221,6 @@
             // TODO: override to filter the response(s)
         }
     });
-
-    MessageProcessor.prototype.getProcessor = function (content) {
-        return this.__factory.getProcessor(content);
-    };
-
-    MessageProcessor.prototype.getContentProcessor = function (type) {
-        return this.__factory.getContentProcessor(type);
-    };
-
-    MessageProcessor.prototype.getCommandProcessor = function (type, cmd) {
-        return this.__factory.getCommandProcessor(type, cmd);
-    };
 
     //-------- namespace --------
     ns.MessageProcessor = MessageProcessor;

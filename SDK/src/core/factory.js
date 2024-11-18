@@ -38,22 +38,22 @@
     var Class = ns.type.Class;
     var Content = ns.protocol.Content;
     var Command = ns.protocol.Command;
-    var BaseCommand = ns.dkd.cmd.BaseCommand;
+    var BaseCommand        = ns.dkd.cmd.BaseCommand;
     var BaseHistoryCommand = ns.dkd.cmd.BaseHistoryCommand;
-    var BaseGroupCommand = ns.dkd.cmd.BaseGroupCommand;
+    var BaseGroupCommand   = ns.dkd.cmd.BaseGroupCommand;
 
     /**
      *  Content Factory
      *  ~~~~~~~~~~~~~~~
      */
-    var ContentFactory = function (clazz) {
+    var ContentParser = function (clazz) {
         Object.call(this);
         this.__class = clazz;
     };
-    Class(ContentFactory, Object, [Content.Factory], null);
+    Class(ContentParser, Object, [Content.Factory], null);
 
     // Override
-    ContentFactory.prototype.parseContent = function (content) {
+    ContentParser.prototype.parseContent = function (content) {
         return new this.__class(content);
     };
 
@@ -61,14 +61,14 @@
      *  Command Factory
      *  ~~~~~~~~~~~~~~~
      */
-    var CommandFactory = function (clazz) {
+    var CommandParser = function (clazz) {
         Object.call(this);
         this.__class = clazz;
     };
-    Class(CommandFactory, Object, [Command.Factory], null);
+    Class(CommandParser, Object, [Command.Factory], null);
 
     // Override
-    CommandFactory.prototype.parseCommand = function (content) {
+    CommandParser.prototype.parseCommand = function (content) {
         return new this.__class(content);
     };
 
@@ -82,14 +82,14 @@
     Class(GeneralCommandFactory, Object, [Content.Factory, Command.Factory], null);
 
     var general_factory = function () {
-        var man = ns.dkd.cmd.FactoryManager;
+        var man = ns.dkd.cmd.CommandFactoryManager;
         return man.generalFactory;
     };
 
     // Override
     GeneralCommandFactory.prototype.parseContent = function (content) {
         var gf = general_factory();
-        var cmd = gf.getCmd(content);
+        var cmd = gf.getCmd(content, '*');
         // get factory by command name
         var factory = gf.getCommandFactory(cmd);
         if (!factory) {
@@ -135,7 +135,7 @@
     // Override
     GroupCommandFactory.prototype.parseContent = function (content) {
         var gf = general_factory();
-        var cmd = gf.getCmd(content);
+        var cmd = gf.getCmd(content, '*');
         // get factory by command name
         var factory = gf.getCommandFactory(cmd);
         if (!factory) {
@@ -150,8 +150,8 @@
     };
 
     //-------- namespace --------
-    ns.ContentFactory = ContentFactory;
-    ns.CommandFactory = CommandFactory;
+    ns.ContentParser = ContentParser;
+    ns.CommandParser = CommandParser;
     ns.GeneralCommandFactory = GeneralCommandFactory;
     ns.HistoryCommandFactory = HistoryCommandFactory;
     ns.GroupCommandFactory = GroupCommandFactory;
@@ -161,34 +161,32 @@
 (function (ns) {
     'use strict';
 
-    var Envelope = ns.protocol.Envelope;
-    var InstantMessage = ns.protocol.InstantMessage;
-    var SecureMessage = ns.protocol.SecureMessage;
+    var Envelope        = ns.protocol.Envelope;
+    var InstantMessage  = ns.protocol.InstantMessage;
+    var SecureMessage   = ns.protocol.SecureMessage;
     var ReliableMessage = ns.protocol.ReliableMessage;
 
-    var ContentType = ns.protocol.ContentType;
-    var Content = ns.protocol.Content;
-    var Command = ns.protocol.Command;
+    var ContentType  = ns.protocol.ContentType;
+    var Content      = ns.protocol.Content;
+    var Command      = ns.protocol.Command;
     var GroupCommand = ns.protocol.GroupCommand;
 
-    var EnvelopeFactory = ns.dkd.EnvelopeFactory;
-    var InstantMessageFactory = ns.dkd.InstantMessageFactory;
-    var SecureMessageFactory = ns.dkd.SecureMessageFactory;
-    var ReliableMessageFactory = ns.dkd.ReliableMessageFactory;
+    var MessageFactory = ns.msg.MessageFactory;
 
-    var ContentFactory = ns.ContentFactory;
-    var CommandFactory = ns.CommandFactory;
+    var ContentParser = ns.ContentParser;
+    var CommandParser = ns.CommandParser;
     var GeneralCommandFactory = ns.GeneralCommandFactory;
     var HistoryCommandFactory = ns.HistoryCommandFactory;
-    var GroupCommandFactory = ns.GroupCommandFactory;
+    var GroupCommandFactory   = ns.GroupCommandFactory;
 
     var registerMessageFactories = function () {
+        var factory = new MessageFactory();
         // Envelope factory
-        Envelope.setFactory(new EnvelopeFactory());
+        Envelope.setFactory(factory);
         // Message factories
-        InstantMessage.setFactory(new InstantMessageFactory());
-        SecureMessage.setFactory(new SecureMessageFactory());
-        ReliableMessage.setFactory(new ReliableMessageFactory());
+        InstantMessage.setFactory(factory);
+        SecureMessage.setFactory(factory);
+        ReliableMessage.setFactory(factory);
     };
 
     /**
@@ -197,23 +195,26 @@
     var registerContentFactories = function () {
 
         // Text
-        Content.setFactory(ContentType.TEXT, new ContentFactory(ns.dkd.BaseTextContent));
+        Content.setFactory(ContentType.TEXT, new ContentParser(ns.dkd.BaseTextContent));
 
         // File
-        Content.setFactory(ContentType.FILE, new ContentFactory(ns.dkd.BaseFileContent));
+        Content.setFactory(ContentType.FILE, new ContentParser(ns.dkd.BaseFileContent));
         // Image
-        Content.setFactory(ContentType.IMAGE, new ContentFactory(ns.dkd.ImageFileContent));
+        Content.setFactory(ContentType.IMAGE, new ContentParser(ns.dkd.ImageFileContent));
         // Audio
-        Content.setFactory(ContentType.AUDIO, new ContentFactory(ns.dkd.AudioFileContent));
+        Content.setFactory(ContentType.AUDIO, new ContentParser(ns.dkd.AudioFileContent));
         // Video
-        Content.setFactory(ContentType.VIDEO, new ContentFactory(ns.dkd.VideoFileContent));
+        Content.setFactory(ContentType.VIDEO, new ContentParser(ns.dkd.VideoFileContent));
 
         // Web Page
-        Content.setFactory(ContentType.PAGE, new ContentFactory(ns.dkd.WebPageContent));
+        Content.setFactory(ContentType.PAGE, new ContentParser(ns.dkd.WebPageContent));
+
+        // Name Card
+        Content.setFactory(ContentType.NAME_CARD, new ContentParser(ns.dkd.NameCardContent));
 
         // Money
-        Content.setFactory(ContentType.MONEY, new ContentFactory(ns.dkd.BaseMoneyContent));
-        Content.setFactory(ContentType.TRANSFER, new ContentFactory(ns.dkd.TransferMoneyContent));
+        Content.setFactory(ContentType.MONEY, new ContentParser(ns.dkd.BaseMoneyContent));
+        Content.setFactory(ContentType.TRANSFER, new ContentParser(ns.dkd.TransferMoneyContent));
         // ...
 
         // Command
@@ -222,20 +223,20 @@
         // History Command
         Content.setFactory(ContentType.HISTORY, new HistoryCommandFactory());
 
-        // Content Array
-        Content.setFactory(ContentType.ARRAY, new ContentFactory(ns.dkd.ListContent));
-
         /*/
         // Application Customized
-        Content.setFactory(ContentType.CUSTOMIZED, new ContentFactory(ns.dkd.AppCustomizedContent));
-        Content.setFactory(ContentType.APPLICATION, new ContentFactory(ns.dkd.AppCustomizedContent));
+        Content.setFactory(ContentType.CUSTOMIZED, new ContentParser(ns.dkd.AppCustomizedContent));
+        Content.setFactory(ContentType.APPLICATION, new ContentParser(ns.dkd.AppCustomizedContent));
         /*/
 
+        // Content Array
+        Content.setFactory(ContentType.ARRAY, new ContentParser(ns.dkd.ListContent));
+
         // Top-Secret
-        Content.setFactory(ContentType.FORWARD, new ContentFactory(ns.dkd.SecretContent));
+        Content.setFactory(ContentType.FORWARD, new ContentParser(ns.dkd.SecretContent));
 
         // unknown content type
-        Content.setFactory(0, new ContentFactory(ns.dkd.BaseContent));
+        Content.setFactory(0, new ContentParser(ns.dkd.BaseContent));
     };
 
     /**
@@ -244,19 +245,27 @@
     var registerCommandFactories = function () {
 
         // Meta Command
-        Command.setFactory(Command.META, new CommandFactory(ns.dkd.cmd.BaseMetaCommand));
+        Command.setFactory(Command.META, new CommandParser(ns.dkd.cmd.BaseMetaCommand));
 
         // Document Command
-        Command.setFactory(Command.DOCUMENT, new CommandFactory(ns.dkd.cmd.BaseDocumentCommand));
+        Command.setFactory(Command.DOCUMENT, new CommandParser(ns.dkd.cmd.BaseDocumentCommand));
+
+        // Receipt Command
+        Command.setFactory(Command.RECEIPT, new CommandParser(ns.dkd.cmd.BaseReceiptCommand));
 
         // Group Commands
         Command.setFactory('group', new GroupCommandFactory());
-        Command.setFactory(GroupCommand.INVITE, new CommandFactory(ns.dkd.cmd.InviteGroupCommand));
-        Command.setFactory(GroupCommand.EXPEL, new CommandFactory(ns.dkd.cmd.ExpelGroupCommand));
-        Command.setFactory(GroupCommand.JOIN, new CommandFactory(ns.dkd.cmd.JoinGroupCommand));
-        Command.setFactory(GroupCommand.QUIT, new CommandFactory(ns.dkd.cmd.QuitGroupCommand));
-        Command.setFactory(GroupCommand.QUERY, new CommandFactory(ns.dkd.cmd.QueryGroupCommand));
-        Command.setFactory(GroupCommand.RESET, new CommandFactory(ns.dkd.cmd.ResetGroupCommand));
+        Command.setFactory(GroupCommand.INVITE, new CommandParser(ns.dkd.cmd.InviteGroupCommand));
+        // 'expel' is deprecated (use 'reset' instead)
+        Command.setFactory(GroupCommand.EXPEL, new CommandParser(ns.dkd.cmd.ExpelGroupCommand));
+        Command.setFactory(GroupCommand.JOIN, new CommandParser(ns.dkd.cmd.JoinGroupCommand));
+        Command.setFactory(GroupCommand.QUIT, new CommandParser(ns.dkd.cmd.QuitGroupCommand));
+        Command.setFactory(GroupCommand.QUERY, new CommandParser(ns.dkd.cmd.QueryGroupCommand));
+        Command.setFactory(GroupCommand.RESET, new CommandParser(ns.dkd.cmd.ResetGroupCommand));
+        // Group Admin Commands
+        Command.setFactory(GroupCommand.HIRE, new CommandParser(ns.dkd.cmd.HireGroupCommand));
+        Command.setFactory(GroupCommand.FIRE, new CommandParser(ns.dkd.cmd.FireGroupCommand));
+        Command.setFactory(GroupCommand.RESIGN, new CommandParser(ns.dkd.cmd.ResignGroupCommand));
     };
 
     /**
@@ -273,10 +282,11 @@
         //
         //  Register customized factories
         //
-        Content.setFactory(ContentType.CUSTOMIZED, new ContentFactory(ns.dkd.AppCustomizedContent));
-        Content.setFactory(ContentType.APPLICATION, new ContentFactory(ns.dkd.AppCustomizedContent));
+        Content.setFactory(ContentType.CUSTOMIZED, new ContentParser(ns.dkd.AppCustomizedContent));
+        Content.setFactory(ContentType.APPLICATION, new ContentParser(ns.dkd.AppCustomizedContent));
     };
 
+    //-------- namespace --------
     ns.registerMessageFactories = registerMessageFactories;
     ns.registerContentFactories = registerContentFactories;
     ns.registerCommandFactories = registerCommandFactories;
