@@ -8,6 +8,13 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
+    ns.registerPlugins();
+
+}(DIMP);
+
+!function (ns) {
+    'use strict';
+
     var moky = ns.format.UTF8.encode('moky');
 
     var test_sha256 = function () {

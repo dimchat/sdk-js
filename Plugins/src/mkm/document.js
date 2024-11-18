@@ -113,13 +113,7 @@
         return man.generalFactory;
     };
 
-    /**
-     *  Register document factories
-     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     */
-    Document.setFactory('*', new GeneralDocumentFactory('*'));
-    Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
-    Document.setFactory(Document.VISA, new GeneralDocumentFactory(Document.VISA));
-    Document.setFactory(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
+    //-------- namespace --------
+    ns.mkm.GeneralDocumentFactory = GeneralDocumentFactory;
 
 })(MingKeMing);

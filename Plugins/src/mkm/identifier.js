@@ -41,11 +41,15 @@
     var ID = ns.protocol.ID;
     var Identifier = ns.mkm.Identifier;
 
-    var IDFactory = function () {
+    /**
+     *  General Identifier Factory
+     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var IdentifierFactory = function () {
         Object.call(this);
         this.__identifiers = {};  // string -> ID
     };
-    Class(IDFactory, Object, [ID.Factory], null);
+    Class(IdentifierFactory, Object, [ID.Factory], null);
 
     /**
      * Call it when received 'UIApplicationDidReceiveMemoryWarningNotification',
@@ -53,20 +57,20 @@
      *
      * @return number of survivors
      */
-    IDFactory.prototype.reduceMemory = function () {
+    IdentifierFactory.prototype.reduceMemory = function () {
         var finger = 0;
         finger = thanos(this.__identifiers, finger);
         return finger >> 1;
     };
 
     // Override
-    IDFactory.prototype.generateIdentifier = function (meta, network, terminal) {
+    IdentifierFactory.prototype.generateIdentifier = function (meta, network, terminal) {
         var address = Address.generate(meta, network);
         return ID.create(meta.getSeed(), address, terminal);
     };
 
     // Override
-    IDFactory.prototype.createIdentifier = function (name, address, terminal) {
+    IdentifierFactory.prototype.createIdentifier = function (name, address, terminal) {
         var string = concat(name, address, terminal);
         var id = this.__identifiers[string];
         if (!id) {
@@ -77,7 +81,7 @@
     }
 
     // Override
-    IDFactory.prototype.parseIdentifier = function (identifier) {
+    IdentifierFactory.prototype.parseIdentifier = function (identifier) {
         var id = this.__identifiers[identifier];
         if (!id) {
             id = this.parse(identifier);
@@ -89,7 +93,7 @@
     };
 
     // protected
-    IDFactory.prototype.newID = function (string, name, address, terminal) {
+    IdentifierFactory.prototype.newID = function (string, name, address, terminal) {
         // override for customized ID
         return new Identifier(string, name, address, terminal);
     };
@@ -101,7 +105,7 @@
      * @param {String} string
      * @return {Identifier}
      */
-    IDFactory.prototype.parse = function (string) {
+    IdentifierFactory.prototype.parse = function (string) {
         var name, address, terminal;
         // split ID string for terminal
         var pair = string.split('/');
@@ -157,13 +161,7 @@
      */
     var thanos = ns.mkm.thanos;
 
-    /**
-     *  Register ID factory
-     *  ~~~~~~~~~~~~~~~~~~~
-     */
-    ID.setFactory(new IDFactory());
-
     //-------- namespace --------
-    ns.mkm.IDFactory = IDFactory;
+    ns.mkm.GeneralIdentifierFactory = IdentifierFactory;
 
 })(MingKeMing);

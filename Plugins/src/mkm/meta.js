@@ -325,14 +325,7 @@
         return man.generalFactory;
     };
 
-    /**
-     *  Register meta factories
-     *  ~~~~~~~~~~~~~~~~~~~~~~~
-     */
-    Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
-    Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
-    Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
-    Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
-    Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
+    //-------- namespace --------
+    ns.mkm.GeneralMetaFactory = GeneralMetaFactory;
 
 })(MingKeMing);

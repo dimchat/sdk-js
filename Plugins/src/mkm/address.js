@@ -96,3 +96,48 @@
     ns.mkm.BaseAddressFactory = BaseAddressFactory;
 
 })(MingKeMing);
+
+(function (ns) {
+    'use strict';
+
+    var Class = ns.type.Class;
+    var Address = ns.protocol.Address;
+    var BaseAddressFactory = ns.mkm.BaseAddressFactory;
+    var BTCAddress = ns.mkm.BTCAddress;
+    var ETHAddress = ns.mkm.ETHAddress;
+
+    /**
+     *  General Address Factory
+     *  ~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    var GeneralAddressFactory = function () {
+        BaseAddressFactory.call(this);
+    };
+    Class(GeneralAddressFactory, BaseAddressFactory, null, null);
+
+    // Override
+    GeneralAddressFactory.prototype.createAddress = function(address) {
+        if (!address) {
+            throw new ReferenceError('address empty');
+        }
+        var len = address.length;
+        if (len === 8) {
+            if (address.toLowerCase() === 'anywhere') {
+                return Address.ANYWHERE;
+            }
+        } else if (len === 10) {
+            if (address.toLowerCase() === 'everywhere') {
+                return Address.EVERYWHERE;
+            }
+        } else if (len === 42) {
+            return ETHAddress.parse(address);
+        } else if (26 <= len && len <= 35) {
+            return BTCAddress.parse(address);
+        }
+        throw new TypeError('invalid address: ' + address);
+    };
+
+    //-------- namespace --------
+    ns.mkm.GeneralAddressFactory = GeneralAddressFactory;
+
+})(MingKeMing);
