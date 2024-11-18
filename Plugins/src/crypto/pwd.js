@@ -105,12 +105,12 @@
         },
 
         // Override
-        encrypt: function (data) {
+        encrypt: function (data, extra) {
             return data;
         },
 
         // Override
-        decrypt: function (data) {
+        decrypt: function (data, params) {
             return data;
         }
     });

@@ -128,9 +128,10 @@ plugins_tests = [];
     var moky = ns.format.UTF8.encode('moky');
 
     var test_password = function () {
+        var extra_params = {};
         var pwd = Password.generate('Hello world!');
-        var ciphertext = pwd.encrypt(moky);
-        var plaintext = pwd.decrypt(ciphertext);
+        var ciphertext = pwd.encrypt(moky, extra_params);
+        var plaintext = pwd.decrypt(ciphertext, extra_params);
         assert(Arrays.equals(plaintext, moky), 'generate password error');
     };
     plugins_tests.push(test_password);

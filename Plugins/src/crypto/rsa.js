@@ -90,7 +90,7 @@
         },
 
         // Override
-        encrypt: function (plaintext) {
+        encrypt: function (plaintext, extra) {
             // convert Uint8Array to String
             plaintext = ns.format.UTF8.decode(plaintext);
             // create cipher
@@ -224,7 +224,7 @@
         },
 
         // Override
-        decrypt: function (data) {
+        decrypt: function (data, params) {
             // convert Uint8Array to Base64
             data = ns.format.Base64.encode(data);
             // create cipher
