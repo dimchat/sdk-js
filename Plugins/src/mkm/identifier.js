@@ -36,9 +36,9 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Address = ns.protocol.Address;
-    var ID = ns.protocol.ID;
+    var Class      = ns.type.Class;
+    var Address    = ns.protocol.Address;
+    var ID         = ns.protocol.ID;
     var Identifier = ns.mkm.Identifier;
 
     /**
@@ -164,4 +164,4 @@
     //-------- namespace --------
     ns.mkm.GeneralIdentifierFactory = IdentifierFactory;
 
-})(MingKeMing);
+})(DIMP);

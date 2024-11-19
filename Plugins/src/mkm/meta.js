@@ -51,10 +51,10 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Enum = ns.type.Enum;
+    var Class      = ns.type.Class;
+    var Enum       = ns.type.Enum;
     var BTCAddress = ns.mkm.BTCAddress;
-    var BaseMeta = ns.mkm.BaseMeta;
+    var BaseMeta   = ns.mkm.BaseMeta;
 
     /**
      *  Create default meta
@@ -97,7 +97,7 @@
     //-------- namespace --------
     ns.mkm.DefaultMeta = DefaultMeta;
 
-})(MingKeMing);
+})(DIMP);
 
 /**
  *  Meta to build BTC address for ID
@@ -116,10 +116,10 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Enum = ns.type.Enum;
+    var Class      = ns.type.Class;
+    var Enum       = ns.type.Enum;
     var BTCAddress = ns.mkm.BTCAddress;
-    var BaseMeta = ns.mkm.BaseMeta;
+    var BaseMeta   = ns.mkm.BaseMeta;
 
     /**
      *  Create meta for BTC address
@@ -169,7 +169,7 @@
     //-------- namespace --------
     ns.mkm.BTCMeta = BTCMeta;
 
-})(MingKeMing);
+})(DIMP);
 
 /**
  *  Meta to build ETH address for ID
@@ -187,9 +187,9 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
+    var Class      = ns.type.Class;
     var ETHAddress = ns.mkm.ETHAddress;
-    var BaseMeta = ns.mkm.BaseMeta;
+    var BaseMeta   = ns.mkm.BaseMeta;
 
     /**
      *  Create meta for ETH address
@@ -236,7 +236,7 @@
     //-------- namespace --------
     ns.mkm.ETHMeta = ETHMeta;
 
-})(MingKeMing);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -315,7 +315,7 @@
             out = new ETHMeta(meta);
         } else {
             // unknown type
-            throw TypeError('unknown meta type: ' + type);
+            throw new TypeError('unknown meta type: ' + type);
         }
         return out.isValid() ? out : null;
     };
@@ -328,4 +328,4 @@
     //-------- namespace --------
     ns.mkm.GeneralMetaFactory = GeneralMetaFactory;
 
-})(MingKeMing);
+})(DIMP);

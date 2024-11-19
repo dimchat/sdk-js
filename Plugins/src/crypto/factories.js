@@ -79,7 +79,7 @@
     ns.crypto.ECCPrivateKeyFactory = ECCPrivateKeyFactory;
     ns.crypto.ECCPublicKeyFactory = ECCPublicKeyFactory;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -130,7 +130,7 @@
     ns.crypto.RSAPrivateKeyFactory = RSAPrivateKeyFactory;
     ns.crypto.RSAPublicKeyFactory = RSAPublicKeyFactory;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -163,7 +163,7 @@
     //-------- namespace --------
     ns.crypto.AESKeyFactory = AESKeyFactory;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -194,4 +194,4 @@
     //-------- namespace --------
     ns.crypto.PlainKeyFactory = PlainKeyFactory
 
-})(MONKEY);
+})(DIMP);

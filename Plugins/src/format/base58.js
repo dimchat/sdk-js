@@ -207,4 +207,4 @@
     //-------- namespace --------
     ns.format.Base58.setCoder(new Base58Coder());
 
-})(MONKEY);
+})(DIMP);

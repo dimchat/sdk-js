@@ -35,10 +35,10 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
+    var Class          = ns.type.Class;
     var ConstantString = ns.type.ConstantString;
-    var EntityType = ns.protocol.EntityType;
-    var Address = ns.protocol.Address;
+    var EntityType     = ns.protocol.EntityType;
+    var Address        = ns.protocol.Address;
 
     /**
      *  Address like Ethereum
@@ -167,4 +167,4 @@
     //-------- namespace --------
     ns.mkm.ETHAddress = ETHAddress;
 
-})(MingKeMing);
+})(DIMP);

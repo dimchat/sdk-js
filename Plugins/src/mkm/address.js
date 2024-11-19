@@ -36,7 +36,7 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
+    var Class   = ns.type.Class;
     var Address = ns.protocol.Address;
 
     /**
@@ -95,16 +95,16 @@
     //-------- namespace --------
     ns.mkm.BaseAddressFactory = BaseAddressFactory;
 
-})(MingKeMing);
+})(DIMP);
 
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Address = ns.protocol.Address;
+    var Class              = ns.type.Class;
+    var Address            = ns.protocol.Address;
     var BaseAddressFactory = ns.mkm.BaseAddressFactory;
-    var BTCAddress = ns.mkm.BTCAddress;
-    var ETHAddress = ns.mkm.ETHAddress;
+    var BTCAddress         = ns.mkm.BTCAddress;
+    var ETHAddress         = ns.mkm.ETHAddress;
 
     /**
      *  General Address Factory
@@ -140,4 +140,4 @@
     //-------- namespace --------
     ns.mkm.GeneralAddressFactory = GeneralAddressFactory;
 
-})(MingKeMing);
+})(DIMP);

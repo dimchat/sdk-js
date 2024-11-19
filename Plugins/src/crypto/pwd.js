@@ -86,7 +86,7 @@
     //-------- namespace --------
     ns.crypto.Password = Password;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -133,4 +133,4 @@
     //-------- namespace --------
     ns.crypto.PlainKey = PlainKey;
 
-})(MONKEY);
+})(DIMP);

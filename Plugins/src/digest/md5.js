@@ -58,4 +58,4 @@
     //-------- namespace --------
     ns.digest.MD5.setDigester(new hash());
 
-})(MONKEY);
+})(DIMP);

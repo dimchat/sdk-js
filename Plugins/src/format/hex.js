@@ -126,4 +126,4 @@
     //-------- namespace --------
     ns.format.Hex.setCoder(new HexCoder());
 
-})(MONKEY);
+})(DIMP);

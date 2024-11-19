@@ -58,7 +58,7 @@
     Class(Facebook, Barrack, null, {
 
         getArchivist: function () {
-            throw Error('Facebook::getArchivist');
+            throw new Error('Facebook::getArchivist');
         },
 
         // Override

@@ -83,7 +83,7 @@
      * @return {boolean} true on reserved
      */
     AddressNameService.prototype.isReserved = function (name) {
-        throw new Error('NotImplemented');
+        throw new Error('AddressNameService::isReserved: ' + name);
     };
 
     /**
@@ -93,7 +93,7 @@
      * @returns {ID}
      */
     AddressNameService.prototype.getIdentifier = function (name) {
-        throw new Error('NotImplemented');
+        throw new Error('AddressNameService::getIdentifier: ' + name);
     };
 
     /**
@@ -103,7 +103,7 @@
      * @returns {string[]}
      */
     AddressNameService.prototype.getNames = function (identifier) {
-        throw new Error('NotImplemented');
+        throw new Error('AddressNameService::getNames: ' + identifier);
     };
 
     //-------- namespace --------

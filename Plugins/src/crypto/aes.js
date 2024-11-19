@@ -145,7 +145,7 @@
         getIVData: function (params) {
             // get base64 encoded IV from params
             if (!params) {
-                throw new Error('params must provided to fetch IV for AES');
+                throw new SyntaxError('params must provided to fetch IV for AES');
             }
             var base64 = this.getIVString(params);
             // decode IV data
@@ -162,7 +162,7 @@
         // private
         newIVData: function (extra) {
             if (!extra) {
-                throw new Error('extra dict must provided to store IV for AES');
+                throw new SyntaxError('extra dict must provided to store IV for AES');
             }
             // random IV data
             var blockSize = this.getBlockSize();
@@ -213,4 +213,4 @@
     //-------- namespace --------
     ns.crypto.AESKey = AESKey;
 
-})(MONKEY);
+})(DIMP);

@@ -200,10 +200,10 @@
             //       so that you will have a private key (decrypt key) to decrypt it.
             var receiver = sMsg.getReceiver();
             var facebook = this.getFacebook();
-            var user = facebook?.selectLocalUser(receiver);
+            var user = facebook.selectLocalUser(receiver);
             if (user == null) {
                 // not for you?
-                throw Error('receiver error: $receiver, from ${sMsg.sender}, ${sMsg.group}');
+                throw new ReferenceError('receiver error: $receiver, from ${sMsg.sender}, ${sMsg.group}');
             }
             // decrypt 'data' to 'content'
             return this.securePacker.decryptMessage(sMsg, user.identifier);

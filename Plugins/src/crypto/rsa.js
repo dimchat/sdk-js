@@ -57,7 +57,7 @@
             if (data) {
                 return ns.format.PEM.decodePublicKey(data);
             } else {
-                throw new Error('public key data not found');
+                throw new ReferenceError('public key data not found');
             }
         },
 
@@ -114,7 +114,7 @@
                 pad.set(res, keySize - res.length);
                 return pad;
             }
-            throw new Error('RSA encrypt error: ' + plaintext);
+            throw new ReferenceError('RSA encrypt error: ' + plaintext);
         }
     });
 
@@ -138,7 +138,7 @@
     //-------- namespace --------
     ns.crypto.RSAPublicKey = RSAPublicKey;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -219,7 +219,7 @@
                 // convert Base64 to Uint8Array
                 return ns.format.Base64.decode(base64);
             } else {
-                throw new Error('RSA sign error: ' + data);
+                throw new ReferenceError('RSA sign error: ' + data);
             }
         },
 
@@ -239,7 +239,7 @@
                 // convert String to Uint8Array
                 return ns.format.UTF8.encode(string);
             } else {
-                throw new Error('RSA decrypt error: ' + data);
+                throw new ReferenceError('RSA decrypt error: ' + data);
             }
         }
     });
@@ -267,4 +267,4 @@
     //-------- namespace --------
     ns.crypto.RSAPrivateKey = RSAPrivateKey;
 
-})(MONKEY);
+})(DIMP);

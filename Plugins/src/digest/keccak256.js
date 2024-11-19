@@ -53,4 +53,4 @@
     //-------- namespace --------
     ns.digest.KECCAK256.setDigester(new hash());
 
-})(MONKEY);
+})(DIMP);

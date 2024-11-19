@@ -159,7 +159,7 @@
         getData: function () {
             var pem = this.getValue('data');
             if (!pem || pem.length === 0) {
-                throw new Error('ECC public key data not found');
+                throw new ReferenceError('ECC public key data not found');
             } else if (pem.length === 66) {
                 // compressed key data
                 return ns.format.Hex.decode(pem);
@@ -234,7 +234,7 @@
     //-------- namespace --------
     ns.crypto.ECCPublicKey = ECCPublicKey;
 
-})(MONKEY);
+})(DIMP);
 
 (function (ns) {
     'use strict';
@@ -330,7 +330,7 @@
             if (data && data.length > 0) {
                 return ns.format.Hex.decode(data);
             } else {
-                throw new Error('ECC private key data not found');
+                throw new ReferenceError('ECC private key data not found');
             }
         },
 
@@ -401,4 +401,4 @@
     //-------- namespace --------
     ns.crypto.ECCPrivateKey = ECCPrivateKey;
 
-})(MONKEY);
+})(DIMP);

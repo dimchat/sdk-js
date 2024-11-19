@@ -31,19 +31,18 @@
 //
 
 //! require <mkm.js>
-//! require 'network.js'
 
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Enum = ns.type.Enum;
-    var Base58 = ns.format.Base58;
-    var SHA256 = ns.digest.SHA256;
-    var RIPEMD160 = ns.digest.RIPEMD160;
+    var Class          = ns.type.Class;
+    var Enum           = ns.type.Enum;
     var ConstantString = ns.type.ConstantString;
-    var EntityType = ns.protocol.EntityType;
-    var Address = ns.protocol.Address;
+    var Base58         = ns.format.Base58;
+    var SHA256         = ns.digest.SHA256;
+    var RIPEMD160      = ns.digest.RIPEMD160;
+    var EntityType     = ns.protocol.EntityType;
+    var Address        = ns.protocol.Address;
 
     /**
      *  Address like BitCoin
@@ -156,4 +155,4 @@
     //-------- namespace --------
     ns.mkm.BTCAddress = BTCAddress;
 
-})(MingKeMing);
+})(DIMP);

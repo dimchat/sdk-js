@@ -150,4 +150,4 @@
     //-------- namespace --------
     ns.format.PEM = new pem();
 
-})(MONKEY);
+})(DIMP);

@@ -58,4 +58,4 @@
     //-------- namespace --------//
     ns.format.JSON.setCoder(new JsonCoder());
 
-})(MONKEY);
+})(DIMP);

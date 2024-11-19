@@ -52,7 +52,7 @@
      * @returns {Content[]} responses to sender
      */
     ContentProcessor.prototype.process = function (content, rMsg) {
-        throw new Error('NotImplemented');
+        throw new Error('ContentProcessor::process');
     };
 
     /**
@@ -69,7 +69,7 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createContentProcessor = function (type) {
-        throw new Error('NotImplemented');
+        throw new Error('Creator::createContentProcessor');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -81,7 +81,7 @@
      * @return {ContentProcessor}
      */
     Creator.prototype.createCommandProcessor = function (type, cmd) {
-        throw new Error('NotImplemented');
+        throw new Error('Creator::createCommandProcessor');
     };
 
     /**
@@ -98,7 +98,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getProcessor = function (content) {
-        throw new Error('NotImplemented');
+        throw new Error('Factory::getProcessor');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -109,7 +109,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getContentProcessor = function (type) {
-        throw new Error('NotImplemented');
+        throw new Error('Factory::getContentProcessor');
     };
 
     // noinspection JSUnusedLocalSymbols
@@ -121,7 +121,7 @@
      * @return {ContentProcessor}
      */
     Factory.prototype.getCommandProcessor = function (type, cmd) {
-        throw new Error('NotImplemented');
+        throw new Error('Factory::getCommandProcessor');
     };
 
     ContentProcessor.Creator = Creator;

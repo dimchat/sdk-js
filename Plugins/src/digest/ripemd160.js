@@ -58,4 +58,4 @@
     //-------- namespace --------
     ns.digest.RIPEMD160.setDigester(new hash());
 
-})(MONKEY);
+})(DIMP);

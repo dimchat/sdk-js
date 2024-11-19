@@ -86,7 +86,7 @@
             if (!keyData) {
                 // A: my visa updated but the sender doesn't got the new one;
                 // B: key data error.
-                throw Error('failed to decrypt message key: ' + encryptedKey.length + ' byte(s) '
+                throw new ReferenceError('failed to decrypt message key: ' + encryptedKey.length + ' byte(s) '
                     + sMsg.getSender() + ' => ' + receiver + ', ' + sMsg.getGroup());
                 // TODO: check whether my visa key is changed, push new visa to this contact
             }
@@ -100,7 +100,7 @@
         if (!password) {
             // A: key data is empty, and cipher key not found from local storage;
             // B: key data error.
-            throw Error('failed to get message key: ' + keyData.length + ' byte(s) '
+            throw new ReferenceError('failed to get message key: ' + keyData.length + ' byte(s) '
                 + sMsg.getSender() + ' => ' + receiver + ', ' + sMsg.getGroup());
             // TODO: ask the sender to send again (with new message key)
         }
@@ -121,7 +121,7 @@
         if (!body) {
             // A: password is a reused key loaded from local storage, but it's expired;
             // B: key error.
-            throw Error('failed to decrypt message data with key: ' + password
+            throw new ReferenceError('failed to decrypt message data with key: ' + password
                 + ', data length: ' + ciphertext.length + ' byte(s)');
             // TODO: ask the sender to send again
         }

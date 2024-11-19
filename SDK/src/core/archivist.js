@@ -164,7 +164,7 @@
 
     // protected
     Archivist.prototype.getLastGroupHistoryTime = function (identifier) {
-        throw Error('Archivist::getLastGroupHistoryTime: ' + identifier);
+        throw new Error('Archivist::getLastGroupHistoryTime: ' + identifier);
     };
 
 
@@ -236,7 +236,7 @@
      * @return {boolean} false on duplicated
      */
     Archivist.prototype.queryMeta = function (identifier) {
-        throw Error('Archivist::queryMeta: ' + identifier);
+        throw new Error('Archivist::queryMeta: ' + identifier);
     };
 
     /**
@@ -248,7 +248,7 @@
      * @return {boolean} false on duplicated
      */
     Archivist.prototype.queryDocuments = function (identifier, docs) {
-        throw Error('Archivist::queryMeta: ' + identifier + ', ' + docs);
+        throw new Error('Archivist::queryMeta: ' + identifier + ', ' + docs);
     };
 
     /**
@@ -260,7 +260,7 @@
      * @return {boolean} false on duplicated
      */
     Archivist.prototype.queryMembers = function (identifier, members) {
-        throw Error('Archivist::queryMeta: ' + identifier + ', ' + members);
+        throw new Error('Archivist::queryMeta: ' + identifier + ', ' + members);
     };
 
     /**
@@ -271,7 +271,7 @@
      * @return {boolean} true on success
      */
     Archivist.prototype.saveMeta = function (meta, identifier) {
-        throw Error('Archivist::saveMeta: ' + identifier + ', ' + meta);
+        throw new Error('Archivist::saveMeta: ' + identifier + ', ' + meta);
     };
 
     /**
@@ -281,7 +281,7 @@
      * @return {boolean} true on success
      */
     Archivist.prototype.saveDocument = function (doc) {
-        throw Error('Archivist::saveDocument: ' + doc);
+        throw new Error('Archivist::saveDocument: ' + doc);
     };
 
 

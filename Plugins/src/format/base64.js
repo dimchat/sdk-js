@@ -173,4 +173,4 @@
     //-------- namespace --------
     ns.format.Base64.setCoder(new Base64Coder());
 
-})(MONKEY);
+})(DIMP);

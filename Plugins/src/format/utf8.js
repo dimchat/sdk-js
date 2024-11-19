@@ -149,4 +149,4 @@
     //-------- namespace --------
     ns.format.UTF8.setCoder(new Utf8Coder());
 
-})(MONKEY);
+})(DIMP);

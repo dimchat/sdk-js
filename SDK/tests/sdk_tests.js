@@ -11,12 +11,25 @@
     'use strict';
 
     var Class = ns.type.Class;
+    var Archivist = ns.Archivist;
     var Facebook = ns.Facebook;
 
     var ClientFacebook = function () {
         Facebook.call(this);
+        this.__archivist = new Archivist(120);
     };
     Class(ClientFacebook, Facebook, null, {
+
+        // Override
+        getArchivist: function () {
+            return this.__archivist;
+        },
+
+        // Override
+        getLocalUsers: function () {
+            // TODO:
+            return [];
+        },
 
         // Override
         getMeta: function (identifier) {

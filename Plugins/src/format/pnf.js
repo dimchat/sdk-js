@@ -57,7 +57,7 @@
             url      = arguments[2];
             password = arguments[3];
         } else {
-            throw Error('PNF arguments error: ' + arguments);
+            throw new SyntaxError('PNF arguments error: ' + arguments);
         }
         var wrapper = new BaseFileWrapper(this.toMap());
         // file data

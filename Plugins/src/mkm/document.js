@@ -116,4 +116,4 @@
     //-------- namespace --------
     ns.mkm.GeneralDocumentFactory = GeneralDocumentFactory;
 
-})(MingKeMing);
+})(DIMP);
