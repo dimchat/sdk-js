@@ -35,10 +35,10 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class         = sys.type.Class;
     var ChannelReader = ns.socket.ChannelReader;
     var ChannelWriter = ns.socket.ChannelWriter;
-    var BaseChannel = ns.socket.BaseChannel;
+    var BaseChannel   = ns.socket.BaseChannel;
 
     /**
      *  Stream Channel Reader
@@ -80,10 +80,9 @@
      *
      * @param {SocketAddress} remote - remote address
      * @param {SocketAddress} local  - local address
-     * @param {WebSocket|*} sock     - WebSocket wrapper
      */
-    var StreamChannel = function (remote, local, sock) {
-        BaseChannel.call(this, remote, local, sock);
+    var StreamChannel = function (remote, local) {
+        BaseChannel.call(this, remote, local);
     };
     Class(StreamChannel, BaseChannel, null, {
         // Override

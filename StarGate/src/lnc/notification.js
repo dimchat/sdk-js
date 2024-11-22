@@ -46,11 +46,33 @@
      */
     var Notification = function (name, sender, userInfo) {
         Object.call(this);
-        this.name = name;
-        this.sender = sender;
-        this.userInfo = userInfo;
+        this.__name = name;
+        this.__sender = sender;
+        this.__info = userInfo;
     };
-    Class(Notification, Object, null, null);
+    Class(Notification, Object, null, {
+
+        // Override
+        toString: function () {
+            var clazz     = this.getClassName();
+            return '<' + clazz + ' name="' + this.getName() + '>\n' +
+                '\t<sender>' + this.getSender() + '</sender>\n' +
+                '\t<info>' + this.getUserInfo() + '</info>\n' +
+                '</' + clazz + '>';
+        }
+    });
+
+    Notification.prototype.getName = function () {
+        return this.__name;
+    };
+
+    Notification.prototype.getSender = function () {
+        return this.__sender;
+    };
+
+    Notification.prototype.getUserInfo = function () {
+        return this.__info;
+    };
 
     //-------- namespace --------
     ns.lnc.Notification = Notification;

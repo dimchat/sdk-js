@@ -39,6 +39,7 @@
 
     /**
      *  Notification observer
+     *  ~~~~~~~~~~~~~~~~~~~~~
      */
     var Observer = Interface(null, null);
 
@@ -47,9 +48,7 @@
      *
      * @param {Notification} notification
      */
-    Observer.prototype.onReceiveNotification = function (notification) {
-        throw new Error('NotImplemented');
-    };
+    Observer.prototype.onReceiveNotification = function (notification) {};
 
     //-------- namespace --------
     ns.lnc.Observer = Observer;

@@ -35,7 +35,7 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class       = sys.type.Class;
     var ArrivalShip = ns.ArrivalShip;
 
     /**
@@ -46,15 +46,12 @@
      * @param {number|null} now - received time
      */
     var PlainArrival = function (data, now) {
-        if (!now) {
-            now = (new Date()).getTime();
-        }
         ArrivalShip.call(this, now);
         this.__data = data;
     };
     Class(PlainArrival, ArrivalShip, null, null);
 
-    PlainArrival.prototype.getPackage = function () {
+    PlainArrival.prototype.getPayload = function () {
         return this.__data;
     };
 

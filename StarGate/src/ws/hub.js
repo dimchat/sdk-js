@@ -36,44 +36,47 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class          = sys.type.Class;
     var AddressPairMap = ns.type.AddressPairMap;
-    var BaseHub = ns.socket.BaseHub;
-    var StreamChannel = ns.ws.StreamChannel;
+    var BaseHub        = ns.socket.BaseHub;
+    var StreamChannel  = ns.ws.StreamChannel;
 
     var ChannelPool = function () {
         AddressPairMap.call(this);
     };
     Class(ChannelPool, AddressPairMap, null, {
+
         // Override
         set: function (remote, local, value) {
-            var old = this.get(remote, local);
-            if (old && old !== value) {
-                this.remove(remote, local, old);
-            }
-            AddressPairMap.prototype.set.call(this, remote, local, value);
-        },
-        // Override
-        remove: function (remote, local, value) {
+            // remove cached item
             var cached = AddressPairMap.prototype.remove.call(this, remote, local, value);
-            if (cached && cached.isOpen()) {
-                try {
-                    cached.close();
-                } catch (e) {
-                    console.error('ChannelPool::remove()', e, remote, local, value, cached);
-                }
-            }
+            // if (cached && cached !== value) {
+            //     cached.close();
+            // }
+            AddressPairMap.prototype.set.call(this, remote, local, value);
             return cached;
         }
+
+        // // Override
+        // remove: function (remote, local, value) {
+        //     var cached = AddressPairMap.prototype.remove.call(this, remote, local, value);
+        //     if (cached && cached !== value) {
+        //         cached.close();
+        //     }
+        //     if (value) {
+        //         value.close();
+        //     }
+        //     return cached;
+        // }
     })
 
     /**
      *  Stream Hub
      *
-     * @param {ConnectionDelegate} delegate
+     * @param {ConnectionDelegate} gate
      */
-    var StreamHub = function (delegate) {
-        BaseHub.call(this, delegate);
+    var StreamHub = function (gate) {
+        BaseHub.call(this, gate);
         this.__channelPool = this.createChannelPool();
     };
     Class(StreamHub, BaseHub, null, null);
@@ -92,37 +95,50 @@
      *
      * @param {SocketAddress} remote - remote address
      * @param {SocketAddress} local  - local address
-     * @param {WebSocket|*} sock     - WebSocket wrapper
      * @return {Channel} null on socket error
      */
     // protected
-    StreamHub.prototype.createChannel = function (remote, local, sock) {
-        return new StreamChannel(remote, local, sock);
+    StreamHub.prototype.createChannel = function (remote, local) {
+        return new StreamChannel(remote, local);
     };
 
     // Override
     StreamHub.prototype.allChannels = function () {
-        return this.__channelPool.values();
-    };
-
-    // protected
-    StreamHub.prototype.getChannel = function (remote, local) {
-        return this.__channelPool.get(remote, local);
-    };
-
-    // protected
-    StreamHub.prototype.setChannel = function (remote, local, channel) {
-        this.__channelPool.set(remote, local, channel);
+        return this.__channelPool.items();
     };
 
     // Override
     StreamHub.prototype.removeChannel = function (remote, local, channel) {
-        this.__channelPool.remove(remote, local, channel);
+        this.__channelPool.remove(remote, null, channel);
+    };
+
+    // protected
+    StreamHub.prototype.getChannel = function (remote, local) {
+        return this.__channelPool.get(remote, null);
+    };
+
+    // protected
+    StreamHub.prototype.setChannel = function (remote, local, channel) {
+        this.__channelPool.set(remote, null, channel);
+    };
+
+    //
+    //  Connection
+    //
+
+    // Override
+    StreamHub.prototype.removeConnection = function (remote, local, connection) {
+        return BaseHub.prototype.removeConnection.call(this, remote, null, connection);
     };
 
     // Override
-    StreamHub.prototype.open = function (remote, local) {
-        return this.getChannel(remote, local);
+    StreamHub.prototype.getConnection = function (remote, local) {
+        return BaseHub.prototype.getConnection.call(this, remote, null);
+    };
+
+    // Override
+    StreamHub.prototype.setConnection = function (remote, local, connection) {
+        return BaseHub.prototype.setConnection.call(this, remote, null, connection);
     };
 
     //-------- namespace --------
@@ -134,46 +150,61 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class            = sys.type.Class;
+    var BaseChannel      = ns.socket.BaseChannel;
     var ActiveConnection = ns.socket.ActiveConnection;
-    var StreamHub = ns.ws.StreamHub;
-    var Socket = ns.ws.Socket;
+    var StreamHub        = ns.ws.StreamHub;
+    var Socket           = ns.ws.Socket;
 
     var ClientHub = function (delegate) {
         StreamHub.call(this, delegate);
     };
     Class(ClientHub, StreamHub, null, {
+
         // Override
-        createConnection: function (remote, local, channel) {
-            var conn = new ActiveConnection(remote, local, channel, this);
+        createConnection: function (remote, local) {
+            var conn = new ActiveConnection(remote, local);
             conn.setDelegate(this.getDelegate());  // gate
-            conn.start();  // start FSM
             return conn;
         },
+
+        //
+        //  Open Socket Channel
+        //
+
+        // Override
         open: function (remote, local) {
-            var channel = StreamHub.prototype.open.call(this, remote, local);
-            if (!channel/* && remote*/) {
-                channel = createSocketChannel.call(this, remote, local);
-                if (channel) {
-                    this.setChannel(channel.getRemoteAddress(), channel.getLocalAddress(), channel);
+            if (!remote) {
+                throw new ReferenceError('remote address empty')
+            }
+            var channel;
+            // try to get channel
+            var old = this.getChannel(remote, local);
+            if (!old) {
+                // create & cache channel
+                channel = this.createChannel(remote, local);
+                var cached = this.setChannel(remote, local, channel);
+                if (cached && cached !== channel) {
+                    cached.close();
+                }
+            } else {
+                channel = old;
+            }
+            if (!old && channel instanceof BaseChannel) {
+                // initialize socket
+                var sock = createWebSocketClient.call(this, remote, local);
+                if (sock) {
+                    // set socket for this channel
+                    channel.setSocket(sock);
+                } else {
+                    console.error('[WS] failed to prepare socket', remote, local);
+                    this.removeChannel(remote, local, channel);
                 }
             }
             return channel;
         }
     });
 
-    var createSocketChannel = function (remote, local) {
-        try {
-            var sock = createWebSocketClient(remote, local);
-            if (!local) {
-                local = sock.getLocalAddress();
-            }
-            return this.createChannel(remote, local, sock);
-        } catch (e) {
-            console.error('ClientHub::createSocketChannel()', remote, local, e);
-            return null;
-        }
-    };
     var createWebSocketClient = function (remote, local) {
         var sock = new Socket();
         sock.configureBlocking(true);

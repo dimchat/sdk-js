@@ -35,11 +35,11 @@
 (function (ns, fsm, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class    = sys.type.Class;
     var Runnable = fsm.skywalker.Runnable;
-    var Thread = fsm.threading.Thread;
+    var Thread   = fsm.threading.Thread;
 
-    var BaseCenter = ns.lnc.BaseCenter;
+    var BaseCenter   = ns.lnc.BaseCenter;
     var Notification = ns.lnc.Notification;
 
     /**
@@ -81,7 +81,7 @@
         process: function () {
             var notification = this.__notifications.shift();
             if (notification) {
-                this.post(notification);
+                this.postNotification(notification);
                 return true;
             } else {
                 // nothing to do now,

@@ -36,23 +36,64 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
-    var UTF8 = sys.format.UTF8;
-    var Departure = ns.port.Departure;
-    var StarDocker = ns.StarDocker;
-    var PlainArrival = ns.PlainArrival;
+    var Class          = sys.type.Class;
+    var UTF8           = sys.format.UTF8;
+    var Departure      = ns.port.Departure;
+    var StarPorter     = ns.StarPorter;
+    var PlainArrival   = ns.PlainArrival;
     var PlainDeparture = ns.PlainDeparture;
 
     /**
      *  Plain Docker
      *  ~~~~~~~~~~~~
      *
-     * @param {Connection} connection
+     * @param {SocketAddress} remote
+     * @param {SocketAddress} local
      */
-    var PlainDocker = function (connection) {
-        StarDocker.call(this, connection);
+    var PlainPorter = function (remote, local) {
+        StarPorter.call(this, remote, local);
     };
-    Class(PlainDocker, StarDocker, null, {
+    Class(PlainPorter, StarPorter, null, {
+
+        // protected
+        createArrival: function (data) {
+            return new PlainArrival(data, null);
+        },
+
+        // protected
+        createDeparture: function (data, priority) {
+            return new PlainDeparture(data, priority);
+        },
+
+        // Override
+        getArrivals: function (data) {
+            if (!data || data.length === 0) {
+                return [];
+            }
+            return [this.createArrival(data)];
+        },
+
+        // Override
+        checkArrival: function (income) {
+            var data = income.getPayload();
+            if (data.length === 4) {
+                init_bytes();
+                if (bytes_equal(data, PING)) {
+                    // PING -> PONG
+                    this.send(PONG, Departure.Priority.SLOWER.valueOf());
+                    return null;
+                } else if (bytes_equal(data, PONG) || bytes_equal(data, NOOP)) {
+                    // ignore
+                    return null;
+                }
+            }
+            return income;
+        },
+
+        //
+        //  Sending
+        //
+
         /**
          *  Send data with priority
          *
@@ -66,49 +107,16 @@
 
         // Override
         sendData: function (payload) {
-            return this.send(payload, Departure.Priority.NORMAL.valueOf());
+            var priority = Departure.Priority.NORMAL.valueOf();
+            return this.send(payload, priority);
         },
 
         // Override
         heartbeat: function () {
             init_bytes();
             this.send(PING, Departure.Priority.SLOWER.valueOf());
-        },
-
-        // Override
-        getArrival: function (data) {
-            if (!data || data.length === 0) {
-                return null;
-            }
-            return this.createArrival(data);
-        },
-
-        // Override
-        checkArrival: function (arrival) {
-            var data = arrival.getPackage();
-            if (data.length === 4) {
-                init_bytes();
-                if (bytes_equal(data, PING)) {
-                    // PING -> PONG
-                    this.send(PONG, Departure.Priority.SLOWER.valueOf());
-                } else if (bytes_equal(data, PONG) || bytes_equal(data, NOOP)) {
-                    // ignore
-                    return null;
-                }
-            }
-            return arrival;
         }
     });
-
-    // protected
-    PlainDocker.prototype.createArrival = function (data) {
-        return new PlainArrival(data, null);
-    };
-
-    // protected
-    PlainDocker.prototype.createDeparture = function (data, priority) {
-        return new PlainDeparture(data, priority);
-    };
 
     var bytes_equal = function (data1, data2) {
         if (data1.length !== data2.length) {
@@ -135,6 +143,6 @@
     var NOOP = 'NOOP';
 
     //-------- namespace --------
-    ns.PlainDocker = PlainDocker;
+    ns.PlainPorter = PlainPorter;
 
 })(StarGate, MONKEY);

@@ -36,15 +36,23 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class            = sys.type.Class;
     var ActiveConnection = ns.socket.ActiveConnection;
-    var StarGate = ns.StarGate;
+    var StarGate         = ns.StarGate;
 
-    var BaseGate = function (delegate) {
-        StarGate.call(this, delegate);
+    /**
+     *  Common Gate
+     *  ~~~~~~~~~~~
+     *  Gate with hub for connection
+     *
+     * @param {PorterDelegate} keeper
+     */
+    var BaseGate = function (keeper) {
+        StarGate.call(this, keeper);
         this.__hub = null;
     };
     Class(BaseGate, StarGate, null, {
+
         //
         //  Hub
         //
@@ -54,52 +62,70 @@
         getHub: function () {
             return this.__hub;
         },
+
         //
         //  Docker
         //
-        fetchDocker: function (remote, local, advanceParties) {
-            var docker = this.getDocker(remote, local);
-            if (!docker) {
-                var hub = this.getHub();
-                var conn = hub.connect(remote, local);
-                if (conn) {
-                    docker = this.createDocker(conn, advanceParties);
-                    this.setDocker(docker.getRemoteAddress(), docker.getLocalAddress(), docker);
-                }
+
+        // Override
+        removePorter: function (remote, local, porter) {
+            return StarGate.prototype.removePorter.call(this, remote, null, porter);
+        },
+        // Override
+        getPorter: function (remote, local) {
+            return StarGate.prototype.getPorter.call(this, remote, null);
+        },
+        // Override
+        setPorter: function (remote, local, porter) {
+            return StarGate.prototype.setPorter.call(this, remote, null, porter);
+        },
+
+        fetchPorter: function (remote, local) {
+            // get connection from hub
+            var hub = this.getHub();
+            if (!hub) {
+                throw new ReferenceError('Gate hub not found');
             }
-            return docker;
+            var conn = hub.connect(remote, local);
+            if (!conn) {
+                // failed to get connection
+                return null;
+            }
+            // connected, get docker with this connection
+            return this.dock(conn, true);
         },
-        // Override
-        getDocker: function (remote, local) {
-            return StarGate.prototype.getDocker.call(this, remote, null);
+
+        /**
+         *  Send payload to remote address
+         *
+         * @param {Uint8Array} payload
+         * @param {Arrival} ship
+         * @param {SocketAddress} remote
+         * @param {SocketAddress} local
+         * @return {boolean} false on error
+         */
+        sendResponse: function (payload, ship, remote, local) {
+            var docker = this.getPorter(remote, local);
+            if (!docker) {
+                console.error('docker not found', remote, local);
+                return false;
+            } else if (!docker.isAlive()) {
+                console.error('docker not alive', remote, local);
+                return false;
+            }
+            return docker.sendData(payload);
         },
-        // Override
-        setDocker: function (remote, local, docker) {
-            return StarGate.prototype.setDocker.call(this, remote, null, docker);
-        },
-        // Override
-        removeDocker: function (remote, local, docker) {
-            return StarGate.prototype.removeDocker.call(this, remote, null, docker);
-        },
+
+        //
+        //  Keep Active
+        //
+
         // Override
         heartbeat: function (connection) {
             // let the client to do the job
             if (connection instanceof ActiveConnection) {
                 StarGate.prototype.heartbeat.call(this, connection);
             }
-        },
-        // Override
-        cacheAdvanceParty: function (data, connection) {
-            // TODO: cache the advance party before decide which docker to user
-            var array = [];
-            if (data && data.length > 0) {
-                array.push(data);
-            }
-            return array;
-        },
-        // Override
-        clearAdvanceParty: function (connection) {
-            // TODO: remove cached advance party for this connection
         }
     });
 
@@ -108,30 +134,90 @@
 
 })(StarGate, MONKEY);
 
-(function (ns, sys) {
+(function (ns, fsm, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
-    var BaseGate = ns.BaseGate;
+    var Class       = sys.type.Class;
+    var Runnable    = fsm.skywalker.Runnable;
+    var Thread      = fsm.threading.Thread;
+    var BaseGate    = ns.BaseGate;
 
-    var CommonGate = function (delegate) {
+    var AutoGate = function (delegate) {
         BaseGate.call(this, delegate);
         this.__running = false;
+        this.__thread = new Thread(this);
     };
-    Class(CommonGate, BaseGate, null, {
+    Class(AutoGate, BaseGate, [Runnable], {
+
         isRunning: function () {
             return this.__running;
         },
+
         start: function () {
+            // 1. mark this gate to running
             this.__running = true;
+            // 2. start an async task for this gate
+            this.__thread.start();
         },
         stop: function () {
+            // 1. mark this gate to stopped
             this.__running = false;
+            // 2. waiting for the gate to stop
+            // 3. cancel the async task
+        },
+
+        // Override
+        run: function () {
+            if (!this.isRunning()) {
+                return false;
+            }
+            var busy = this.process();
+            if (busy) {
+                console.warn('client busy', busy);
+            }
+            return true;
+        },
+
+        process: function () {
+            var hub = this.getHub();
+            try {
+                var incoming = hub.process();
+                var outgoing = BaseGate.prototype.process.call(this);
+                return incoming || outgoing;
+            } catch (e) {
+                console.error('client process error', e);
+            }
         },
 
         getChannel: function (remote, local) {
             var hub = this.getHub();
             return hub.open(remote, local);
+        }
+    });
+
+    //-------- namespace --------
+    ns.AutoGate = AutoGate;
+
+})(StarGate, FiniteStateMachine, MONKEY);
+
+(function (ns, sys) {
+    "use strict";
+
+    var Class       = sys.type.Class;
+    var AutoGate    = ns.AutoGate;
+    var PlainPorter = ns.PlainPorter;
+
+    var WSClientGate = function (delegate) {
+        AutoGate.call(this, delegate);
+    };
+    Class(WSClientGate, AutoGate, null, {
+
+        // Override
+        createPorter: function (remote, local) {
+            // TODO: check data format before creating docker
+            var docker = new PlainPorter(remote, local);
+            docker.setDelegate(this.getDelegate());
+            return docker;
         },
 
         /**
@@ -143,41 +229,15 @@
          * @return {boolean} false on error
          */
         sendMessage: function (payload, remote, local) {
-            var docker = this.fetchDocker(remote, local, null);
-            if (!docker || !docker.isOpen()) {
+            var docker = this.fetchPorter(remote, local);
+            if (!docker) {
+                console.error('docker not found', remote, local);
+                return false;
+            } else if (!docker.isAlive()) {
+                console.error('docker not alive', remote, local);
                 return false;
             }
             return docker.sendData(payload);
-        }
-    });
-
-    //-------- namespace --------
-    ns.CommonGate = CommonGate;
-
-})(StarGate, MONKEY);
-
-(function (ns, sys) {
-    "use strict";
-
-    var Class = sys.type.Class;
-    var CommonGate = ns.CommonGate;
-    var PlainDocker = ns.PlainDocker;
-
-    var WSClientGate = function (delegate) {
-        CommonGate.call(this, delegate);
-    };
-    Class(WSClientGate, CommonGate, null, {
-
-        //
-        //  Docker
-        //
-
-        // Override
-        createDocker: function (connection, advanceParties) {
-            // TODO: check data format before creating docker
-            var docker = new PlainDocker(connection);
-            docker.setDelegate(this.getDelegate());
-            return docker;
         }
     });
 

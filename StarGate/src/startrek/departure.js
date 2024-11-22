@@ -35,7 +35,7 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
+    var Class         = sys.type.Class;
     var DepartureShip = ns.DepartureShip;
 
     /**
@@ -55,7 +55,7 @@
     };
     Class(PlainDeparture, DepartureShip, null, null);
 
-    PlainDeparture.prototype.getPackage = function () {
+    PlainDeparture.prototype.getPayload = function () {
         return this.__completed;
     };
 

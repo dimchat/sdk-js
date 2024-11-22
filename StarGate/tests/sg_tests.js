@@ -13,7 +13,7 @@ var g_variables = {};
     var Class = sys.type.Class;
     var UTF8 = sys.format.UTF8;
     var InetSocketAddress = ns.type.InetSocketAddress;
-    var DockerDelegate = ns.port.DockerDelegate;
+    var PorterDelegate = ns.port.PorterDelegate;
     var ClientHub = ns.ws.ClientHub;
     var WSClientGate = ns.WSClientGate;
 
@@ -25,10 +25,12 @@ var g_variables = {};
         var hub = new ClientHub(gate);
         gate.setHub(hub);
         this.gate = gate;
+        this.hub = hub;
     };
-    Class(Client, Object, [DockerDelegate], null);
+    Class(Client, Object, [PorterDelegate], null);
 
     Client.prototype.start = function () {
+        this.hub.connect(this.remoteAddress, this.localAddress);
         this.gate.start();
     };
 
@@ -37,7 +39,8 @@ var g_variables = {};
     };
 
     Client.prototype.send = function (data) {
-        this.gate.sendMessage(data, this.remoteAddress, this.localAddress);
+        var ok = this.gate.sendMessage(data, this.remoteAddress, this.localAddress);
+        console.info('send message', ok);
     };
 
     //
@@ -45,39 +48,43 @@ var g_variables = {};
     //
 
     // Override
-    Client.prototype.onDockerStatusChanged = function (previous, current, docker) {
-        var remote = docker.getRemoteAddress();
+    Client.prototype.onPorterStatusChanged = function (previous, current, porter) {
+        var remote = porter.getRemoteAddress();
         if (remote) remote = remote.toString();
         if (previous) previous = previous.toString();
         if (current) current = current.toString();
-        console.info('!!! docker state changed: ', previous, current, remote);
+        console.warn('!!! docker state changed: ', previous, current, remote);
     };
 
     // Override
-    Client.prototype.onDockerReceived = function (arrival, docker) {
-        var remote = docker.getRemoteAddress();
+    Client.prototype.onPorterReceived = function (arrival, porter) {
+        var remote = porter.getRemoteAddress();
         if (remote) remote = remote.toString();
-        var data = arrival.getPackage();
+        var data = arrival.getPayload();
         var text = UTF8.decode(data);
-        console.info('<<< docker received: ', data.length + ' bytes', text, remote);
+        console.warn('<<< docker received: ', data.length + ' bytes', text, remote);
     };
 
     // Override
-    Client.prototype.onDockerSent = function (departure, docker) {
+    Client.prototype.onPorterSent = function (departure, porter) {
         // plain departure has no response,
         // we would not know whether the task is success here
+        var remote = porter.getRemoteAddress();
+        if (remote) remote = remote.toString();
+        var data = departure.getPayload();
+        console.warn('>>> docker sent: ', data.length + ' bytes', remote);
     };
 
     // Override
-    Client.prototype.onDockerFailed = function (error, departure, docker) {
-        var remote = docker.getRemoteAddress();
+    Client.prototype.onPorterFailed = function (error, departure, porter) {
+        var remote = porter.getRemoteAddress();
         if (remote) remote = remote.toString();
         console.error('!!! docker failed: ', error, departure, remote);
     };
 
     // Override
-    Client.prototype.onDockerError = function (error, departure, docker) {
-        var remote = docker.getRemoteAddress();
+    Client.prototype.onPorterError = function (error, departure, porter) {
+        var remote = porter.getRemoteAddress();
         if (remote) remote = remote.toString();
         console.error('!!! docker error: ', error, departure, remote);
     };

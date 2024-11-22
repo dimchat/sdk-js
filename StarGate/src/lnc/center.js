@@ -36,8 +36,10 @@
 (function (ns, sys) {
     "use strict";
 
-    var Class = sys.type.Class;
-    var Arrays = sys.type.Arrays;
+    var Interface    = sys.type.Interface;
+    var Class        = sys.type.Class;
+    var Arrays       = sys.type.Arrays;
+    var Observer     = ns.lnc.Observer;
 
     var BaseCenter = function () {
         Object.call(this);
@@ -80,34 +82,32 @@
         }
     };
 
-    var getObservers = function (name) {
-        var list = this.__observers[name];
-        if (list) {
-            return list.slice();
-        } else {
-            return [];
-        }
-    };
-
-    BaseCenter.prototype.postNotification = function (notification, sender, userInfo) {
-        throw new Error('NotImplemented');
-    };
-
-    // protected
-    BaseCenter.prototype.post = function (notification) {
-        var name = notification.name;
-        var sender = notification.sender;
-        var userInfo = notification.userInfo;
+    /**
+     *  Post notification
+     *
+     *  Usages:
+     *      1. postNotification(notification);
+     *      2. postNotification(name, sender, userInfo);
+     */
+    BaseCenter.prototype.postNotification = function (notification) {
         // send to all observers with this notification name
-        var observers = getObservers.call(this, name);
+        var observers = this.__observers[notification.getName()];
+        if (!observers || observers.length === 0) {
+            // no listeners for this notification
+            return;
+        } else {
+            observers = observers.slice();
+        }
         var obs;
         for (var i = observers.length - 1; i >= 0; --i) {
             obs = observers[i];
             try {
-                if (typeof obs === 'function') {
-                    obs.call(notification, name, sender, userInfo);
-                } else {
+                if (Interface.conforms(obs, Observer)) {
                     obs.onReceiveNotification(notification);
+                } else if (typeof obs === 'function') {
+                    obs.call(notification);
+                } else {
+                    console.error('Notification observer error', obs, notification);
                 }
             } catch (e) {
                 console.error('DefaultCenter::post() error', notification, obs, e);
@@ -120,32 +120,11 @@
 
 })(StarGate, MONKEY);
 
-(function (ns, sys) {
+(function (ns) {
     "use strict";
 
-    var Class = sys.type.Class;
-    var BaseCenter = ns.lnc.BaseCenter;
+    var BaseCenter   = ns.lnc.BaseCenter;
     var Notification = ns.lnc.Notification;
-
-    /**
-     *  Default Notification Center
-     *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     *
-     *  call for each observers immediately
-     */
-    var DefaultCenter = function () {
-        BaseCenter.call(this);
-    };
-    Class(DefaultCenter, BaseCenter, null, {
-        
-        // Override
-        postNotification: function (notification, sender, userInfo) {
-            if (typeof notification === 'string') {
-                notification = new Notification(notification, sender, userInfo);
-            }
-            this.post(notification);
-        }
-    });
 
     /**
      *  Singleton
@@ -176,22 +155,26 @@
         /**
          *  Post notification with name
          *
-         * @param {Notification|string} notification - notification or name
+         * @param {Notification|String} notification - notification or name
          * @param {*} sender
          * @param {{}} userInfo - OPTIONAL
          */
         postNotification: function (notification, sender, userInfo) {
-            this.defaultCenter.postNotification(notification, sender, userInfo);
+            if (notification instanceof Notification) {
+                this.defaultCenter.postNotification(notification);
+            } else {
+                this.defaultCenter.postNotification(notification, sender, userInfo);
+            }
         },
 
-        getInstance: function () {
-            return this.defaultCenter;
-        },
-        defaultCenter: new DefaultCenter()
+        defaultCenter: new BaseCenter()
+    };
+
+    NotificationCenter.getInstance = function () {
+        return NotificationCenter.defaultCenter;
     };
 
     //-------- namespace --------
-    ns.lnc.DefaultCenter = DefaultCenter;
     ns.lnc.NotificationCenter = NotificationCenter;
 
-})(StarGate, MONKEY);
+})(StarGate);
