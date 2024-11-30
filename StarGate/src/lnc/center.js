@@ -38,7 +38,8 @@
 
     var Interface    = sys.type.Interface;
     var Class        = sys.type.Class;
-    var Arrays       = sys.type.Arrays;
+    var HashSet      = sys.type.HashSet;
+    var Log          = ns.lnc.Log;
     var Observer     = ns.lnc.Observer;
 
     var BaseCenter = function () {
@@ -48,16 +49,16 @@
     Class(BaseCenter, Object, null, null);
 
     BaseCenter.prototype.addObserver = function (observer, name) {
-        var list = this.__observers[name];
-        if (!list) {
+        var set = this.__observers[name];
+        if (!set) {
             // new set
-            list = [];
-            this.__observers[name] = list;
-        } else if (list.indexOf(observer) >= 0) {
+            set = new HashSet();
+            this.__observers[name] = set;
+        } else if (set.contains(observer)) {
             // already exists
-            return;
+            return false;
         }
-        list.push(observer);
+        return set.add(observer);
     };
 
     BaseCenter.prototype.removeObserver = function (observer, name) {
@@ -73,10 +74,10 @@
     };
     var remove = function (observer, name) {
         // Remove observer for notification name
-        var list = this.__observers[name];
-        if (list/* instanceof Array*/) {
-            Arrays.remove(list, observer);
-            if (list.length === 0) {
+        var set = this.__observers[name];
+        if (set/* instanceof HashSet*/) {
+            set.remove(observer);
+            if (set.isEmpty()) {
                 delete this.__observers[name];
             }
         }
@@ -85,20 +86,17 @@
     /**
      *  Post notification
      *
-     *  Usages:
-     *      1. postNotification(notification);
-     *      2. postNotification(name, sender, userInfo);
+     * @param {Notification} notification
      */
     BaseCenter.prototype.postNotification = function (notification) {
         // send to all observers with this notification name
-        var observers = this.__observers[notification.getName()];
-        if (!observers || observers.length === 0) {
+        var set = this.__observers[notification.getName()];
+        if (!set || set.isEmpty()) {
             // no listeners for this notification
             return;
-        } else {
-            observers = observers.slice();
         }
-        var obs;
+        var observers = set.toArray();
+        var obs;  // Observer
         for (var i = observers.length - 1; i >= 0; --i) {
             obs = observers[i];
             try {
@@ -107,10 +105,10 @@
                 } else if (typeof obs === 'function') {
                     obs.call(notification);
                 } else {
-                    console.error('Notification observer error', obs, notification);
+                    Log.error('Notification observer error', obs, notification);
                 }
             } catch (e) {
-                console.error('DefaultCenter::post() error', notification, obs, e);
+                Log.error('DefaultCenter::post() error', notification, obs, e);
             }
         }
     };
@@ -163,7 +161,8 @@
             if (notification instanceof Notification) {
                 this.defaultCenter.postNotification(notification);
             } else {
-                this.defaultCenter.postNotification(notification, sender, userInfo);
+                notification = new Notification(notification, sender, userInfo);
+                this.defaultCenter.postNotification(notification);
             }
         },
 
@@ -171,7 +170,7 @@
     };
 
     NotificationCenter.getInstance = function () {
-        return NotificationCenter.defaultCenter;
+        return this;
     };
 
     //-------- namespace --------

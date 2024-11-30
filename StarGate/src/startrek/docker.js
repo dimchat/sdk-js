@@ -80,7 +80,7 @@
                 init_bytes();
                 if (bytes_equal(data, PING)) {
                     // PING -> PONG
-                    this.send(PONG, Departure.Priority.SLOWER.valueOf());
+                    this.send(PONG, Departure.Priority.SLOWER.getValue());
                     return null;
                 } else if (bytes_equal(data, PONG) || bytes_equal(data, NOOP)) {
                     // ignore
@@ -107,14 +107,15 @@
 
         // Override
         sendData: function (payload) {
-            var priority = Departure.Priority.NORMAL.valueOf();
+            var priority = Departure.Priority.NORMAL.getValue();
             return this.send(payload, priority);
         },
 
         // Override
         heartbeat: function () {
             init_bytes();
-            this.send(PING, Departure.Priority.SLOWER.valueOf());
+            var priority = Departure.Priority.SLOWER.getValue();
+            this.send(PING, priority);
         }
     });
 

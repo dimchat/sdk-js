@@ -37,6 +37,7 @@
     "use strict";
 
     var Class            = sys.type.Class;
+    var Log              = ns.lnc.Log;
     var ActiveConnection = ns.socket.ActiveConnection;
     var StarGate         = ns.StarGate;
 
@@ -107,10 +108,10 @@
         sendResponse: function (payload, ship, remote, local) {
             var docker = this.getPorter(remote, local);
             if (!docker) {
-                console.error('docker not found', remote, local);
+                Log.error('docker not found', remote, local);
                 return false;
             } else if (!docker.isAlive()) {
-                console.error('docker not alive', remote, local);
+                Log.error('docker not alive', remote, local);
                 return false;
             }
             return docker.sendData(payload);
@@ -138,6 +139,7 @@
     "use strict";
 
     var Class       = sys.type.Class;
+    var Log         = ns.lnc.Log;
     var Runnable    = fsm.skywalker.Runnable;
     var Thread      = fsm.threading.Thread;
     var BaseGate    = ns.BaseGate;
@@ -173,7 +175,7 @@
             }
             var busy = this.process();
             if (busy) {
-                console.warn('client busy', busy);
+                Log.debug('client busy', busy);
             }
             return true;
         },
@@ -185,7 +187,7 @@
                 var outgoing = BaseGate.prototype.process.call(this);
                 return incoming || outgoing;
             } catch (e) {
-                console.error('client process error', e);
+                Log.error('client process error', e);
             }
         },
 
@@ -204,6 +206,7 @@
     "use strict";
 
     var Class       = sys.type.Class;
+    var Log         = ns.lnc.Log;
     var AutoGate    = ns.AutoGate;
     var PlainPorter = ns.PlainPorter;
 
@@ -231,10 +234,10 @@
         sendMessage: function (payload, remote, local) {
             var docker = this.fetchPorter(remote, local);
             if (!docker) {
-                console.error('docker not found', remote, local);
+                Log.error('docker not found', remote, local);
                 return false;
             } else if (!docker.isAlive()) {
-                console.error('docker not alive', remote, local);
+                Log.error('docker not alive', remote, local);
                 return false;
             }
             return docker.sendData(payload);

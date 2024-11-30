@@ -39,15 +39,13 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var EntityType = ns.protocol.EntityType;
-    var ID = ns.protocol.ID;
-    var Meta = ns.protocol.Meta;
-    var DocumentHelper = ns.mkm.DocumentHelper;
-    var BaseUser = ns.mkm.BaseUser;
-    var BaseGroup = ns.mkm.BaseGroup;
-    var Bot = ns.mkm.Bot;
-    var Station = ns.mkm.Station;
+    var Class           = ns.type.Class;
+    var EntityType      = ns.protocol.EntityType;
+    var DocumentHelper  = ns.mkm.DocumentHelper;
+    var BaseUser        = ns.mkm.BaseUser;
+    var BaseGroup       = ns.mkm.BaseGroup;
+    var Bot             = ns.mkm.Bot;
+    var Station         = ns.mkm.Station;
     var ServiceProvider = ns.mkm.ServiceProvider;
 
     var Barrack = ns.Barrack;

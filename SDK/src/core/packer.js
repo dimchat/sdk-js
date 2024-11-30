@@ -35,17 +35,14 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-
-    var ReliableMessage = ns.protocol.ReliableMessage;
-
+    var Class                 = ns.type.Class;
+    var ReliableMessage       = ns.protocol.ReliableMessage;
     var InstantMessagePacker  = ns.msg.InstantMessagePacker;
     var SecureMessagePacker   = ns.msg.SecureMessagePacker;
     var ReliableMessagePacker = ns.msg.ReliableMessagePacker
     var MessageHelper         = ns.msg.MessageHelper;
-
-    var TwinsHelper = ns.TwinsHelper;
-    var Packer      = ns.Packer;
+    var TwinsHelper           = ns.TwinsHelper;
+    var Packer                = ns.Packer;
 
     var MessagePacker = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
@@ -206,7 +203,7 @@
                 throw new ReferenceError('receiver error: $receiver, from ${sMsg.sender}, ${sMsg.group}');
             }
             // decrypt 'data' to 'content'
-            return this.securePacker.decryptMessage(sMsg, user.identifier);
+            return this.securePacker.decryptMessage(sMsg, user.getIdentifier());
 
             // TODO: check top-secret message
             //       (do it by application)

@@ -242,8 +242,8 @@
 
     // Station.ANY = ID.create('station', Address.ANYWHERE, null);
     // Station.EVERY = ID.create('stations', Address.EVERYWHERE, null);
-    Station.ANY   = new ns.mkm.Identifier('station', Address.ANYWHERE, null);
-    Station.EVERY = new ns.mkm.Identifier('stations', Address.EVERYWHERE, null);
+    Station.ANY   = new ns.mkm.Identifier('station@anywhere', 'station', Address.ANYWHERE, null);
+    Station.EVERY = new ns.mkm.Identifier('stations@everywhere', 'stations', Address.EVERYWHERE, null);
 
     //-------- namespace --------
     ns.mkm.Station = Station;

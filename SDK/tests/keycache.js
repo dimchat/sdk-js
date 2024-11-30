@@ -157,7 +157,7 @@
     //-------- CipherKeyDelegate --------
 
     // @override
-    KeyCache.prototype.getCipherKey = function (sender, receiver) {
+    KeyCache.prototype.getCipherKey = function (sender, receiver, generate) {
         if (receiver.isBroadcast()) {
             return ns.crypto.PlainKey.getInstance();
         }

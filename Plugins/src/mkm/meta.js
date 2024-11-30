@@ -80,9 +80,7 @@
 
         // Override
         generateAddress: function (network) {
-            if (Enum.isEnum(network)) {
-                network = network.valueOf();
-            }
+            network = Enum.getInt(network);
             // check cache
             var address = this.__addresses[network];
             if (!address) {
@@ -149,9 +147,7 @@
 
         // Override
         generateAddress: function (network) {
-            if (Enum.isEnum(network)) {
-                network = network.valueOf();
-            }
+            network = Enum.getInt(network);
             // check cache
             var address = this.__address;
             if (!address || address.getType() !== network) {

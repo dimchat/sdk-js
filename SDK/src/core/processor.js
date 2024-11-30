@@ -35,11 +35,11 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Envelope = ns.protocol.Envelope;
+    var Class          = ns.type.Class;
+    var Envelope       = ns.protocol.Envelope;
     var InstantMessage = ns.protocol.InstantMessage;
-    var Processor = ns.Processor;
-    var TwinsHelper = ns.TwinsHelper;
+    var Processor      = ns.Processor;
+    var TwinsHelper    = ns.TwinsHelper;
 
     var MessageProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);

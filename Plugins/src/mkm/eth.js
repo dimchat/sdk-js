@@ -56,7 +56,7 @@
     Class(ETHAddress, ConstantString, [Address], null);
 
     ETHAddress.prototype.getType = function () {
-        return EntityType.USER.valueOf();
+        return EntityType.USER.getValue();
     };
 
     ETHAddress.prototype.isBroadcast = function () {

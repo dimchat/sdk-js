@@ -151,6 +151,7 @@
     "use strict";
 
     var Class            = sys.type.Class;
+    var Log              = ns.lnc.Log;
     var BaseChannel      = ns.socket.BaseChannel;
     var ActiveConnection = ns.socket.ActiveConnection;
     var StreamHub        = ns.ws.StreamHub;
@@ -197,7 +198,7 @@
                     // set socket for this channel
                     channel.setSocket(sock);
                 } else {
-                    console.error('[WS] failed to prepare socket', remote, local);
+                    Log.error('[WS] failed to prepare socket', remote, local);
                     this.removeChannel(remote, local, channel);
                 }
             }

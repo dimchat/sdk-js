@@ -60,10 +60,7 @@
      */
     var BTCAddress = function (string, network) {
         ConstantString.call(this, string);
-        if (Enum.isEnum(network)) {
-            network = network.valueOf();
-        }
-        this.__network = network;
+        this.__network = Enum.getInt(network);
     };
     Class(BTCAddress, ConstantString, [Address], null);
 
@@ -89,9 +86,7 @@
      * @returns {BTCAddress}
      */
     BTCAddress.generate = function (fingerprint, network) {
-        if (Enum.isEnum(network)) {
-            network = network.valueOf();
-        }
+        network = Enum.getInt(network);
         // 1. digest = ripemd160(sha256(fingerprint))
         var digest = RIPEMD160.digest(SHA256.digest(fingerprint));
         // 2. head = network + digest

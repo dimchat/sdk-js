@@ -35,11 +35,11 @@
 (function (ns) {
     'use strict';
 
-    var Class = ns.type.Class;
-    var Packer = ns.Packer;
-    var Processor = ns.Processor;
+    var Class             = ns.type.Class;
+    var Packer            = ns.Packer;
+    var Processor         = ns.Processor;
     var CipherKeyDelegate = ns.CipherKeyDelegate;
-    var Transceiver = ns.Transceiver;
+    var Transceiver       = ns.Transceiver;
 
     var Messenger = function () {
         Transceiver.call(this);

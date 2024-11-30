@@ -116,8 +116,8 @@
     var Socket = function () {
         Object.call(this);
         this.__packages = [];
-        this.__connected = false;
-        this.__closed = false;
+        this.__connected = -1;
+        this.__closed = -1;
         this.__host = null;
         this.__port = null;
         this.__ws = null;
@@ -140,6 +140,7 @@
         this.__closed = true;
     };
     Socket.prototype.onError = function (error) {
+        this.__connected = false;
     };
     Socket.prototype.onReceived = function (data) {
         this.__packages.push(data);
@@ -157,17 +158,17 @@
 
     // Override
     Socket.prototype.isOpen = function () {
-        return !this.__closed;
+        return this.__closed === false;
     };
 
     // Override
     Socket.prototype.isConnected = function () {
-        return this.__connected;
+        return this.__connected === true;
     };
 
     // Override
     Socket.prototype.isBound = function () {
-        return true;
+        return this.__connected === true;
     };
 
     // Override
@@ -198,8 +199,10 @@
      */
     // Override
     Socket.prototype.connect = function (remote) {
-        this.__remote = remote;
         this.close();
+        this.__closed = false;
+        this.__connected = false;
+        this.__remote = remote;
         this.__host = remote.getHost();
         this.__port = remote.getPort();
         var url = build_url(this.__host, this.__port);
