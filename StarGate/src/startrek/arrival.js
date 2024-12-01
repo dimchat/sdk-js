@@ -63,7 +63,7 @@
 
     // Override
     PlainArrival.prototype.assemble = function (arrival) {
-        console.assert(arrival === this, 'plain arrival error', arrival, this);
+        // console.assert(arrival === this, 'plain arrival error', arrival, this);
         // plain arrival needs no assembling
         return arrival;
     };
