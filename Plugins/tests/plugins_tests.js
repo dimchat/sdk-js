@@ -8,7 +8,17 @@ plugins_tests = [];
 !function (ns) {
     'use strict';
 
+    var Meta                  = ns.protocol.Meta;
+    var CompatibleMetaFactory = ns.mkm.CompatibleMetaFactory;
+
     ns.registerPlugins();
+
+    Meta.setFactory('1', new CompatibleMetaFactory('1'));
+    Meta.setFactory('2', new CompatibleMetaFactory('2'));
+    Meta.setFactory('4', new CompatibleMetaFactory('4'));
+    Meta.setFactory(Meta.MKM, new CompatibleMetaFactory(Meta.MKM));
+    Meta.setFactory(Meta.BTC, new CompatibleMetaFactory(Meta.BTC));
+    Meta.setFactory(Meta.ETH, new CompatibleMetaFactory(Meta.ETH));
 
 }(DIMP);
 

@@ -38,7 +38,6 @@
 (function (ns) {
     'use strict';
 
-    var MetaType = ns.protocol.MetaType;
     var Address  = ns.protocol.Address;
     var ID       = ns.protocol.ID;
     var Meta     = ns.protocol.Meta;
@@ -70,11 +69,9 @@
      *  ~~~~~~~~~~~~~~~~~~~~~~~
      */
     var registerMetaFactories = function () {
-        Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
-        Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
-        Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
-        Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
-        Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH));
+        Meta.setFactory(Meta.MKM, new GeneralMetaFactory(Meta.MKM));
+        Meta.setFactory(Meta.BTC, new GeneralMetaFactory(Meta.BTC));
+        Meta.setFactory(Meta.ETH, new GeneralMetaFactory(Meta.ETH));
     };
 
     /**
@@ -84,8 +81,8 @@
     var registerDocumentFactories = function () {
 
         Document.setFactory('*', new GeneralDocumentFactory('*'));
-        Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
         Document.setFactory(Document.VISA, new GeneralDocumentFactory(Document.VISA));
+        Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
         Document.setFactory(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN));
     };
 

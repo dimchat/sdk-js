@@ -42,6 +42,7 @@
     var ID      = ns.protocol.ID;
     var Address = ns.protocol.Address;
 
+    var Identifier     = ns.mkm.Identifier;
     var User           = ns.mkm.User;
     var BaseUser       = ns.mkm.BaseUser;
     var DocumentHelper = ns.mkm.DocumentHelper;
@@ -242,8 +243,8 @@
 
     // Station.ANY = ID.create('station', Address.ANYWHERE, null);
     // Station.EVERY = ID.create('stations', Address.EVERYWHERE, null);
-    Station.ANY   = new ns.mkm.Identifier('station@anywhere', 'station', Address.ANYWHERE, null);
-    Station.EVERY = new ns.mkm.Identifier('stations@everywhere', 'stations', Address.EVERYWHERE, null);
+    Station.ANY   = Identifier.create('station', Address.ANYWHERE, null);
+    Station.EVERY = Identifier.create('stations', Address.EVERYWHERE, null);
 
     //-------- namespace --------
     ns.mkm.Station = Station;

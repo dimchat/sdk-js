@@ -582,7 +582,6 @@ if (typeof StarGate !== 'object') {
 (function (ns, sys) {
     "use strict";
     var Class = sys.type.Class;
-    var SocketAddress = ns.type.SocketAddress;
     var connect = function (url, proxy) {
         var ws = new WebSocket(url);
         ws.onopen = function (ev) {

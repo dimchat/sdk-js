@@ -38,7 +38,6 @@
     var Class             = ns.type.Class;
     var TransportableData = ns.format.TransportableData;
     var InstantMessage    = ns.protocol.InstantMessage;
-    var SecureMessage     = ns.protocol.SecureMessage;
     var ReliableMessage   = ns.protocol.ReliableMessage;
 
     var SecureMessagePacker = function (messenger) {

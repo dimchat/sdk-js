@@ -83,7 +83,7 @@
             } else if (type === Document.BULLETIN) {
                 return new BaseBulletin(identifier)
             } else {
-                return new BaseDocument(identifier)
+                return new BaseDocument(identifier, type)
             }
         }
     };

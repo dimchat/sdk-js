@@ -1173,11 +1173,13 @@
             var ivWordArray = bytes2words(iv);
             var key = this.getData();
             var keyWordArray = bytes2words(key);
-            var cipher = CryptoJS.AES.encrypt(message, keyWordArray, {iv: ivWordArray});
-            if (cipher.hasOwnProperty('ciphertext')) {
-                return words2bytes(cipher.ciphertext)
-            } else {
-                throw new TypeError('failed to encrypt message with key: ' + this);
+            try {
+                var cipher = CryptoJS.AES.encrypt(message, keyWordArray, {iv: ivWordArray});
+                if (cipher.hasOwnProperty('ciphertext')) {
+                    return words2bytes(cipher.ciphertext)
+                }
+            } catch (e) {
+                return null
             }
         }, decrypt: function (ciphertext, params) {
             var message = bytes2words(ciphertext);
@@ -1186,8 +1188,12 @@
             var key = this.getData();
             var keyWordArray = bytes2words(key);
             var cipher = {ciphertext: message};
-            var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, {iv: ivWordArray});
-            return words2bytes(plaintext)
+            try {
+                var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, {iv: ivWordArray});
+                return words2bytes(plaintext)
+            } catch (e) {
+                return null
+            }
         }
     });
     ns.crypto.AESKey = AESKey
@@ -1353,7 +1359,6 @@
     var Base58 = ns.format.Base58;
     var SHA256 = ns.digest.SHA256;
     var RIPEMD160 = ns.digest.RIPEMD160;
-    var EntityType = ns.protocol.EntityType;
     var Address = ns.protocol.Address;
     var BTCAddress = function (string, network) {
         ConstantString.call(this, string);
@@ -1362,15 +1367,6 @@
     Class(BTCAddress, ConstantString, [Address], null);
     BTCAddress.prototype.getType = function () {
         return this.__network
-    };
-    BTCAddress.prototype.isBroadcast = function () {
-        return false
-    };
-    BTCAddress.prototype.isUser = function () {
-        return EntityType.isUser(this.__network)
-    };
-    BTCAddress.prototype.isGroup = function () {
-        return EntityType.isGroup(this.__network)
     };
     BTCAddress.generate = function (fingerprint, network) {
         network = Enum.getInt(network);
@@ -1426,15 +1422,6 @@
     Class(ETHAddress, ConstantString, [Address], null);
     ETHAddress.prototype.getType = function () {
         return EntityType.USER.getValue()
-    };
-    ETHAddress.prototype.isBroadcast = function () {
-        return false
-    };
-    ETHAddress.prototype.isUser = function () {
-        return true
-    };
-    ETHAddress.prototype.isGroup = function () {
-        return false
     };
     ETHAddress.getValidateAddress = function (address) {
         if (!is_eth(address)) {
@@ -1554,7 +1541,7 @@
     Class(GeneralAddressFactory, BaseAddressFactory, null, null);
     GeneralAddressFactory.prototype.createAddress = function (address) {
         if (!address) {
-            throw new ReferenceError('address empty');
+            return null
         }
         var len = address.length;
         if (len === 8) {
@@ -1565,12 +1552,16 @@
             if (address.toLowerCase() === 'everywhere') {
                 return Address.EVERYWHERE
             }
-        } else if (len === 42) {
-            return ETHAddress.parse(address)
-        } else if (26 <= len && len <= 35) {
-            return BTCAddress.parse(address)
         }
-        throw new TypeError('invalid address: ' + address);
+        var res;
+        if (26 <= len && len <= 35) {
+            res = BTCAddress.parse(address)
+        } else if (len === 42) {
+            res = ETHAddress.parse(address)
+        } else {
+            res = null
+        }
+        return res
     };
     ns.mkm.GeneralAddressFactory = GeneralAddressFactory
 })(DIMP);
@@ -1595,7 +1586,7 @@
         return ID.create(meta.getSeed(), address, terminal)
     };
     IdentifierFactory.prototype.createIdentifier = function (name, address, terminal) {
-        var string = concat(name, address, terminal);
+        var string = Identifier.concat(name, address, terminal);
         var id = this.__identifiers[string];
         if (!id) {
             id = this.newID(string, name, address, terminal);
@@ -1637,16 +1628,6 @@
         }
         return this.newID(string, name, address, terminal)
     };
-    var concat = function (name, address, terminal) {
-        var string = address.toString();
-        if (name && name.length > 0) {
-            string = name + '@' + string
-        }
-        if (terminal && terminal.length > 0) {
-            string = string + '/' + terminal
-        }
-        return string
-    };
     var thanos = ns.mkm.thanos;
     ns.mkm.GeneralIdentifierFactory = IdentifierFactory
 })(DIMP);
@@ -1667,14 +1648,17 @@
         this.__addresses = {}
     };
     Class(DefaultMeta, BaseMeta, null, {
-        generateAddress: function (network) {
+        hasSeed: function () {
+            return true
+        }, generateAddress: function (network) {
             network = Enum.getInt(network);
-            var address = this.__addresses[network];
-            if (!address) {
-                address = BTCAddress.generate(this.getFingerprint(), network);
-                this.__addresses[network] = address
+            var cached = this.__addresses[network];
+            if (!cached) {
+                var data = this.getFingerprint();
+                cached = BTCAddress.generate(data, network);
+                this.__addresses[network] = cached
             }
-            return address
+            return cached
         }
     });
     ns.mkm.DefaultMeta = DefaultMeta
@@ -1695,19 +1679,21 @@
         } else {
             throw new SyntaxError('BTC meta arguments error: ' + arguments);
         }
-        this.__address = null
+        this.__addresses = {}
     };
     Class(BTCMeta, BaseMeta, null, {
-        generateAddress: function (network) {
+        hasSeed: function () {
+            return false
+        }, generateAddress: function (network) {
             network = Enum.getInt(network);
-            var address = this.__address;
-            if (!address || address.getType() !== network) {
+            var cached = this.__addresses[network];
+            if (!cached) {
                 var key = this.getPublicKey();
-                var fingerprint = key.getData();
-                address = BTCAddress.generate(fingerprint, network);
-                this.__address = address
+                var data = key.getData();
+                cached = BTCAddress.generate(data, network);
+                this.__addresses[network] = cached
             }
-            return address
+            return cached
         }
     });
     ns.mkm.BTCMeta = BTCMeta
@@ -1730,15 +1716,17 @@
         this.__address = null
     };
     Class(ETHMeta, BaseMeta, null, {
-        generateAddress: function (network) {
-            var address = this.__address;
-            if (!address) {
+        hasSeed: function () {
+            return false
+        }, generateAddress: function (network) {
+            var cached = this.__address;
+            if (!cached) {
                 var key = this.getPublicKey();
-                var fingerprint = key.getData();
-                address = ETHAddress.generate(fingerprint);
-                this.__address = address
+                var data = key.getData();
+                cached = ETHAddress.generate(data);
+                this.__address = cached
             }
-            return address
+            return cached
         }
     });
     ns.mkm.ETHMeta = ETHMeta
@@ -1747,30 +1735,17 @@
     'use strict';
     var Class = ns.type.Class;
     var TransportableData = ns.format.TransportableData;
-    var MetaType = ns.protocol.MetaType;
     var Meta = ns.protocol.Meta;
     var DefaultMeta = ns.mkm.DefaultMeta;
     var BTCMeta = ns.mkm.BTCMeta;
     var ETHMeta = ns.mkm.ETHMeta;
-    var GeneralMetaFactory = function (version) {
+    var GeneralMetaFactory = function (type) {
         Object.call(this);
-        this.__type = version
+        this.__algorithm = type
     };
     Class(GeneralMetaFactory, Object, [Meta.Factory], null);
-    GeneralMetaFactory.prototype.createMeta = function (key, seed, fingerprint) {
-        if (MetaType.MKM.equals(this.__type)) {
-            return new DefaultMeta(this.__type, key, seed, fingerprint)
-        } else if (MetaType.BTC.equals(this.__type)) {
-            return new BTCMeta(this.__type, key)
-        } else if (MetaType.ExBTC.equals(this.__type)) {
-            return new BTCMeta(this.__type, key, seed, fingerprint)
-        } else if (MetaType.ETH.equals(this.__type)) {
-            return new ETHMeta(this.__type, key)
-        } else if (MetaType.ExETH.equals(this.__type)) {
-            return new ETHMeta(this.__type, key, seed, fingerprint)
-        } else {
-            return null
-        }
+    GeneralMetaFactory.prototype.getAlgorithm = function () {
+        return this.__algorithm
     };
     GeneralMetaFactory.prototype.generateMeta = function (sKey, seed) {
         var fingerprint = null;
@@ -1781,19 +1756,27 @@
         var pKey = sKey.getPublicKey();
         return this.createMeta(pKey, seed, fingerprint)
     };
+    GeneralMetaFactory.prototype.createMeta = function (key, seed, fingerprint) {
+        var type = this.getAlgorithm();
+        if (type === Meta.MKM) {
+            return new DefaultMeta(type, key, seed, fingerprint)
+        } else if (type === Meta.BTC) {
+            return new BTCMeta(type, key)
+        } else if (type === Meta.ETH) {
+            return new ETHMeta(type, key)
+        } else {
+            return null
+        }
+    };
     GeneralMetaFactory.prototype.parseMeta = function (meta) {
         var out;
         var gf = general_factory();
-        var type = gf.getMetaType(meta, 0);
-        if (MetaType.MKM.equals(type)) {
+        var type = gf.getMetaType(meta, '');
+        if (type === Meta.MKM) {
             out = new DefaultMeta(meta)
-        } else if (MetaType.BTC.equals(type)) {
+        } else if (type === Meta.BTC) {
             out = new BTCMeta(meta)
-        } else if (MetaType.ExBTC.equals(type)) {
-            out = new BTCMeta(meta)
-        } else if (MetaType.ETH.equals(type)) {
-            out = new ETHMeta(meta)
-        } else if (MetaType.ExETH.equals(type)) {
+        } else if (type === Meta.ETH) {
             out = new ETHMeta(meta)
         } else {
             throw new TypeError('unknown meta type: ' + type);
@@ -1846,7 +1829,7 @@
             } else if (type === Document.BULLETIN) {
                 return new BaseBulletin(identifier)
             } else {
-                return new BaseDocument(identifier)
+                return new BaseDocument(identifier, type)
             }
         }
     };
@@ -1876,7 +1859,6 @@
 })(DIMP);
 (function (ns) {
     'use strict';
-    var MetaType = ns.protocol.MetaType;
     var Address = ns.protocol.Address;
     var ID = ns.protocol.ID;
     var Meta = ns.protocol.Meta;
@@ -1892,16 +1874,14 @@
         ID.setFactory(new GeneralIdentifierFactory())
     };
     var registerMetaFactories = function () {
-        Meta.setFactory(MetaType.MKM, new GeneralMetaFactory(MetaType.MKM));
-        Meta.setFactory(MetaType.BTC, new GeneralMetaFactory(MetaType.BTC));
-        Meta.setFactory(MetaType.ExBTC, new GeneralMetaFactory(MetaType.ExBTC));
-        Meta.setFactory(MetaType.ETH, new GeneralMetaFactory(MetaType.ETH));
-        Meta.setFactory(MetaType.ExETH, new GeneralMetaFactory(MetaType.ExETH))
+        Meta.setFactory(Meta.MKM, new GeneralMetaFactory(Meta.MKM));
+        Meta.setFactory(Meta.BTC, new GeneralMetaFactory(Meta.BTC));
+        Meta.setFactory(Meta.ETH, new GeneralMetaFactory(Meta.ETH))
     };
     var registerDocumentFactories = function () {
         Document.setFactory('*', new GeneralDocumentFactory('*'));
-        Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
         Document.setFactory(Document.VISA, new GeneralDocumentFactory(Document.VISA));
+        Document.setFactory(Document.PROFILE, new GeneralDocumentFactory(Document.PROFILE));
         Document.setFactory(Document.BULLETIN, new GeneralDocumentFactory(Document.BULLETIN))
     };
     ns.registerAddressFactory = registerAddressFactory;

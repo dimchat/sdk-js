@@ -174,6 +174,7 @@
     var Converter = ns.type.Converter;
     var ID = ns.protocol.ID;
     var Address = ns.protocol.Address;
+    var Identifier = ns.mkm.Identifier;
     var User = ns.mkm.User;
     var BaseUser = ns.mkm.BaseUser;
     var DocumentHelper = ns.mkm.DocumentHelper;
@@ -291,8 +292,8 @@
         var network = id.getAddress().getType();
         return '<' + clazz + ' id="' + id.toString() + '" network="' + network + '" host="' + this.getHost() + '" port=' + this.getPort() + ' />'
     };
-    Station.ANY = new ns.mkm.Identifier('station@anywhere', 'station', Address.ANYWHERE, null);
-    Station.EVERY = new ns.mkm.Identifier('stations@everywhere', 'stations', Address.EVERYWHERE, null);
+    Station.ANY = Identifier.create('station', Address.ANYWHERE, null);
+    Station.EVERY = Identifier.create('stations', Address.EVERYWHERE, null);
     ns.mkm.Station = Station
 })(DIMP);
 (function (ns) {
@@ -413,7 +414,6 @@
     var Class = ns.type.Class;
     var TransportableData = ns.format.TransportableData;
     var InstantMessage = ns.protocol.InstantMessage;
-    var SecureMessage = ns.protocol.SecureMessage;
     var ReliableMessage = ns.protocol.ReliableMessage;
     var SecureMessagePacker = function (messenger) {
         this.__transceiver = messenger

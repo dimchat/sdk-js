@@ -55,18 +55,9 @@
     };
     Class(ETHAddress, ConstantString, [Address], null);
 
+    // Override
     ETHAddress.prototype.getType = function () {
         return EntityType.USER.getValue();
-    };
-
-    ETHAddress.prototype.isBroadcast = function () {
-        return false;
-    };
-    ETHAddress.prototype.isUser = function () {
-        return true;
-    };
-    ETHAddress.prototype.isGroup = function () {
-        return false;
     };
 
     ETHAddress.getValidateAddress = function (address) {

@@ -71,7 +71,7 @@
 
     // Override
     IdentifierFactory.prototype.createIdentifier = function (name, address, terminal) {
-        var string = concat(name, address, terminal);
+        var string = Identifier.concat(name, address, terminal);
         var id = this.__identifiers[string];
         if (!id) {
             id = this.newID(string, name, address, terminal);
@@ -130,25 +130,6 @@
             return null;
         }
         return this.newID(string, name, address, terminal);
-    };
-
-    /**
-     *  Concat ID with components
-     *
-     * @param {String} name
-     * @param {Address} address
-     * @param {String} terminal
-     * @return {String}
-     */
-    var concat = function (name, address, terminal) {
-        var string = address.toString();
-        if (name && name.length > 0) {
-            string = name + '@' + string;
-        }
-        if (terminal && terminal.length > 0) {
-            string = string + '/' + terminal;
-        }
-        return string;
     };
 
     /**

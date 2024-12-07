@@ -118,23 +118,32 @@
     // Override
     GeneralAddressFactory.prototype.createAddress = function(address) {
         if (!address) {
-            throw new ReferenceError('address empty');
+            //throw new ReferenceError('address empty');
+            return null;
         }
         var len = address.length;
         if (len === 8) {
+            // "anywhere"
             if (address.toLowerCase() === 'anywhere') {
                 return Address.ANYWHERE;
             }
         } else if (len === 10) {
+            // "everywhere"
             if (address.toLowerCase() === 'everywhere') {
                 return Address.EVERYWHERE;
             }
-        } else if (len === 42) {
-            return ETHAddress.parse(address);
-        } else if (26 <= len && len <= 35) {
-            return BTCAddress.parse(address);
         }
-        throw new TypeError('invalid address: ' + address);
+        var res;
+        if (26 <= len && len <= 35) {
+            res = BTCAddress.parse(address);
+        } else if (len === 42) {
+            res = ETHAddress.parse(address);
+        } else {
+            //throw new TypeError('invalid address: ' + address);
+            res = null;
+        }
+        // TODO: other types of address
+        return res;
     };
 
     //-------- namespace --------

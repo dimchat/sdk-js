@@ -41,7 +41,6 @@
     var Base58         = ns.format.Base58;
     var SHA256         = ns.digest.SHA256;
     var RIPEMD160      = ns.digest.RIPEMD160;
-    var EntityType     = ns.protocol.EntityType;
     var Address        = ns.protocol.Address;
 
     /**
@@ -64,18 +63,9 @@
     };
     Class(BTCAddress, ConstantString, [Address], null);
 
+    // Override
     BTCAddress.prototype.getType = function () {
         return this.__network;
-    };
-
-    BTCAddress.prototype.isBroadcast = function () {
-        return false;
-    };
-    BTCAddress.prototype.isUser = function () {
-        return EntityType.isUser(this.__network);
-    };
-    BTCAddress.prototype.isGroup = function () {
-        return EntityType.isGroup(this.__network);
     };
 
     /**

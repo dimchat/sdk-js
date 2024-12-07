@@ -86,7 +86,7 @@
     };
     Class(AESKey, BaseSymmetricKey, null, {
 
-        // private
+        // protected
         generateKeyData: function () {
             // random key data
             var keySize = this.getKeySize();
@@ -100,13 +100,13 @@
             return ted;
         },
 
-        // private
+        // protected
         getKeySize: function () {
             // TODO: get from key data
             return this.getInt('keySize', 32);
         },
 
-        // private
+        // protected
         getBlockSize: function () {
             // TODO: get from iv data
             return this.getInt('blockSize', 16);  // cipher.getBlockSize();
@@ -123,7 +123,7 @@
             return !ted ? null : ted.getData();
         },
 
-        // private
+        // protected
         getIVString: function (params) {
             var base64 = params['IV'];
             if (base64 && base64.length > 0) {
@@ -141,7 +141,7 @@
             return this.getString('IV', null);
         },
 
-        // private
+        // protected
         getIVData: function (params) {
             // get base64 encoded IV from params
             if (!params) {
@@ -159,7 +159,7 @@
             return zero_data(blockSize);
         },
 
-        // private
+        // protected
         newIVData: function (extra) {
             if (!extra) {
                 throw new SyntaxError('extra dict must provided to store IV for AES');
@@ -184,12 +184,15 @@
             var key = this.getData();
             var keyWordArray = bytes2words(key);
             // 3. try to encrypt
-            var cipher = CryptoJS.AES.encrypt(message, keyWordArray, { iv: ivWordArray });
-            if (cipher.hasOwnProperty('ciphertext')) {
-                return words2bytes(cipher.ciphertext);
-            } else {
-                throw new TypeError('failed to encrypt message with key: ' + this);
+            try {
+                var cipher = CryptoJS.AES.encrypt(message, keyWordArray, { iv: ivWordArray });
+                if (cipher.hasOwnProperty('ciphertext')) {
+                    return words2bytes(cipher.ciphertext);
+                }
+            } catch (e) {
+                return null;
             }
+            //throw new TypeError('failed to encrypt message with key: ' + this);
         },
 
         // Override
@@ -205,8 +208,12 @@
             var cipher = {
                 ciphertext: message
             };
-            var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
-            return words2bytes(plaintext);
+            try {
+                var plaintext = CryptoJS.AES.decrypt(cipher, keyWordArray, { iv: ivWordArray });
+                return words2bytes(plaintext);
+            } catch (e) {
+                return null;
+            }
         }
     });
 
