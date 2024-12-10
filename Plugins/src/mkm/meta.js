@@ -254,6 +254,7 @@
     'use strict';
 
     var Class             = ns.type.Class;
+    var UTF8              = ns.format.UTF8;
     var TransportableData = ns.format.TransportableData;
     var Meta              = ns.protocol.Meta;
     var DefaultMeta       = ns.mkm.DefaultMeta;
@@ -264,22 +265,22 @@
      *  General Meta factory
      *  ~~~~~~~~~~~~~~~~~~~~
      */
-    var GeneralMetaFactory = function (type) {
+    var GeneralMetaFactory = function (algorithm) {
         Object.call(this);
-        this.__algorithm = type;
+        this.__type = algorithm;
     };
     Class(GeneralMetaFactory, Object, [Meta.Factory], null);
 
     // protected
-    GeneralMetaFactory.prototype.getAlgorithm = function () {
-        return this.__algorithm;
+    GeneralMetaFactory.prototype.getType = function () {
+        return this.__type;
     };
 
     // Override
     GeneralMetaFactory.prototype.generateMeta = function(sKey, seed) {
         var fingerprint = null;  // TransportableData
         if (seed && seed.length > 0) {
-            var sig = sKey.sign(ns.format.UTF8.encode(seed));
+            var sig = sKey.sign(UTF8.encode(seed));
             fingerprint = TransportableData.create(sig);
         }
         var pKey = sKey.getPublicKey();
@@ -288,20 +289,22 @@
 
     // Override
     GeneralMetaFactory.prototype.createMeta = function(key, seed, fingerprint) {
-        var type = this.getAlgorithm();
+        var out;
+        var type = this.getType();
         if (type === Meta.MKM) {
             // MKM
-            return new DefaultMeta(type, key, seed, fingerprint);
+            out = new DefaultMeta(type, key, seed, fingerprint);
         } else if (type === Meta.BTC) {
             // BTC
-            return new BTCMeta(type, key);
+            out = new BTCMeta(type, key);
         } else if (type === Meta.ETH) {
             // ETH
-            return new ETHMeta(type, key);
+            out = new ETHMeta(type, key);
         } else {
             // unknown type
-            return null;
+            throw new TypeError('unknown meta type: ' + type);
         }
+        return out;
     };
 
     // Override
