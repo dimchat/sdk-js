@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIMP : Decentralized Instant Messaging Protocol
@@ -32,19 +32,16 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
-
-    var Class             = ns.type.Class;
-    var SecureMessage     = ns.protocol.SecureMessage;
-
-    var ReliableMessagePacker = function (messenger) {
-        this.__transceiver = messenger;  // ReliableMessageDelegate
+    ReliableMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger;  // ReliableMessageDelegate
     };
-    Class(ReliableMessagePacker, null, null, null);
+    var ReliableMessagePacker = ReliableMessage.Packer;
 
-    ReliableMessagePacker.prototype.getReliableMessageDelegate = function () {
-        return this.__transceiver;
+    Class(ReliableMessagePacker, BaseObject, null, null);
+
+    ReliableMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger;
     };
 
     /*
@@ -64,11 +61,11 @@
     /**
      *  Verify 'data' and 'signature' field with sender's public key
      *
-     * @param {ReliableMessage|SecureMessage|Mapper} rMsg - network message
+     * @param {dkd.protocol.ReliableMessage|dkd.protocol.SecureMessage|mk.type.Mapper} rMsg
      * @return {SecureMessage} null if signature not matched
      */
     ReliableMessagePacker.prototype.verifyMessage = function (rMsg) {
-        var transceiver = this.getReliableMessageDelegate();
+        var transceiver = this.getDelegate();
 
         //
         //  0. Decode 'message.data' to encrypted content data
@@ -102,8 +99,3 @@
         delete info['signature'];
         return SecureMessage.parse(info);
     };
-
-    //-------- namespace --------
-    ns.msg.ReliableMessagePacker = ReliableMessagePacker;
-
-})(DIMP);

@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIMP : Decentralized Instant Messaging Protocol
@@ -32,58 +32,44 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
+    /// 1. [Meta Protocol]
+    /// 2. [Visa Protocol]
+    sdk.msg.MessageUtils = {
 
-    var Interface = ns.type.Interface;
-    var Meta      = ns.protocol.Meta;
-    var Document  = ns.protocol.Document;
-    var Visa      = ns.protocol.Visa;
+        /**
+         *  Sender's Meta
+         *  ~~~~~~~~~~~~~
+         *  Extends for the first message package of 'Handshake' protocol.
+         *
+         * @param {mkm.protocol.Meta} meta
+         * @param {dkd.protocol.Message|mk.type.Mapper} msg
+         */
+        setMeta: function (meta, msg) {
+            msg.setMap('meta', meta);
+        },
+        getMeta: function (msg) {
+            var meta = msg.getValue('meta');
+            return Meta.parse(meta);
+        },
 
-    /**
-     *  Sender's Meta
-     *  ~~~~~~~~~~~~~
-     *  Extends for the first message package of 'Handshake' protocol.
-     *
-     * @param {Meta} meta
-     * @param {Message|Mapper} msg
-     */
-    var setMeta = function (meta, msg) {
-        msg.setMap('meta', meta);
-    };
-    var getMeta = function (msg) {
-        var meta = msg.getValue('meta');
-        return Meta.parse(meta);
-    };
-
-    /**
-     *  Sender's Visa
-     *  ~~~~~~~~~~~~~
-     *  Extends for the first message package of 'Handshake' protocol.
-     *
-     * @param {Visa} visa document
-     * @param {Message|Mapper} msg
-     */
-    var setVisa = function (visa, msg) {
-        msg.setMap('visa', visa);
-    };
-    var getVisa = function (msg) {
-        var visa = msg.getValue('visa');
-        var doc = Document.parse(visa);
-        if (Interface.conforms(doc, Visa)) {
-            return doc;
+        /**
+         *  Sender's Visa
+         *  ~~~~~~~~~~~~~
+         *  Extends for the first message package of 'Handshake' protocol.
+         *
+         * @param {mkm.protocol.Visa} visa document
+         * @param {dkd.protocol.Message|mk.type.Mapper} msg
+         */
+        setVisa: function (visa, msg) {
+            msg.setMap('visa', visa);
+        },
+        getVisa: function (msg) {
+            var visa = msg.getValue('visa');
+            var doc = Document.parse(visa);
+            if (Interface.conforms(doc, Visa)) {
+                return doc;
+            }
+            return null;
         }
-        return null;
     };
-
-    //-------- namespace --------
-    ns.msg.MessageHelper = {
-
-        getMeta: getMeta,
-        setMeta: setMeta,
-
-        getVisa: getVisa,
-        setVisa: setVisa
-    };
-
-})(DIMP);
+    var MessageUtils = sdk.msg.MessageUtils;

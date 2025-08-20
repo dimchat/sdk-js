@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -30,22 +30,7 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-
-(function (ns) {
-    'use strict';
-
-    var Class      = ns.type.Class;
-    var BaseObject = ns.type.BaseObject;
-    var Converter  = ns.type.Converter;
-
-    var ID      = ns.protocol.ID;
-    var Address = ns.protocol.Address;
-
-    var Identifier     = ns.mkm.Identifier;
-    var User           = ns.mkm.User;
-    var BaseUser       = ns.mkm.BaseUser;
-    var DocumentHelper = ns.mkm.DocumentHelper;
+//! require 'user.js'
 
     /**
      *  Station for DIM network
@@ -55,7 +40,7 @@
      *      2. new Station(host, port);
      *      3. new Station(identifier, host, port);
      */
-    var Station = function () {
+    mkm.mkm.Station = function () {
         BaseObject.call(this);
         var user;
         var host, port;
@@ -79,6 +64,8 @@
         this.__port = port;
         this.__isp = null;
     };
+    var Station = mkm.mkm.Station;
+
     Class(Station, BaseObject, [User], {
 
         // Override
@@ -88,19 +75,27 @@
             } else if (!other) {
                 return false;
             } else if (other instanceof Station) {
-                return ns.mkm.ServiceProvider.sameStation(other, this);
+                return ServiceProvider.sameStation(other, this);
             }
             return this.__user.equals(other);
         },
 
         // Override
         valueOf: function () {
-            return desc.call(this);
+            return this.getString();
         },
 
         // Override
         toString: function () {
-            return desc.call(this);
+            var clazz = this.getClassName();
+            var id = this.getIdentifier();
+            var network = id.getAddress().getType();
+            return '<' + clazz + ' id="' + id.toString() + '" network="' + network +
+                '" host="' + this.getHost() + '" port=' + this.getPort() + ' />';
+        },
+
+        getClassName: function () {
+            return Object.getPrototypeOf(this).constructor.name;
         },
 
         //-------- Entity
@@ -179,9 +174,9 @@
         //-------- Server
 
         setIdentifier: function (identifier) {
-            var delegate = this.getDataSource();
+            var facebook = this.getDataSource();
             var user = new BaseUser(identifier);
-            user.setDataSource(delegate);
+            user.setDataSource(facebook);
             this.__user = user;
         },
 
@@ -208,7 +203,7 @@
 
         getProfile: function () {
             var docs = this.getDocuments();
-            return DocumentHelper.lastDocument(docs);
+            return DocumentUtils.lastDocument(docs, '*');
         },
 
         reload: function () {
@@ -224,7 +219,7 @@
                 if (port > 0) {
                     this.__port = port;
                 }
-                var isp = doc.getProperty('ISP');
+                var isp = doc.getProperty('provider');
                 isp = ID.parse(isp);
                 if (isp) {
                     this.__isp = isp;
@@ -233,20 +228,7 @@
         }
     });
 
-    var desc = function () {
-        var clazz = Object.getPrototypeOf(this).constructor.name;
-        var id = this.getIdentifier();
-        var network = id.getAddress().getType();
-        return '<' + clazz + ' id="' + id.toString() + '" network="' + network +
-            '" host="' + this.getHost() + '" port=' + this.getPort() + ' />';
-    };
-
     // Station.ANY = ID.create('station', Address.ANYWHERE, null);
     // Station.EVERY = ID.create('stations', Address.EVERYWHERE, null);
     Station.ANY   = Identifier.create('station', Address.ANYWHERE, null);
     Station.EVERY = Identifier.create('stations', Address.EVERYWHERE, null);
-
-    //-------- namespace --------
-    ns.mkm.Station = Station;
-
-})(DIMP);

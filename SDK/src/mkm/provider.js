@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -30,28 +30,23 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-
-(function (ns) {
-    'use strict';
-
-    var Class          = ns.type.Class;
-    var BaseGroup      = ns.mkm.BaseGroup;
-    var DocumentHelper = ns.mkm.DocumentHelper;
+//! require 'group.js'
 
     /**
      *  DIM Station Owner
      *  ~~~~~~~~~~~~~~~~~
      */
-    var ServiceProvider = function (identifier) {
+    mkm.mkm.ServiceProvider = function (identifier) {
         BaseGroup.call(this, identifier);
     };
+    var ServiceProvider = mkm.mkm.ServiceProvider;
+
     Class(ServiceProvider, BaseGroup, null, {
 
         // Provider Document
         getProfile: function () {
             var docs = this.getDocuments();
-            return DocumentHelper.lastDocument(docs);
+            return DocumentUtils.lastDocument(docs, '*');
         },
 
         getStations: function () {
@@ -64,7 +59,6 @@
             }
             // TODO: load from local storage
             return [];
-            // return this.getMembers();
         }
     });
 
@@ -105,8 +99,3 @@
         }
         return a === b;
     };
-
-    //-------- namespace --------
-    ns.mkm.ServiceProvider = ServiceProvider;
-
-})(DIMP);

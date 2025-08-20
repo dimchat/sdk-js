@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -30,22 +30,17 @@
 // =============================================================================
 //
 
-//! require <dimp.js>
-
-(function (ns) {
-    'use strict';
-
-    var Class    = ns.type.Class;
-    var ID       = ns.protocol.ID;
-    var BaseUser = ns.mkm.BaseUser;
+//! require 'user.js'
 
     /**
      *  Bot User
      *  ~~~~~~~~
      */
-    var Bot = function (identifier) {
+    mkm.mkm.Bot = function (identifier) {
         BaseUser.call(this, identifier);
     };
+    var Bot = mkm.mkm.Bot;
+
     Class(Bot, BaseUser, null, {
 
         // Bot Document
@@ -57,15 +52,10 @@
         getProvider: function () {
             var doc = this.getProfile();
             if (doc) {
-                var icp = doc.getProperty('ICP');
+                var icp = doc.getProperty('provider');
                 return ID.parse(icp);
             }
             return null;
         }
 
     });
-
-    //-------- namespace --------
-    ns.mkm.Bot = Bot;
-
-})(DIMP);

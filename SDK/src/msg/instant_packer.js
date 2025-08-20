@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIMP : Decentralized Instant Messaging Protocol
@@ -32,22 +32,16 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
-
-    var Class             = ns.type.Class;
-    var UTF8              = ns.format.UTF8;
-    var TransportableData = ns.format.TransportableData;
-    var SecureMessage     = ns.protocol.SecureMessage;
-    var BaseMessage       = ns.msg.BaseMessage;
-
-    var InstantMessagePacker = function (messenger) {
-        this.__transceiver = messenger;  // InstantMessageDelegate
+    InstantMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger;  // InstantMessageDelegate
     };
-    Class(InstantMessagePacker, null, null, null);
+    var InstantMessagePacker = InstantMessage.Packer;
 
-    InstantMessagePacker.prototype.getInstantMessageDelegate = function () {
-        return this.__transceiver;
+    Class(InstantMessagePacker, BaseObject, null, null);
+
+    InstantMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger;
     };
 
     /*
@@ -67,15 +61,15 @@
      *  1. Encrypt message, replace 'content' field with encrypted 'data'
      *  2. Encrypt group message, replace 'content' field with encrypted 'data'
      *
-     * @param {InstantMessage|Message|Mapper} iMsg - plain message
-     * @param {SymmetricKey} password              - symmetric key
-     * @param {ID[]} members                       - group members for group message
+     * @param {dkd.protocol.InstantMessage|dkd.protocol.Message|mk.type.Mapper} iMsg
+     * @param {mk.protocol.SymmetricKey} password  - symmetric key
+     * @param {mkm.protocol.ID[]} members          - group members for group message
      * @return {SecureMessage} encrypted message, null on visa not found
      */
     InstantMessagePacker.prototype.encryptMessage = function (iMsg, password, members) {
         // TODO: check attachment for File/Image/Audio/Video message content
         //      (do it by application)
-        var transceiver = this.getInstantMessageDelegate();
+        var transceiver = this.getDelegate();
 
         //
         //  1. Serialize 'message.content' to data (JsON / ProtoBuf / ...)
@@ -150,7 +144,7 @@
                 if (!encryptedKey) {
                     // public key for encryption not found
                     // TODO: suspend this message for waiting receiver's visa
-                    return null;
+                    continue;
                 }
                 //
                 //  6. Encode message key to String (Base64)
@@ -171,8 +165,3 @@
         // OK, pack message
         return SecureMessage.parse(info);
     };
-
-    //-------- namespace --------
-    ns.msg.InstantMessagePacker = InstantMessagePacker;
-
-})(DIMP);

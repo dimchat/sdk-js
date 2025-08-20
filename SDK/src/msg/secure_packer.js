@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIMP : Decentralized Instant Messaging Protocol
@@ -32,21 +32,16 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
-
-    var Class             = ns.type.Class;
-    var TransportableData = ns.format.TransportableData;
-    var InstantMessage    = ns.protocol.InstantMessage;
-    var ReliableMessage   = ns.protocol.ReliableMessage;
-
-    var SecureMessagePacker = function (messenger) {
-        this.__transceiver = messenger;  // SecureMessageDelegate
+    SecureMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger;  // SecureMessageDelegate
     };
-    Class(SecureMessagePacker, null, null, null);
+    var SecureMessagePacker = SecureMessage.Packer;
 
-    SecureMessagePacker.prototype.getSecureMessageDelegate = function () {
-        return this.__transceiver;
+    Class(SecureMessagePacker, BaseObject, null, null);
+
+    SecureMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger;
     };
 
     /*
@@ -65,12 +60,12 @@
     /**
      *  Decrypt message, replace encrypted 'data' with 'content' field
      *
-     * @param {SecureMessage|Message|Mapper} sMsg - encrypted message
+     * @param {dkd.protocol.SecureMessage|dkd.protocol.Message|mk.type.Mapper} sMsg
      * @param {ID} receiver                       - actual receiver (local user)
      * @return {InstantMessage} plain message
      */
     SecureMessagePacker.prototype.decryptMessage = function (sMsg, receiver) {
-        var transceiver = this.getSecureMessageDelegate();
+        var transceiver = this.getDelegate();
 
         //
         //  1. Decode 'message.key' to encrypted symmetric key data
@@ -167,11 +162,11 @@
     /**
      *  Sign message.data, add 'signature' field
      *
-     * @param {SecureMessage|Mapper} sMsg - encrypted message
+     * @param {dkd.protocol.SecureMessage|mk.type.Mapper} sMsg - encrypted message
      * @return {ReliableMessage} network message
      */
     SecureMessagePacker.prototype.signMessage = function (sMsg) {
-        var transceiver = this.getSecureMessageDelegate();
+        var transceiver = this.getDelegate();
 
         //
         //  0. decode message data
@@ -193,8 +188,3 @@
         info['signature'] = base64;
         return ReliableMessage.parse(info);
     };
-
-    //-------- namespace --------
-    ns.msg.SecureMessagePacker = SecureMessagePacker;
-
-})(DIMP);
