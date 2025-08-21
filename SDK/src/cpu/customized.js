@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,18 +32,12 @@
 
 //! require 'base.js'
 
-(function (ns) {
-    'use strict';
-
-    var Interface = ns.type.Interface;
-    var Class = ns.type.Class;
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-
     /**
      *  Handler for Customized Content
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var CustomizedContentHandler = Interface(null, null);
+    sdk.cpu.CustomizedContentHandler = Interface(null, null);
+    var CustomizedContentHandler = sdk.cpu.CustomizedContentHandler;
 
     /**
      *  Do your job
@@ -56,89 +50,86 @@
      */
     CustomizedContentHandler.prototype.handleAction = function (act, sender, content, rMsg) {};
 
+
+    sdk.cpu.BaseCustomizedHandler = function (facebook, messenger) {
+        TwinsHelper.call(this, facebook, messenger);
+    };
+    var BaseCustomizedHandler = sdk.cpu.BaseCustomizedHandler;
+
+    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler], null);
+
+    // Override
+    BaseCustomizedHandler.prototype.handleAction = function (act, sender, content, rMsg) {
+        var app = content.getApplication();
+        var mod = content.getModule();
+        var text = 'Content not support.';
+        return this.respondReceipt(text, content, rMsg.getEnvelope(), {
+            'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
+            'replacements': {
+                'app': app,
+                'mod': mod,
+                'act': act
+            }
+        });
+    };
+
+    //
+    //  Convenient responding
+    //
+
+    // protected
+    BaseCustomizedHandler.prototype.respondReceipt = function (text, envelope, content, extra) {
+        return [
+            // create base receipt command with text & original envelope
+            BaseContentProcessor.createReceipt(text, envelope, content, extra)
+        ];
+    };
+
+
     /**
      *  Customized Content Processing Unit
      *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    var CustomizedContentProcessor = function (facebook, messenger) {
+    sdk.cpu.CustomizedContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
+        this.__defaultHandler = this.createDefaultHandler(facebook, messenger);
     };
-    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], {
+    var CustomizedContentProcessor = sdk.cpu.CustomizedContentProcessor;
 
-        // Override
-        process: function (content, rMsg) {
-            // 1. check app id
-            var app = content.getApplication();
-            var res = this.filterApplication(app, content, rMsg);
-            if (res) {
-                // app id not found
-                return res;
-            }
-            // 2. get handler with module name
-            var mod = content.getModule();
-            var handler = this.fetchHandler(mod, content, rMsg);
-            if (!handler) {
-                // module not support
-                return null;
-            }
-            // 3. do the job
-            var act = rMsg.getAction();
-            var sender = rMsg.getSender();
-            return handler.handleAction(act, sender, content, rMsg);
-        },
+    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], null);
 
-        /**
-         *  Check App ID
-         *
-         * @param {string} app                   - App ID
-         * @param {CustomizedContent} content    - customized content
-         * @param {ReliableMessage|Message} rMsg - network message
-         * @return {Content[]} responses when app not match
-         */
-        // protected: override for your application
-        filterApplication: function (app, content, rMsg) {
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Customized content (app: ${app}) not support yet!',
-                'replacements': {
-                    'app': app
-                }
-            });
-        },
+    /**
+     *  Create default customized handler
+     *
+     * @param {Facebook} facebook
+     * @param {Messenger} messenger
+     * @return {CustomizedContentHandler}
+     */
+    // protected
+    CustomizedContentProcessor.prototype.createDefaultHandler = function (facebook, messenger) {
+        return new BaseCustomizedHandler(facebook, messenger);
+    };
 
-        /**
-         *  Check Module
-         *
-         * @param {string} mod                  - module name
-         * @param {CustomizedContent} content - customized content
-         * @param {ReliableMessage} rMsg        - network message
-         * @return {CustomizedContentHandler} handler
-         */
-        // protected: override for your module
-        fetchHandler: function (mod, content, rMsg) {
-            // if the application has too many modules, I suggest you to
-            // use different handler to do the jobs for each module.
-            return this;
-        },
+    // protected
+    CustomizedContentProcessor.prototype.getDefaultHandler = function () {
+        return this.__defaultHandler;
+    };
 
-        // Override: override for customized actions
-        handleAction: function (act, sender, content, rMsg) {
-            var app = content.getApplication();
-            var mod = content.getModule();
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
-                'replacements': {
-                    'app': app,
-                    'mod': mod,
-                    'act': act
-                }
-            });
-        }
-    });
+    // Override
+    CustomizedContentProcessor.prototype.processContent = function (content, rMsg) {
+        // get handler for 'app' & 'mod'
+        var app = content.getApplication();
+        var mod = content.getModule();
+        var handler = this.filter(app, mod, content, rMsg);
+        // handle the action
+        var act = content.getAction();
+        var sender = rMsg.getSender();
+        return handler.handleAction(act, sender, content, rMsg);
+    };
 
-    //-------- namespace --------
-    ns.cpu.CustomizedContentHandler = CustomizedContentHandler;
-    ns.cpu.CustomizedContentProcessor = CustomizedContentProcessor;
-
-})(DIMP);
+    // protected
+    CustomizedContentProcessor.prototype.filter = function (app, mod, content, rMsg) {
+        // if the application has too many modules, I suggest you to
+        // use different handler to do the jobs for each module.
+        return this.getDefaultHandler();
+    };

@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,22 +32,15 @@
 
 //! require 'base.js'
 
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var MetaCommand     = ns.protocol.MetaCommand;
-    var DocumentCommand = ns.protocol.DocumentCommand;
-    var DocumentHelper       = ns.mkm.DocumentHelper;
-    var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
-
-    var MetaCommandProcessor = function (facebook, messenger) {
+    sdk.cpu.MetaCommandProcessor = function (facebook, messenger) {
         BaseCommandProcessor.call(this, facebook, messenger);
     };
+    var MetaCommandProcessor = sdk.cpu.MetaCommandProcessor;
+
     Class(MetaCommandProcessor, BaseCommandProcessor, null, {
 
         // Override
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var identifier = content.getIdentifier();
             if (!identifier) {
                 // error
@@ -70,14 +63,15 @@
             var meta = facebook.getMeta(identifier);
             if (meta) {
                 // OK
-                var res = MetaCommand.response(identifier, meta);
-                return [res];
+                return [
+                    MetaCommand.response(identifier, meta)
+                ];
             }
             var text = 'Meta not found.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Meta not found: ${ID}.',
+                'template': 'Meta not found: ${did}.',
                 'replacements': {
-                    'ID': identifier.toString()
+                    'did': identifier.toString()
                 }
             });
         },
@@ -93,9 +87,9 @@
             // 2. success
             var text = 'Meta received.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Meta received: ${ID}.',
+                'template': 'Meta received: ${did}.',
                 'replacements': {
-                    'ID': identifier.toString()
+                    'did': identifier.toString()
                 }
             });
         },
@@ -107,18 +101,18 @@
             if (!this.checkMeta(meta, identifier)) {
                 text = 'Meta not valid.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Meta not valid: ${ID}.',
+                    'template': 'Meta not valid: ${did}.',
                     'replacements': {
-                        'ID': identifier.toString()
+                        'did': identifier.toString()
                     }
                 });
-            } else if (!this.getFacebook().saveMeta(meta, identifier)) {
+            } else if (!this.getArchivist().saveMeta(meta, identifier)) {
                 // DB error?
                 text = 'Meta not accepted.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Meta not accepted: ${ID}.',
+                    'template': 'Meta not accepted: ${did}.',
                     'replacements': {
-                        'ID': identifier.toString()
+                        'did': identifier.toString()
                     }
                 });
             }
@@ -128,17 +122,20 @@
 
         // protected
         checkMeta: function (meta, identifier) {
-            return meta.isValid() && meta.matchIdentifier(identifier);
+            return meta.isValid() && MetaUtils.matchIdentifier(identifier, meta);
         }
     });
 
-    var DocumentCommandProcessor = function (facebook, messenger) {
+
+    sdk.cpu.DocumentCommandProcessor = function (facebook, messenger) {
         MetaCommandProcessor.call(this, facebook, messenger);
     };
+    var DocumentCommandProcessor = sdk.cpu.DocumentCommandProcessor;
+
     Class(DocumentCommandProcessor, MetaCommandProcessor, null, {
 
         // Override
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var text;
             var identifier = content.getIdentifier();
             if (!identifier) {
@@ -146,34 +143,41 @@
                 text = 'Document command error.';
                 return this.respondReceipt(text, rMsg.getEnvelope(), content);
             }
-            var doc = content.getDocument();
-            if (!doc) {
+            var documents = content.getDocuments();
+            if (!documents) {
                 // query entity documents for ID
                 return this.queryDocument(identifier, content, rMsg.getEnvelope());
-            } else if (identifier.equals(doc.getIdentifier())) {
-                // received a new document for ID
-                return this.updateDocument(doc, identifier, content, rMsg.getEnvelope());
             }
-            // error
-            text = 'Document ID not match.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Document ID not match: ${ID}.',
-                'replacements': {
-                    'ID': identifier.toString()
+            var doc;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                if (identifier.equals(doc.getIdentifier())) {
+                    // document ID matched
+                } else {
+                    // error
+                    text = 'Document ID not match.';
+                    return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                        'template': 'Document ID not match: ${did}.',
+                        'replacements': {
+                            'did': identifier.toString()
+                        }
+                    });
                 }
-            });
+            }
+            // received a new document for ID
+            return this.updateDocuments(documents, identifier, content, rMsg.getEnvelope());
         },
 
         // private
         queryDocument: function (identifier, content, envelope) {
             var text;
-            var docs = this.getFacebook().getDocuments(identifier);
-            if (!docs || docs.length === 0) {
+            var documents = this.getFacebook().getDocuments(identifier);
+            if (!documents || documents.length === 0) {
                 text = 'Document not found.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not found: ${ID}.',
+                    'template': 'Document not found: ${did}.',
                     'replacements': {
-                        'ID': identifier.toString()
+                        'did': identifier.toString()
                     }
                 });
             }
@@ -181,36 +185,30 @@
             var queryTime = content.getLastTime();
             if (queryTime) {
                 // check last document time
-                var last = DocumentHelper.lastDocument(docs);
+                var last = DocumentUtils.lastDocument(documents);
                 var lastTime = !last ? null : last.getTime();
                 if (!lastTime) {
                     // ERROR: document error
-                } else if (lastTime.getTime() > queryTime.getTime()) {
+                } else if (lastTime.getTime() <= queryTime.getTime()) {
                     // document not updated
                     text = 'Document not updated.';
                     return this.respondReceipt(text, envelope, content, {
-                        'template': 'Document not updated: ${ID}, last time: ${time}.',
+                        'template': 'Document not updated: ${did}, last time: ${time}.',
                         'replacements': {
-                            'ID': identifier.toString(),
+                            'did': identifier.toString(),
                             'time': lastTime.getTime()
                         }
                     });
                 }
             }
             var meta = this.getFacebook().getMeta(identifier);
-            // respond first document with meta
-            var command = DocumentCommand.response(identifier, meta, docs[0]);
-            var responses = [command];
-            for (var i = 1; i < docs.length; ++i) {
-                // respond other documents
-                command = DocumentCommand.response(identifier, null, docs[i]);
-                responses.push(command);
-            }
-            return responses;
+            return [
+                DocumentCommand.response(identifier, meta, documents)
+            ];
         },
 
         // private
-        updateDocument: function (doc, identifier, content, envelope) {
+        updateDocuments: function (documents, identifier, content, envelope) {
             var errors;  // List<Content>
             var meta = content.getMeta();
             var text;
@@ -220,9 +218,9 @@
                 if (!meta) {
                     text = 'Meta not found.';
                     return this.respondReceipt(text, envelope, content, {
-                        'template': 'Meta not found: ${ID}.',
+                        'template': 'Meta not found: ${did}.',
                         'replacements': {
-                            'ID': identifier.toString()
+                            'did': identifier.toString()
                         }
                     });
                 }
@@ -235,17 +233,28 @@
                 }
             }
             // 2. try to save document
-            errors = this.saveDocument(doc, meta, identifier, content, envelope);
-            if (errors) {
+            errors = [];
+            var array;
+            var doc;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                array = this.saveDocument(doc, meta, identifier, content, envelope);
+                if (array) {
+                    for (var j = 0; j < array.length; ++j) {
+                        errors.push(array[j]);
+                    }
+                }
+            }
+            if (array.length > 0) {
                 // failed
                 return errors;
             }
             // 3. success
             text = 'Document received.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Document received: ${ID}.',
+                'template': 'Document received: ${did}.',
                 'replacements': {
-                    'ID': identifier.toString()
+                    'did': identifier.toString()
                 }
             });
         },
@@ -258,18 +267,18 @@
                 // document error
                 text = 'Document not accepted.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not accepted: ${ID}.',
+                    'template': 'Document not accepted: ${did}.',
                     'replacements': {
-                        'ID': identifier.toString()
+                        'did': identifier.toString()
                     }
                 });
-            } else if (!this.getFacebook().saveDocument(doc)) {
+            } else if (!this.getArchivist().saveDocument(doc)) {
                 // document expired
                 text = 'Document not changed.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not changed: ${ID}.',
+                    'template': 'Document not changed: ${did}.',
                     'replacements': {
-                        'ID': identifier.toString()
+                        'did': identifier.toString()
                     }
                 });
             }
@@ -290,9 +299,3 @@
             // TODO: check for group document
         }
     });
-
-    //-------- namespace --------
-    ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
-    ns.cpu.DocumentCommandProcessor = DocumentCommandProcessor;
-
-})(DIMP);

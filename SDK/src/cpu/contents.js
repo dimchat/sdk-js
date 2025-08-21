@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,21 +32,15 @@
 
 //! require 'base.js'
 
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var ForwardContent = ns.protocol.ForwardContent;
-    var ArrayContent   = ns.protocol.ArrayContent;
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-
-    var ForwardContentProcessor = function (facebook, messenger) {
+    sdk.cpu.ForwardContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
+    var ForwardContentProcessor = sdk.cpu.ForwardContentProcessor;
+
     Class(ForwardContentProcessor, BaseContentProcessor, null, {
 
         // Override
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var secrets = content.getSecrets();
             if (!secrets) {
                 return null;
@@ -71,13 +65,16 @@
         }
     });
 
-    var ArrayContentProcessor = function (facebook, messenger) {
+
+    sdk.cpu.ArrayContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
+    var ArrayContentProcessor = sdk.cpu.ArrayContentProcessor;
+
     Class(ArrayContentProcessor, BaseContentProcessor, null, {
 
         // Override
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var array = content.getContents();
             if (!array) {
                 return null;
@@ -101,9 +98,3 @@
             return responses;
         }
     });
-
-    //-------- namespace --------
-    ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
-    ns.cpu.ArrayContentProcessor = ArrayContentProcessor;
-
-})(DIMP);

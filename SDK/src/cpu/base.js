@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -30,14 +30,8 @@
 // =============================================================================
 //
 
-//! require 'content.js'
-
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var ContentProcessor = ns.cpu.ContentProcessor;
-    var TwinsHelper = ns.TwinsHelper;
+//! require 'dkd/proc.js'
+//! require 'twins.js'
 
     /**
      *  Content Processing Unit
@@ -46,22 +40,59 @@
      * @param {Facebook} facebook
      * @param {Messenger} messenger
      */
-    var BaseContentProcessor = function (facebook, messenger) {
+    sdk.cpu.BaseContentProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], {
+    var BaseContentProcessor = sdk.cpu.BaseContentProcessor;
 
-        // Override
-        process: function (content, rMsg) {
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Content (type: ${type}) not support yet!',
-                'replacements': {
-                    'type': content.getType()
-                }
-            });
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+
+    // Override
+    BaseContentProcessor.prototype.processContent = function (content, rMsg) {
+        var text = 'Content not support.';
+        return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+            'template': 'Content (type: ${type}) not support yet!',
+            'replacements': {
+                'type': content.getType()
+            }
+        });
+    };
+
+    //
+    //  Convenient responding
+    //
+
+    // protected
+    BaseContentProcessor.prototype.respondReceipt = function (text, envelope, content, extra) {
+        return [
+            BaseContentProcessor.createReceipt(text, envelope, content, extra)
+        ];
+    };
+
+    /**
+     *  Receipt command with text, original envelope, serial number & group
+     *
+     * @param {string} text     - respond message
+     * @param {Envelope} envelope - original message envelope
+     * @param {Content} content  - original message content
+     * @param {*} extra    - extra info
+     * @return {ReceiptCommand}
+     */
+    BaseContentProcessor.createReceipt = function (text, envelope, content, extra) {
+        // create base receipt command with text, original envelope, serial number & group ID
+        var res = ReceiptCommand.create(text, envelope, content);
+        // add extra key-values
+        if (extra) {
+            var keys = Object.keys(extra);
+            var name, value;
+            for (var i = 0; i < keys.length; ++i) {
+                name = keys[i];
+                value = extra[name];
+                res.setValue(name, value);
+            }
         }
-    });
+        return res;
+    };
 
     /**
      *  Command Processing Unit
@@ -70,13 +101,15 @@
      * @param {Facebook} facebook
      * @param {Messenger} messenger
      */
-    var BaseCommandProcessor = function (facebook, messenger) {
+    sdk.cpu.BaseCommandProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger);
     };
+    var BaseCommandProcessor = sdk.cpu.BaseCommandProcessor;
+
     Class(BaseCommandProcessor, BaseContentProcessor, null, {
 
         // Override
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var text = 'Command not support.';
             return this.respondReceipt(text, rMsg.getEnvelope(), content, {
                 'template': 'Command (name: ${command}) not support yet!',
@@ -86,9 +119,3 @@
             });
         }
     });
-
-    //-------- namespace --------
-    ns.cpu.BaseContentProcessor = BaseContentProcessor;
-    ns.cpu.BaseCommandProcessor = BaseCommandProcessor;
-
-})(DIMP);

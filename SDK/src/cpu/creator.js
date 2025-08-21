@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,15 +32,6 @@
 
 //! require 'content.js'
 
-(function (ns) {
-    'use strict';
-
-    var Class = ns.type.Class;
-    var ContentType = ns.protocol.ContentType;
-    var Command = ns.protocol.Command;
-    var ContentProcessor = ns.cpu.ContentProcessor;
-    var TwinsHelper = ns.TwinsHelper;
-
     /**
      *  CPU Creator
      *  ~~~~~~~~~~~
@@ -48,45 +39,48 @@
      * @param {Facebook} facebook
      * @param {Messenger} messenger
      */
-    var ContentProcessorCreator = function (facebook, messenger) {
+    sdk.cpu.BaseContentProcessorCreator = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger);
     };
-    Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
+    var BaseContentProcessorCreator = sdk.cpu.BaseContentProcessorCreator;
+
+    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
 
         // Override
         createContentProcessor: function (type) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();
-            // forward content
-            if (ContentType.FORWARD.equals(type)) {
-                return new ns.cpu.ForwardContentProcessor(facebook, messenger);
-            }
-            // array content
-            if (ContentType.ARRAY.equals(type)) {
-                return new ns.cpu.ArrayContentProcessor(facebook, messenger);
-            }
+            switch (type) {
 
-            /*/
-            // application customized
-            if (ContentType.APPLICATION.equals(type)) {
-                return new ns.cpu.CustomizedContentProcessor(facebook, messenger);
-            } else if (ContentType.CUSTOMIZED.equals(type)) {
-                return new ns.cpu.CustomizedContentProcessor(facebook, messenger);
-            }
-            /*/
+                // // application customized
+                // case ContentType.APPLICATION:
+                // case 'application':
+                // case ContentType.CUSTOMIZED:
+                // case 'customized':
+                //     return new CustomizedContentProcessor(facebook, messenger);
 
-            // default commands
-            if (ContentType.COMMAND.equals(type)) {
-                return new ns.cpu.BaseCommandProcessor(facebook, messenger);
+                // forward content
+                case ContentType.FORWARD:
+                case 'forward':
+                    return ForwardContentProcessor(facebook, messenger);
+
+                // array content
+                case ContentType.ARRAY:
+                case 'array':
+                    return ArrayContentProcessor(facebook, messenger);
+
+                // default commands
+                case ContentType.COMMAND:
+                case 'command':
+                    return new BaseCommandProcessor(facebook, messenger);
+
+                // default commands
+                case ContentType.ANY:
+                case '*':
+                    // must return a default processor for type==0
+                    return new BaseContentProcessor(facebook, messenger);
             }
-            /*/
-            // default contents
-            if (0 === type) {
-                // must return a default processor for type==0
-                return new ns.cpu.BaseContentProcessor(facebook, messenger);
-            }
-            /*/
-            // unknown
+            // unsupported content
             return null;
         },
 
@@ -94,19 +88,17 @@
         createCommandProcessor: function (type, cmd) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();
-            // meta command
-            if (cmd === Command.META) {
-                return new ns.cpu.MetaCommandProcessor(facebook, messenger);
-            } else if (cmd === Command.DOCUMENT) {
-                return new ns.cpu.DocumentCommandProcessor(facebook, messenger);
-            }
+            switch (cmd) {
 
-            // unknown
+                // meta command
+                case Command.META:
+                    return new MetaCommandProcessor(facebook, messenger);
+
+                // meta command
+                case Command.DOCUMENTS:
+                    return new DocumentCommandProcessor(facebook, messenger);
+            }
+            // unsupported command
             return null;
         }
     });
-
-    //-------- namespace --------
-    ns.cpu.ContentProcessorCreator = ContentProcessorCreator;
-
-})(DIMP);
