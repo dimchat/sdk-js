@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,11 +32,8 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
-
-    var Interface = ns.type.Interface;
-    var ID        = ns.protocol.ID;
+    sdk.core.CipherKeyDelegate = Interface(null, null);
+    var CipherKeyDelegate = sdk.core.CipherKeyDelegate;
 
     /*  Situations:
                       +-------------+-------------+-------------+-------------+
@@ -70,7 +67,20 @@
         |             |             |             |             |             |
         +-------------+-------------+-------------+-------------+-------------+
      */
-    var getDestination = function (receiver, group) {
+
+    /**
+     *  Get destination for cipher key vector: (sender, dest)
+     *
+     * @param {dkd.protocol.Message|mk.type.Mapper} msg
+     * @return {ID}
+     */
+    CipherKeyDelegate.getDestinationForMessage = function (msg) {
+        var receiver = msg.getReceiver();
+        var group = ID.parse(msg.getValue('group'));
+        return CipherKeyDelegate.getDestination(receiver, group);
+    };
+
+    CipherKeyDelegate.getDestination = function (receiver, group) {
         if (!group && receiver.isGroup()) {
             /// Transform:
             ///     (B) => (J)
@@ -99,21 +109,6 @@
         }
     };
 
-    var CipherKeyDelegate = Interface(null, null);
-
-    /**
-     *  Get destination for cipher key vector: (sender, dest)
-     *
-     * @param {Message|Mapper} msg
-     * @return {ID}
-     */
-    CipherKeyDelegate.getDestinationForMessage = function (msg) {
-        var group = ID.parse(msg.getValue('group'));
-        return getDestination(msg.getReceiver(), group);
-    };
-
-    CipherKeyDelegate.getDestination = getDestination;
-
     /**
      *  Get cipher key for encrypt message from 'sender' to 'receiver'
      *
@@ -132,9 +127,3 @@
      * @param {SymmetricKey} key - cipher key
      */
     CipherKeyDelegate.prototype.cacheCipherKey = function (sender, receiver, key) {};
-
-    //-------- namespace --------
-    ns.CipherKeyDelegate = CipherKeyDelegate;
-
-})(DIMP);
-

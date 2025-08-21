@@ -1,4 +1,4 @@
-;
+'use strict';
 // license: https://mit-license.org
 //
 //  DIM-SDK : Decentralized Instant Messaging Software Development Kit
@@ -32,33 +32,42 @@
 
 //! require <dimp.js>
 
-(function (ns) {
-    'use strict';
+//! require 'core/delegate.js'
+//! require 'core/packer.js'
+//! require 'core/processor.js'
+//! require 'core/transceiver.js'
 
-    var Class             = ns.type.Class;
-    var Packer            = ns.Packer;
-    var Processor         = ns.Processor;
-    var CipherKeyDelegate = ns.CipherKeyDelegate;
-    var Transceiver       = ns.Transceiver;
-
-    var Messenger = function () {
+    sdk.Messenger = function () {
         Transceiver.call(this);
     };
+    var Messenger = sdk.Messenger;
+
     Class(Messenger, Transceiver, [Packer, Processor], null);
 
     // protected
-    Messenger.prototype.getCipherKeyDelegate = function () {
-        throw new Error('Messenger::getCipherKeyDelegate');
-    };
+    Messenger.prototype.getCipherKeyDelegate = function () {};
 
     // protected
-    Messenger.prototype.getPacker = function () {
-        throw new Error('Messenger::getPacker');
-    };
+    Messenger.prototype.getPacker = function () {};
 
     // protected
-    Messenger.prototype.getProcessor = function () {
-        throw new Error('Messenger::getProcessor');
+    Messenger.prototype.getProcessor = function () {};
+
+    //-------- SecureMessageDelegate
+
+    // Override
+    Messenger.prototype.deserializeKey = function (keyData, sMsg) {
+        if (!keyData) {
+            // get key from cache with direction: sender -> receiver(group)
+            return this.getDecryptKey(sMsg);
+        }
+        var password = Transceiver.prototype.deserializeKey.call(this, keyData, sMsg);
+        // cache decrypt key when success
+        if (password) {
+            // cache the key with direction: sender -> receiver(group)
+            this.cacheDecryptKey(password, sMsg);
+        }
+        return password;
     };
 
     //
@@ -69,24 +78,24 @@
     Messenger.prototype.getEncryptKey = function (iMsg) {
         var sender = iMsg.getSender();
         var target = CipherKeyDelegate.getDestinationForMessage(iMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.getCipherKey(sender, target, true);
+        var db = this.getCipherKeyDelegate();
+        return db.getCipherKey(sender, target, true);
     };
 
     // Override
     Messenger.prototype.getDecryptKey = function (sMsg) {
         var sender = sMsg.getSender();
         var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.getCipherKey(sender, target, false);
+        var db = this.getCipherKeyDelegate();
+        return db.getCipherKey(sender, target, false);
     };
 
     // Override
     Messenger.prototype.cacheDecryptKey = function (key, sMsg) {
         var sender = sMsg.getSender();
         var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.cacheCipherKey(sender, target, key);
+        var db = this.getCipherKeyDelegate();
+        return db.cacheCipherKey(sender, target, key);
     };
 
     //
@@ -105,17 +114,17 @@
         return packer.signMessage(sMsg);
     };
 
-    // Override
-    Messenger.prototype.serializeMessage = function (rMsg) {
-        var packer = this.getPacker();
-        return packer.serializeMessage(rMsg);
-    };
-
-    // Override
-    Messenger.prototype.deserializeMessage = function (data) {
-        var packer = this.getPacker();
-        return packer.deserializeMessage(data);
-    };
+    // // Override
+    // Messenger.prototype.serializeMessage = function (rMsg) {
+    //     var packer = this.getPacker();
+    //     return packer.serializeMessage(rMsg);
+    // };
+    //
+    // // Override
+    // Messenger.prototype.deserializeMessage = function (data) {
+    //     var packer = this.getPacker();
+    //     return packer.deserializeMessage(data);
+    // };
 
     // Override
     Messenger.prototype.verifyMessage = function (rMsg) {
@@ -162,38 +171,3 @@
         var processor = this.getProcessor();
         return processor.processContent(content, rMsg);
     };
-
-    //
-    //  SecureMessage Delegate
-    //
-
-    // Override
-    Messenger.prototype.deserializeKey = function (data, sMsg) {
-        if (!data) {
-            // get key from cache with direction: sender -> receiver(group)
-            return this.getDecryptKey(sMsg);
-        }
-        return Transceiver.prototype.deserializeKey.call(this, data, sMsg);
-    };
-
-    // Override
-    Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
-        var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
-
-        // cache decrypt key when success
-        if (!content) {
-            // assert(false, 'content error: ${data.length}');
-        } else {
-            // cache the key with direction: sender -> receiver(group)
-            this.cacheDecryptKey(pwd, sMsg);
-        }
-
-        // NOTICE: check attachment for File/Image/Audio/Video message content
-        //         after deserialize content, this job should be do in subclass
-        return content;
-    };
-
-    //-------- namespace --------
-    ns.Messenger = Messenger;
-
-})(DIMP);

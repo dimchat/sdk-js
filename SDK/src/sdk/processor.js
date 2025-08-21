@@ -1,0 +1,221 @@
+'use strict';
+// license: https://mit-license.org
+//
+//  DIM-SDK : Decentralized Instant Messaging Software Development Kit
+//
+//                               Written in 2020 by Moky <albert.moky@gmail.com>
+//
+// =============================================================================
+// The MIT License (MIT)
+//
+// Copyright (c) 2020 Albert Moky
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+// =============================================================================
+//
+
+//! require 'namespace.js'
+
+    sdk.MessageProcessor = function (facebook, messenger) {
+        TwinsHelper.call(this, facebook, messenger);
+        this.__factory = this.createFactory(facebook, messenger);
+    };
+    var MessageProcessor = sdk.MessageProcessor;
+
+    Class(MessageProcessor, TwinsHelper, [Processor], null);
+
+    // protected
+    MessageProcessor.prototype.createFactory = function (facebook, messenger) {};
+
+    // private
+    MessageProcessor.prototype.getFactory = function () {
+        return this.__factory;
+    };
+
+    //
+    //  Processing Message
+    //
+
+    // Override
+    MessageProcessor.prototype.processPackage = function (data) {
+        var messenger = this.getMessenger();
+
+        // 1. deserialize message
+        var rMsg = messenger.deserializeMessage(data);
+        if (!rMsg) {
+            // no valid message received
+            return [];
+        }
+
+        // 2. process message
+        var responses = messenger.processReliableMessage(rMsg);
+        if (!responses || responses.length === 0) {
+            // nothing to respond
+            return [];
+        }
+
+        // 3. serialize messages
+        var packages = [];  // Uint8Array[]
+        var res, pack;      // ReliableMessage, Uint8Array
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                // should not happen
+                continue;
+            }
+            pack = messenger.serializeMessage(res);
+            if (!pack) {
+                // should not happen
+                continue;
+            }
+            packages.push(pack);
+        }
+        return packages;
+    };
+
+    // Override
+    MessageProcessor.prototype.processReliableMessage = function (rMsg) {
+        // TODO: override to check broadcast message before calling it
+        var messenger = this.getMessenger();
+
+        // 1. verify message
+        var sMsg = messenger.verifyMessage(rMsg);
+        if (!sMsg) {
+            // waiting for sender's meta if not exists
+            return [];
+        }
+
+        // 2. process message
+        var responses = messenger.processSecureMessage(sMsg, rMsg);
+        if (!responses || responses.length === 0) {
+            // nothing to respond
+            return [];
+        }
+
+        // 3. sign messages
+        var messages = [];  // ReliableMessage[]
+        var res, msg;       // SecureMessage, ReliableMessage
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                // should not happen
+                continue;
+            }
+            msg = messenger.signMessage(res);
+            if (!msg) {
+                // should not happen
+                continue;
+            }
+            messages.push(msg);
+        }
+        return messages;
+        // TODO: override to deliver to the receiver when catch exception "receiver error ..."
+    };
+
+    // Override
+    MessageProcessor.prototype.processSecureMessage = function (sMsg, rMsg) {
+        var messenger = this.getMessenger();
+
+        // 1. decrypt message
+        var iMsg = messenger.decryptMessage(sMsg);
+        if (!iMsg) {
+            // cannot decrypt this message, not for you?
+            // delivering message to other receiver?
+            return [];
+        }
+
+        // 2. process message
+        var responses = messenger.processInstantMessage(iMsg, rMsg);
+        if (!responses || responses.length === 0) {
+            // nothing to respond
+            return [];
+        }
+
+        // 3. encrypt message
+        var messages = [];  // SecureMessage[]
+        var res, msg;       // InstantMessage, SecureMessage
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                // should not happen
+                continue;
+            }
+            msg = messenger.encryptMessage(res);
+            if (!msg) {
+                // should not happen
+                continue;
+            }
+            messages.push(msg);
+        }
+        return messages;
+    };
+
+    // Override
+    MessageProcessor.prototype.processInstantMessage = function (iMsg, rMsg) {
+        var facebook = this.getFacebook();
+        var messenger = this.getMessenger();
+
+        // 1. process content
+        var responses = messenger.processContent(iMsg.getContent(), rMsg);
+        if (!responses || responses.length === 0) {
+            // nothing to respond
+            return [];
+        }
+
+        // 2. select a local user to build message
+        var sender = iMsg.getSender();
+        var receiver = iMsg.getReceiver();
+        var me = facebook.selectLocalUser(receiver);
+        if (!me) {
+            // receiver error
+            return [];
+        }
+
+        // 3. pack messages
+        var messages = [];  // InstantMessage[]
+        var res, env, msg;  // Content, Envelope, InstantMessage
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                // should not happen
+                continue;
+            }
+            env = Envelope.create(me, sender, null);
+            msg = InstantMessage.create(env, res);
+            if (!msg) {
+                // should not happen
+                continue;
+            }
+            messages.push(msg);
+        }
+        return messages;
+    };
+
+    // Override
+    MessageProcessor.prototype.processContent = function (content, rMsg) {
+        // TODO: override to check group
+        var factory = this.getFactory();
+        var cpu = factory.getContentProcessor(content);
+        if (!cpu) {
+            // default content processor
+            cpu = factory.getContentProcessorForType(ContentType.ANY);
+        }
+        return cpu.processContent(content, rMsg);
+        // TODO: override to filter the response(s)
+    };

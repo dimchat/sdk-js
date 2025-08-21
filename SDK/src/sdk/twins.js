@@ -30,54 +30,21 @@
 // =============================================================================
 //
 
-//! require 'namespace.js'
+//! require <dimp.js>
 
-    /**
-     *  Message Processor
-     *  ~~~~~~~~~~~~~~~~~
-     */
-    sdk.core.Processor = Interface(null, null);
-    var Processor = sdk.core.Processor;
+    sdk.TwinsHelper = function (facebook, messenger) {
+        BaseObject.call(this);
+        this.__facebook = facebook;
+        this.__messenger = messenger;
+    };
+    var TwinsHelper = sdk.TwinsHelper;
 
-    /**
-     *  Process data package
-     *
-     * @param {Uint8Array} data - data to be processed
-     * @return {Uint8Array} response data
-     */
-    Processor.prototype.processPackage = function (data) {};
+    Class(TwinsHelper, BaseObject, null, null);
 
-    /**
-     *  Process network message
-     *
-     * @param {ReliableMessage} rMsg - message to be processed
-     * @return {ReliableMessage} response message
-     */
-    Processor.prototype.processReliableMessage = function (rMsg) {};
+    TwinsHelper.prototype.getFacebook = function () {
+        return this.__facebook;
+    }
 
-    /**
-     *  Process encrypted message
-     *
-     * @param {SecureMessage} sMsg - message to be processed
-     * @param {ReliableMessage} rMsg - message received
-     * @return {SecureMessage} response message
-     */
-    Processor.prototype.processSecureMessage = function (sMsg, rMsg) {};
-
-    /**
-     *  Process plain message
-     *
-     * @param {InstantMessage} iMsg - message to be processed
-     * @param {ReliableMessage} rMsg - message received
-     * @return {InstantMessage} response message
-     */
-    Processor.prototype.processInstantMessage = function (iMsg, rMsg) {};
-
-    /**
-     *  Process message content
-     *
-     * @param {Content} content - content to be processed
-     * @param {ReliableMessage} rMsg - message received
-     * @return {Content} response content
-     */
-    Processor.prototype.processContent = function (content, rMsg) {};
+    TwinsHelper.prototype.getMessenger = function () {
+        return this.__messenger;
+    }
