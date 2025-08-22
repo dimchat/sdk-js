@@ -5,69 +5,49 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DIM-SDK Test Cases</title>
-    <script src="/Plugins/libs/3rd/crypto-js/core.js"></script>
-    <script src="/Plugins/libs/3rd/crypto-js/cipher-core.js"></script>
-    <script src="/Plugins/libs/3rd/crypto-js/aes.js"></script>
-    <script src="/Plugins/libs/3rd/crypto-js/md5.js"></script>
-    <script src="/Plugins/libs/3rd/crypto-js/sha256.js"></script>
-    <script src="/Plugins/libs/3rd/crypto-js/ripemd160.js"></script>
-    <script src="/Plugins/libs/3rd/jsencrypt.js"></script>
-    <script src="/Plugins/libs/3rd/sha3.js"></script>
-    <script src="/Plugins/libs/3rd/ecc/bn.js"></script>
-    <script src="/Plugins/libs/3rd/ecc/secp256k1.js"></script>
+    <link href="../../Crypto/tests/test.css" type="text/css" rel="stylesheet" />
+    <script src="../../Crypto/libs/loader.js"></script>
+    <script src="../../Crypto/libs/runner.js"></script>
+    <script src="../../Crypto/libs/utils.js"></script>
 
-    <link href="/Crypto/tests/test.css" type="text/css" rel="stylesheet" />
-    <script src="/Crypto/libs/loader.js"></script>
-    <script src="/Crypto/libs/runner.js"></script>
-    <script src="/Crypto/libs/utils.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/core.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/cipher-core.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/aes.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/md5.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/sha256.js"></script>
+    <script src="../../Plugins/libs/3rd/crypto-js/ripemd160.js"></script>
+    <script src="../../Plugins/libs/3rd/jsencrypt.js"></script>
+    <script src="../../Plugins/libs/3rd/sha3.js"></script>
+    <script src="../../Plugins/libs/3rd/ecc/bn.js"></script>
+    <script src="../../Plugins/libs/3rd/ecc/secp256k1.js"></script>
 
-    <script src="/DIMP/dist/dimp.js"></script>
-    <script src="/Plugins/dist/plugins.js"></script>
+    <script src="../../DIMP/dist/dimp.js"></script>
+    <script src="../../Plugins/dist/plugins.js"></script>
 
+    <script src="../src/sources.js"></script>
     <script>
         !function (ns) {
             var sources = [
-                'src/namespace.js',
-                'src/utils/checkers.js',
-
-                'src/mkm/members.js',
-                'src/mkm/bot.js',
-                'src/mkm/station.js',
-                'src/mkm/provider.js',
-
-                'src/msg/instant.js',
-                'src/msg/secure.js',
-                'src/msg/reliable.js',
-                'src/msg/helper.js',
-                'src/msg/factory.js',
-
-                'src/cpu/proc.js',
-                'src/cpu/base.js',
-                'src/cpu/contents.js',
-                'src/cpu/commands.js',
-                'src/cpu/customized.js',
-                'src/cpu/creator.js',
-
-                'src/core/ans.js',
-                'src/core/archivist.js',
-                'src/core/delegate.js',
-                'src/core/facebook.js',
-                'src/core/packer.js',
-                'src/core/processor.js',
-                'src/core/messenger.js',
-                'src/core/factory.js',
-                null
-            ];
-
+                'src/requires.js'
+            ].concat(sdk_sources);
             var dist = 'dist/sdk.js';
 
             var tests = [
-                '../Crypto/tests/crypto_tests.js',
-                '../MingKeMing/tests/mkm_tests.js',
-                '../DaoKeDao/tests/dkd_tests.js',
-                '../DIMP/tests/core_tests.js',
-                '../Plugins/tests/compat.js',
-                '../Plugins/tests/plugins_tests.js',
+                '../../Crypto/tests/format/utf8.js',
+                '../../Crypto/tests/format/json.js',
+                '../../Crypto/tests/format/hex.js',
+                '../../Crypto/tests/format/base58.js',
+                '../../Crypto/tests/format/base64.js',
+                '../../Crypto/tests/crypto_tests.js',
+
+                '../../MingKeMing/tests/mkm_tests.js',
+
+                '../../DaoKeDao/tests/dkd_tests.js',
+
+                '../../DIMP/tests/core_tests.js',
+
+                '../../Plugins/tests/compat.js',
+                '../../Plugins/tests/plugins_tests.js',
 
                 'tests/keycache.js',
                 'tests/sdk_tests.js',
@@ -77,6 +57,7 @@
             var base = window.location.href;
             base = base.substring(0, base.indexOf('tests/test.html'));
             var loader = new Loader(base);
+            loader.importJS('src/namespace.js');
 
             for (var i = 0; i < sources.length; ++i) {
                 loader.importJS(sources[i]);
@@ -150,16 +131,19 @@
 <p class="console">
     <script>
         !(function () {
-            var text = 'cat';
-            var file;
+            var targets = [
+                'src/ns_begin.closure'
+            ];
             for (var i = 0; i < sources.length; ++i) {
-                file = sources[i];
-                if (!file) {
-                    continue;
+                var file = sources[i];
+                if (file) {
+                    targets.push(file);
                 }
-                text += ' ' + file;
             }
-            text += ' >> ' + dist;
+            targets.push('src/ns_end.closure');
+
+            var text = targets.join(' ');
+            text = 'cat ' + text + ' > ' + dist;
             document.writeln(text);
         }());
     </script>
@@ -167,14 +151,14 @@
 <p class="console">
     <script>
         !(function () {
-            var text = 'cat' +
-                ' ../../core-js/DIMP/dist/dimp.js' +
-                ' ../Plugins/dist/plugins.js' +
-                ' dist/sdk.js' +
-                ' ../../../moky/FiniteStateMachine/fsm-js/FSM/dist/fsm.js' +
-                ' ../../../moky/wormhole/startrek-js/StarTrek/dist/startrek.js' +
-                ' ../StarGate/dist/stargate.js';
-            text += ' >> dist/dimall.js';
+            var targets = [
+                '../../core-js/DIMP/dist/dimp.js',
+                '../../plugins-js/Plugins/dist/plugins.js',
+                dist
+            ];
+
+            var text = targets.join(' ');
+            text = 'cat ' + text + ' >> dist/dimsdk.js';
             document.writeln(text);
         }());
     </script>

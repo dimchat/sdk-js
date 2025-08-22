@@ -3,7 +3,20 @@
 !function (ns) {
     'use strict';
 
-    ns.registerAllFactories();
+    var ExtensionLoader       = ns.ext.ExtensionLoader;
+    var PluginLoader          = ns.ext.PluginLoader;
+
+    var LibraryLoader = function () {
+        this.ext_loader = new ExtensionLoader();
+        this.plg_loader = new PluginLoader();
+    };
+    LibraryLoader.prototype.run = function () {
+        this.ext_loader.load();
+        this.plg_loader.load();
+    };
+
+    var loader = new LibraryLoader();
+    loader.run();
 
 }(DIMP);
 
@@ -14,15 +27,40 @@
     var Archivist = ns.Archivist;
     var Facebook = ns.Facebook;
 
+    var Archivist = ns.core.Archivist;
+    var Barrack = ns.core.Barrack;
+
+    var ClientBarrack = function () {
+        Barrack.call(this);
+    };
+    Class(ClientBarrack, Barrack, [Archivist], {
+
+        // Override
+        getMetaKey: function (identifier) {
+            // TODO:
+        },
+
+        // Override
+        getVisaKey: function (identifier) {
+            // TODO:
+        }
+
+    });
+
     var ClientFacebook = function () {
         Facebook.call(this);
-        this.__archivist = new Archivist(120);
+        this.__barrack = new ClientBarrack();
     };
     Class(ClientFacebook, Facebook, null, {
 
         // Override
+        getBarrack: function () {
+            return this.__barrack;
+        },
+
+        // Override
         getArchivist: function () {
-            return this.__archivist;
+            return this.__barrack;
         },
 
         // Override
@@ -76,8 +114,6 @@
     });
 
     ns.ClientMessenger = ClientMessenger;
-
-    ns.registerAllFactories();
 
 }(DIMP);
 

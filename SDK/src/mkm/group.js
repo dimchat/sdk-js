@@ -89,7 +89,7 @@
      *  1. founder has the same public key with the group's meta.key
      *  2. owner and members should be set complying with the consensus algorithm
      */
-    Group.DataSource = Interface(null, [Entity.DataSource]);
+    Group.DataSource = Interface(null, [EntityDataSource]);
     var GroupDataSource = Group.DataSource;
 
     /**

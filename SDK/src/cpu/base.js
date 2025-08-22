@@ -83,13 +83,7 @@
         var res = ReceiptCommand.create(text, envelope, content);
         // add extra key-values
         if (extra) {
-            var keys = Object.keys(extra);
-            var name, value;
-            for (var i = 0; i < keys.length; ++i) {
-                name = keys[i];
-                value = extra[name];
-                res.setValue(name, value);
-            }
+            Mapper.addAll(res, extra);
         }
         return res;
     };

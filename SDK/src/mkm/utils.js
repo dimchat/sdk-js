@@ -159,7 +159,7 @@
             if (!documents || documents.length === 0) {
                 return null;
             }
-            var last = null
+            var last = null;
             var doc, matched;
             for (var i = 0; i < documents.length; ++i) {
                 doc = documents[i];
@@ -187,7 +187,7 @@
             if (!documents || documents.length === 0) {
                 return null;
             }
-            var last = null
+            var last = null;
             var doc, matched;
             for (var i = 0; i < documents.length; ++i) {
                 doc = documents[i];

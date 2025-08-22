@@ -42,7 +42,9 @@
     };
     var Facebook = sdk.Facebook;
 
-    Class(Facebook, BaseObject, null, null);
+    Class(Facebook, BaseObject, [
+        EntityDelegate, UserDataSource, GroupDataSource
+    ], null);
 
     // protected
     Facebook.prototype.getBarrack = function () {};

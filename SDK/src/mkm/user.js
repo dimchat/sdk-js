@@ -130,7 +130,7 @@
      *  6. public key for visa verification
      *     meta.key only
      */
-    User.DataSource = Interface(null, [Entity.DataSource]);
+    User.DataSource = Interface(null, [EntityDataSource]);
     var UserDataSource = User.DataSource;
 
     /**

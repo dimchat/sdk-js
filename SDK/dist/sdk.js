@@ -1,184 +1,511 @@
 /**
- *  DIM-SDK (v1.0.0)
+ *  DIM-SDK (v2.0.0)
  *  (DIMP: Decentralized Instant Messaging Protocol)
  *
  * @author    moKy <albert.moky at gmail.com>
- * @date      Nov. 19, 2024
- * @copyright (c) 2024 Albert Moky
+ * @date      Aug. 23, 2025
+ * @copyright (c) 2020-2025 Albert Moky
  * @license   {@link https://mit-license.org | MIT License}
  */;
-(function (ns) {
-    'use strict';
-    if (typeof ns.cpu !== 'object') {
-        ns.cpu = {}
+(function (sdk, dkd, mkm, mk) {
+    if (typeof sdk.msg !== 'object') {
+        sdk.msg = {}
     }
-    if (typeof ns.utils !== 'object') {
-        ns.utils = {}
+    if (typeof sdk.core !== 'object') {
+        sdk.core = {}
     }
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ReceiptCommand = ns.protocol.ReceiptCommand;
-    var TwinsHelper = function (facebook, messenger) {
-        Object.call(this);
-        this.__facebook = facebook;
-        this.__messenger = messenger
-    };
-    Class(TwinsHelper, Object, null, null);
-    TwinsHelper.prototype.getFacebook = function () {
-        return this.__facebook
+    if (typeof sdk.cpu !== 'object') {
+        sdk.cpu = {}
     }
-    TwinsHelper.prototype.getMessenger = function () {
-        return this.__messenger
-    }
-    TwinsHelper.prototype.respondReceipt = function (text, envelope, content, extra) {
-        var res = TwinsHelper.createReceipt(text, envelope, content, extra);
-        return [res]
-    }
-    TwinsHelper.createReceipt = function (text, envelope, content, extra) {
-        var res = ReceiptCommand.create(text, envelope, content);
-        if (extra) {
-            var keys = Object.keys(extra);
-            var name, value;
-            for (var i = 0; i < keys.length; ++i) {
-                name = keys[i];
-                value = extra[name];
-                res.setValue(name, value)
+    var Interface = mk.type.Interface;
+    var Class = mk.type.Class;
+    var Converter = mk.type.Converter;
+    var Wrapper = mk.type.Wrapper;
+    var Mapper = mk.type.Mapper;
+    var Stringer = mk.type.Stringer;
+    var IObject = mk.type.Object;
+    var BaseObject = mk.type.BaseObject;
+    var ConstantString = mk.type.ConstantString;
+    var Dictionary = mk.type.Dictionary;
+    var Arrays = mk.type.Arrays;
+    var StringCoder = mk.format.StringCoder;
+    var UTF8 = mk.format.UTF8;
+    var ObjectCoder = mk.format.ObjectCoder;
+    var JSONMap = mk.format.JSONMap;
+    var DataCoder = mk.format.DataCoder;
+    var Base58 = mk.format.Base58;
+    var Base64 = mk.format.Base64;
+    var Hex = mk.format.Hex;
+    var BaseDataWrapper = mk.format.BaseDataWrapper;
+    var BaseFileWrapper = mk.format.BaseFileWrapper;
+    var MessageDigester = mk.digest.MessageDigester;
+    var SHA256 = mk.digest.SHA256;
+    var RIPEMD160 = mk.digest.RIPEMD160;
+    var KECCAK256 = mk.digest.KECCAK256;
+    var EncodeAlgorithms = mk.protocol.EncodeAlgorithms;
+    var TransportableData = mk.protocol.TransportableData;
+    var PortableNetworkFile = mk.protocol.PortableNetworkFile;
+    var SymmetricAlgorithms = mk.protocol.SymmetricAlgorithms;
+    var AsymmetricAlgorithms = mk.protocol.AsymmetricAlgorithms;
+    var EncryptKey = mk.protocol.EncryptKey;
+    var DecryptKey = mk.protocol.DecryptKey;
+    var VerifyKey = mk.protocol.VerifyKey;
+    var SymmetricKey = mk.protocol.SymmetricKey;
+    var SymmetricKeyFactory = mk.protocol.SymmetricKey.Factory;
+    var AsymmetricKey = mk.protocol.AsymmetricKey;
+    var PublicKey = mk.protocol.PublicKey;
+    var PublicKeyFactory = mk.protocol.PublicKey.Factory;
+    var PrivateKey = mk.protocol.PrivateKey;
+    var PrivateKeyFactory = mk.protocol.PrivateKey.Factory;
+    var BaseSymmetricKey = mk.crypto.BaseSymmetricKey;
+    var BasePublicKey = mk.crypto.BasePublicKey;
+    var BasePrivateKey = mk.crypto.BasePrivateKey;
+    var GeneralCryptoHelper = mk.ext.GeneralCryptoHelper;
+    var SymmetricKeyHelper = mk.ext.SymmetricKeyHelper;
+    var PrivateKeyHelper = mk.ext.PrivateKeyHelper;
+    var PublicKeyHelper = mk.ext.PublicKeyHelper;
+    var GeneralFormatHelper = mk.ext.GeneralFormatHelper;
+    var PortableNetworkFileHelper = mk.ext.PortableNetworkFileHelper;
+    var TransportableDataHelper = mk.ext.TransportableDataHelper;
+    var SharedCryptoExtensions = mk.ext.SharedCryptoExtensions;
+    var SharedFormatExtensions = mk.ext.SharedFormatExtensions;
+    var EntityType = mkm.protocol.EntityType;
+    var Address = mkm.protocol.Address;
+    var AddressFactory = mkm.protocol.Address.Factory;
+    var ID = mkm.protocol.ID;
+    var IDFactory = mkm.protocol.ID.Factory;
+    var Meta = mkm.protocol.Meta;
+    var MetaFactory = mkm.protocol.Meta.Factory;
+    var Document = mkm.protocol.Document;
+    var DocumentFactory = mkm.protocol.Document.Factory;
+    var Visa = mkm.protocol.Visa;
+    var Bulletin = mkm.protocol.Bulletin;
+    var MetaType = mkm.protocol.MetaType;
+    var DocumentType = mkm.protocol.DocumentType;
+    var Identifier = mkm.mkm.Identifier;
+    var BaseMeta = mkm.mkm.BaseMeta;
+    var BaseDocument = mkm.mkm.BaseDocument;
+    var BaseBulletin = mkm.mkm.BaseBulletin;
+    var BaseVisa = mkm.mkm.BaseVisa;
+    var GeneralAccountHelper = mkm.ext.GeneralAccountHelper;
+    var AddressHelper = mkm.ext.AddressHelper;
+    var IdentifierHelper = mkm.ext.IdentifierHelper;
+    var MetaHelper = mkm.ext.MetaHelper;
+    var DocumentHelper = mkm.ext.DocumentHelper;
+    var SharedAccountExtensions = mkm.ext.SharedAccountExtensions;
+    var InstantMessage = dkd.protocol.InstantMessage;
+    var InstantMessageFactory = dkd.protocol.InstantMessage.Factory;
+    var SecureMessage = dkd.protocol.SecureMessage;
+    var SecureMessageFactory = dkd.protocol.SecureMessage.Factory;
+    var ReliableMessage = dkd.protocol.ReliableMessage;
+    var ReliableMessageFactory = dkd.protocol.ReliableMessage.Factory;
+    var Envelope = dkd.protocol.Envelope;
+    var EnvelopeFactory = dkd.protocol.Envelope.Factory;
+    var Content = dkd.protocol.Content;
+    var ContentFactory = dkd.protocol.Content.Factory;
+    var Command = dkd.protocol.Command;
+    var CommandFactory = dkd.protocol.Command.Factory;
+    var ContentType = dkd.protocol.ContentType;
+    var ForwardContent = dkd.protocol.ForwardContent;
+    var ArrayContent = dkd.protocol.ArrayContent;
+    var MetaCommand = dkd.protocol.MetaCommand;
+    var DocumentCommand = dkd.protocol.DocumentCommand;
+    var GroupCommand = dkd.protocol.GroupCommand;
+    var ReceiptCommand = dkd.protocol.ReceiptCommand;
+    var MessageEnvelope = dkd.msg.MessageEnvelope;
+    var BaseMessage = dkd.msg.BaseMessage;
+    var PlainMessage = dkd.msg.PlainMessage;
+    var EncryptedMessage = dkd.msg.EncryptedMessage;
+    var NetworkMessage = dkd.msg.NetworkMessage;
+    var BaseContent = dkd.dkd.BaseContent;
+    var BaseTextContent = dkd.dkd.BaseTextContent;
+    var BaseFileContent = dkd.dkd.BaseFileContent;
+    var ImageFileContent = dkd.dkd.ImageFileContent;
+    var AudioFileContent = dkd.dkd.AudioFileContent;
+    var VideoFileContent = dkd.dkd.VideoFileContent;
+    var WebPageContent = dkd.dkd.WebPageContent;
+    var NameCardContent = dkd.dkd.NameCardContent;
+    var BaseQuoteContent = dkd.dkd.BaseQuoteContent;
+    var BaseMoneyContent = dkd.dkd.BaseMoneyContent;
+    var TransferMoneyContent = dkd.dkd.TransferMoneyContent;
+    var ListContent = dkd.dkd.ListContent;
+    var CombineForwardContent = dkd.dkd.CombineForwardContent;
+    var SecretContent = dkd.dkd.SecretContent;
+    var AppCustomizedContent = dkd.dkd.AppCustomizedContent;
+    var BaseCommand = dkd.dkd.BaseCommand;
+    var BaseMetaCommand = dkd.dkd.BaseMetaCommand;
+    var BaseDocumentCommand = dkd.dkd.BaseDocumentCommand;
+    var BaseReceiptCommand = dkd.dkd.BaseReceiptCommand;
+    var BaseHistoryCommand = dkd.dkd.BaseHistoryCommand;
+    var BaseGroupCommand = dkd.dkd.BaseGroupCommand;
+    var InviteGroupCommand = dkd.dkd.InviteGroupCommand;
+    var ExpelGroupCommand = dkd.dkd.ExpelGroupCommand;
+    var JoinGroupCommand = dkd.dkd.JoinGroupCommand;
+    var QuitGroupCommand = dkd.dkd.QuitGroupCommand;
+    var ResetGroupCommand = dkd.dkd.ResetGroupCommand;
+    var HireGroupCommand = dkd.dkd.HireGroupCommand;
+    var FireGroupCommand = dkd.dkd.FireGroupCommand;
+    var ResignGroupCommand = dkd.dkd.ResignGroupCommand;
+    var GeneralMessageHelper = dkd.ext.GeneralMessageHelper;
+    var ContentHelper = dkd.ext.ContentHelper;
+    var EnvelopeHelper = dkd.ext.EnvelopeHelper;
+    var InstantMessageHelper = dkd.ext.InstantMessageHelper;
+    var SecureMessageHelper = dkd.ext.SecureMessageHelper;
+    var ReliableMessageHelper = dkd.ext.ReliableMessageHelper;
+    var GeneralCommandHelper = dkd.ext.GeneralCommandHelper;
+    var CommandHelper = dkd.ext.CommandHelper;
+    var SharedCommandExtensions = dkd.ext.SharedCommandExtensions;
+    var SharedMessageExtensions = dkd.ext.SharedMessageExtensions;
+    mkm.mkm.MetaUtils = {
+        matchIdentifier: function (identifier, meta) {
+            if (!meta.isValid()) {
+                return false
             }
-        }
-        return res
-    };
-    ns.TwinsHelper = TwinsHelper
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var FrequencyChecker = function (lifeSpan) {
-        this.__expires = lifeSpan;
-        this.__records = {}
-    };
-    Class(FrequencyChecker, null, null, null);
-    FrequencyChecker.prototype.forceExpired = function (key, now) {
-        this.__records[key] = now + this.__expires;
-        return true
-    };
-    FrequencyChecker.prototype.checkExpired = function (key, now) {
-        var expired = this.__records[key];
-        if (expired && expired > now) {
-            return false
-        }
-        this.__records[key] = now + this.__expires;
-        return true
-    };
-    FrequencyChecker.prototype.isExpired = function (key, now, force) {
-        if (!now) {
-            now = new Date();
-            now = now.getTime()
-        } else if (now instanceof Date) {
-            now = now.getTime()
-        }
-        if (force) {
-            return this.forceExpired(key, now)
-        } else {
-            return this.checkExpired(key, now)
+            var seed = meta.getSeed();
+            var name = identifier.getName();
+            if (seed !== name) {
+                return false
+            }
+            var old = identifier.getAddress();
+            var gen = Address.generate(meta, old.getType());
+            return old.equals(gen)
+        }, matchPublicKey: function (pKey, meta) {
+            if (!meta.isValid()) {
+                return false
+            }
+            if (meta.getPublicKey().equals(pKey)) {
+                return true
+            }
+            var seed = meta.getSeed();
+            if (!seed) {
+                return false
+            }
+            var fingerprint = meta.getFingerprint();
+            if (!fingerprint) {
+                return false
+            }
+            var data = UTF8.encode(seed);
+            return pKey.verify(data, fingerprint)
         }
     };
-    var RecentTimeChecker = function () {
-        this.__times = {}
-    };
-    Class(RecentTimeChecker, null, null, null);
-    RecentTimeChecker.prototype.setLastTime = function (key, when) {
-        if (!when) {
-            return false
-        } else if (when instanceof Date) {
-            when = when.getTime()
+    var MetaUtils = mkm.mkm.MetaUtils;
+    mkm.mkm.DocumentUtils = {
+        getDocumentType: function (document) {
+            var helper = SharedAccountExtensions.getHelper();
+            return helper.getDocumentType(document.toMap(), null)
+        }, isBefore: function (oldTime, thisTime) {
+            if (!oldTime || !thisTime) {
+                return false
+            }
+            return thisTime.getTime() < oldTime.getTime()
+        }, isExpired: function (thisDoc, oldDoc) {
+            var thisTime = thisDoc.getTime();
+            var oldTime = oldDoc.getTime();
+            return this.isBefore(oldTime, thisTime)
+        }, lastDocument: function (documents, type) {
+            if (!documents || documents.length === 0) {
+                return null
+            } else if (!type || type === '*') {
+                type = ''
+            }
+            var checkType = type.length > 0;
+            var last = null;
+            var doc, docType, matched;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                if (checkType) {
+                    docType = this.getDocumentType(doc);
+                    matched = !docType || docType.length === 0 || docType === type;
+                    if (!matched) {
+                        continue
+                    }
+                }
+                if (last != null && this.isExpired(doc, last)) {
+                    continue
+                }
+                last = doc
+            }
+            return last
+        }, lastVisa: function (documents) {
+            if (!documents || documents.length === 0) {
+                return null
+            }
+            var last = null;
+            var doc, matched;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                matched = Interface.conforms(doc, Visa);
+                if (!matched) {
+                    continue
+                }
+                if (last != null && this.isExpired(doc, last)) {
+                    continue
+                }
+                last = doc
+            }
+            return last
+        }, lastBulletin: function (documents) {
+            if (!documents || documents.length === 0) {
+                return null
+            }
+            var last = null;
+            var doc, matched;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                matched = Interface.conforms(doc, Bulletin);
+                if (!matched) {
+                    continue
+                }
+                if (last != null && this.isExpired(doc, last)) {
+                    continue
+                }
+                last = doc
+            }
+            return last
         }
-        var last = this.__times[key];
-        if (!last || last < when) {
-            this.__times[key] = when;
+    };
+    var DocumentUtils = mkm.mkm.DocumentUtils;
+    mkm.mkm.Entity = Interface(null, [IObject]);
+    var Entity = mkm.mkm.Entity;
+    Entity.prototype.getIdentifier = function () {
+    };
+    Entity.prototype.getType = function () {
+    };
+    Entity.prototype.getMeta = function () {
+    };
+    Entity.prototype.getDocuments = function () {
+    };
+    Entity.prototype.setDataSource = function (barrack) {
+    };
+    Entity.prototype.getDataSource = function () {
+    };
+    Entity.DataSource = Interface(null, null);
+    var EntityDataSource = Entity.DataSource;
+    EntityDataSource.prototype.getMeta = function (identifier) {
+    };
+    EntityDataSource.prototype.getDocuments = function (identifier) {
+    };
+    Entity.Delegate = Interface(null, null);
+    var EntityDelegate = Entity.Delegate;
+    EntityDelegate.prototype.getUser = function (identifier) {
+    };
+    EntityDelegate.prototype.getGroup = function (identifier) {
+    };
+    mkm.mkm.BaseEntity = function (identifier) {
+        BaseObject.call(this);
+        this.__identifier = identifier;
+        this.__facebook = null
+    };
+    var BaseEntity = mkm.mkm.BaseEntity;
+    Class(BaseEntity, BaseObject, [Entity], null);
+    BaseEntity.prototype.equals = function (other) {
+        if (this === other) {
             return true
-        } else {
+        } else if (!other) {
             return false
+        } else if (Interface.conforms(other, Entity)) {
+            other = other.getIdentifier()
         }
+        return this.__identifier.equals(other)
     };
-    RecentTimeChecker.prototype.isExpired = function (key, now) {
-        if (!now) {
-            return true
-        } else if (now instanceof Date) {
-            now = now.getTime()
+    BaseEntity.prototype.valueOf = function () {
+        return this.toString()
+    };
+    BaseEntity.prototype.toString = function () {
+        var clazz = this.getClassName();
+        var id = this.__identifier;
+        var network = id.getAddress().getType();
+        return '<' + clazz + ' id="' + id.toString() + '" network="' + network + '" />'
+    };
+    BaseEntity.prototype.getClassName = function () {
+        return Object.getPrototypeOf(this).constructor.name
+    };
+    BaseEntity.prototype.setDataSource = function (facebook) {
+        this.__facebook = facebook
+    };
+    BaseEntity.prototype.getDataSource = function () {
+        return this.__facebook
+    };
+    BaseEntity.prototype.getIdentifier = function () {
+        return this.__identifier
+    };
+    BaseEntity.prototype.getType = function () {
+        return this.__identifier.getType()
+    };
+    BaseEntity.prototype.getMeta = function () {
+        var facebook = this.getDataSource();
+        return facebook.getMeta(this.__identifier)
+    };
+    BaseEntity.prototype.getDocuments = function () {
+        var facebook = this.getDataSource();
+        return facebook.getDocuments(this.__identifier)
+    };
+    mkm.mkm.Group = Interface(null, [Entity]);
+    var Group = mkm.mkm.Group;
+    Group.prototype.getBulletin = function () {
+    };
+    Group.prototype.getFounder = function () {
+    };
+    Group.prototype.getOwner = function () {
+    };
+    Group.prototype.getMembers = function () {
+    };
+    Group.prototype.getAssistants = function () {
+    };
+    Group.DataSource = Interface(null, [EntityDataSource]);
+    var GroupDataSource = Group.DataSource;
+    GroupDataSource.prototype.getFounder = function (identifier) {
+    };
+    GroupDataSource.prototype.getOwner = function (identifier) {
+    };
+    GroupDataSource.prototype.getMembers = function (identifier) {
+    };
+    GroupDataSource.prototype.getAssistants = function (identifier) {
+    };
+    mkm.mkm.BaseGroup = function (identifier) {
+        BaseEntity.call(this, identifier);
+        this.__founder = null
+    };
+    var BaseGroup = mkm.mkm.BaseGroup;
+    Class(BaseGroup, BaseEntity, [Group], {
+        getBulletin: function () {
+            var docs = this.getDocuments();
+            return DocumentUtils.lastBulletin(docs)
+        }, getFounder: function () {
+            var founder = this.__founder;
+            if (!founder) {
+                var facebook = this.getDataSource();
+                var group = this.getIdentifier();
+                founder = facebook.getFounder(group);
+                this.__founder = founder
+            }
+            return founder
+        }, getOwner: function () {
+            var facebook = this.getDataSource();
+            var group = this.getIdentifier();
+            return facebook.getOwner(group)
+        }, getMembers: function () {
+            var facebook = this.getDataSource();
+            var group = this.getIdentifier();
+            return facebook.getMembers(group)
+        }, getAssistants: function () {
+            var facebook = this.getDataSource();
+            var group = this.getIdentifier();
+            return facebook.getAssistants(group)
         }
-        var last = this.__times[key];
-        return last && last > now
+    });
+    mkm.mkm.User = Interface(null, [Entity]);
+    var User = mkm.mkm.User;
+    User.prototype.getVisa = function () {
     };
-    ns.utils.FrequencyChecker = FrequencyChecker;
-    ns.utils.RecentTimeChecker = RecentTimeChecker
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var kFounder = (0x20);
-    var kOwner = (0x3F);
-    var kAdmin = (0x0F);
-    var kMember = (0x07);
-    var kOther = (0x00);
-    var kFreezing = (0x80);
-    var kWaiting = (0x40);
-    var kOwnerWaiting = (kOwner | kWaiting);
-    var kOwnerFreezing = (kOwner | kFreezing);
-    var kAdminWaiting = (kAdmin | kWaiting);
-    var kAdminFreezing = (kAdmin | kFreezing);
-    var kMemberWaiting = (kMember | kWaiting);
-    var kMemberFreezing = (kMember | kFreezing);
-    ns.mkm.MemberType = ns.type.Enum(null, {
-        FOUNDER: kFounder,
-        OWNER: kOwner,
-        ADMIN: kAdmin,
-        MEMBER: kMember,
-        OTHER: kOther,
-        FREEZING: kFreezing,
-        WAITING: kWaiting,
-        OWNER_WAITING: kOwnerWaiting,
-        OWNER_FREEZING: kOwnerFreezing,
-        ADMIN_WAITING: kAdminWaiting,
-        ADMIN_FREEZING: kAdminFreezing,
-        MEMBER_WAITING: kMemberWaiting,
-        MEMBER_FREEZING: kMemberFreezing
-    })
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ID = ns.protocol.ID;
-    var BaseUser = ns.mkm.BaseUser;
-    var Bot = function (identifier) {
+    User.prototype.getContacts = function () {
+    };
+    User.prototype.verify = function (data, signature) {
+    };
+    User.prototype.encrypt = function (plaintext) {
+    };
+    User.prototype.sign = function (data) {
+    };
+    User.prototype.decrypt = function (ciphertext) {
+    };
+    User.prototype.signVisa = function (doc) {
+    };
+    User.prototype.verifyVisa = function (doc) {
+    };
+    User.DataSource = Interface(null, [EntityDataSource]);
+    var UserDataSource = User.DataSource;
+    UserDataSource.prototype.getContacts = function (identifier) {
+    };
+    UserDataSource.prototype.getPublicKeyForEncryption = function (identifier) {
+    };
+    UserDataSource.prototype.getPublicKeysForVerification = function (identifier) {
+    };
+    UserDataSource.prototype.getPrivateKeysForDecryption = function (identifier) {
+    };
+    UserDataSource.prototype.getPrivateKeyForSignature = function (identifier) {
+    };
+    UserDataSource.prototype.getPrivateKeyForVisaSignature = function (identifier) {
+    };
+    mkm.mkm.BaseUser = function (identifier) {
+        BaseEntity.call(this, identifier)
+    };
+    var BaseUser = mkm.mkm.BaseUser;
+    Class(BaseUser, BaseEntity, [User], {
+        getVisa: function () {
+            var docs = this.getDocuments();
+            return DocumentUtils.lastVisa(docs)
+        }, getContacts: function () {
+            var facebook = this.getDataSource();
+            var user = this.getIdentifier();
+            return facebook.getContacts(user)
+        }, verify: function (data, signature) {
+            var facebook = this.getDataSource();
+            var user = this.getIdentifier();
+            var keys = facebook.getPublicKeysForVerification(user);
+            for (var i = 0; i < keys.length; ++i) {
+                if (keys[i].verify(data, signature)) {
+                    return true
+                }
+            }
+            return false
+        }, encrypt: function (plaintext) {
+            var facebook = this.getDataSource();
+            var user = this.getIdentifier();
+            var pKey = facebook.getPublicKeyForEncryption(user);
+            return pKey.encrypt(plaintext, null)
+        }, sign: function (data) {
+            var facebook = this.getDataSource();
+            var user = this.getIdentifier();
+            var sKey = facebook.getPrivateKeyForSignature(user);
+            return sKey.sign(data)
+        }, decrypt: function (ciphertext) {
+            var facebook = this.getDataSource();
+            var user = this.getIdentifier();
+            var keys = facebook.getPrivateKeysForDecryption(user);
+            var plaintext;
+            for (var i = 0; i < keys.length; ++i) {
+                plaintext = keys[i].decrypt(ciphertext, null);
+                if (plaintext && plaintext.length > 0) {
+                    return plaintext
+                }
+            }
+            return null
+        }, signVisa: function (doc) {
+            var did = doc.getIdentifier();
+            var facebook = this.getDataSource();
+            var sKey = facebook.getPrivateKeyForVisaSignature(did);
+            var sig = doc.sign(sKey);
+            if (!sig) {
+                return null
+            }
+            return doc
+        }, verifyVisa: function (doc) {
+            var did = doc.getIdentifier();
+            if (!this.getIdentifier().equals(did)) {
+                return false
+            }
+            var meta = this.getMeta();
+            var pKey = meta.getPublicKey();
+            return doc.verify(pKey)
+        }
+    });
+    mkm.mkm.Bot = function (identifier) {
         BaseUser.call(this, identifier)
     };
+    var Bot = mkm.mkm.Bot;
     Class(Bot, BaseUser, null, {
         getProfile: function () {
             return this.getVisa()
         }, getProvider: function () {
             var doc = this.getProfile();
             if (doc) {
-                var icp = doc.getProperty('ICP');
+                var icp = doc.getProperty('provider');
                 return ID.parse(icp)
             }
             return null
         }
     });
-    ns.mkm.Bot = Bot
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var BaseObject = ns.type.BaseObject;
-    var Converter = ns.type.Converter;
-    var ID = ns.protocol.ID;
-    var Address = ns.protocol.Address;
-    var Identifier = ns.mkm.Identifier;
-    var User = ns.mkm.User;
-    var BaseUser = ns.mkm.BaseUser;
-    var DocumentHelper = ns.mkm.DocumentHelper;
-    var Station = function () {
+    mkm.mkm.Station = function () {
         BaseObject.call(this);
         var user;
         var host, port;
@@ -200,6 +527,7 @@
         this.__port = port;
         this.__isp = null
     };
+    var Station = mkm.mkm.Station;
     Class(Station, BaseObject, [User], {
         equals: function (other) {
             if (this === other) {
@@ -207,13 +535,18 @@
             } else if (!other) {
                 return false
             } else if (other instanceof Station) {
-                return ns.mkm.ServiceProvider.sameStation(other, this)
+                return ServiceProvider.sameStation(other, this)
             }
             return this.__user.equals(other)
         }, valueOf: function () {
-            return desc.call(this)
+            return this.getString()
         }, toString: function () {
-            return desc.call(this)
+            var clazz = this.getClassName();
+            var id = this.getIdentifier();
+            var network = id.getAddress().getType();
+            return '<' + clazz + ' id="' + id.toString() + '" network="' + network + '" host="' + this.getHost() + '" port=' + this.getPort() + ' />'
+        }, getClassName: function () {
+            return Object.getPrototypeOf(this).constructor.name
         }, setDataSource: function (delegate) {
             this.__user.setDataSource(delegate)
         }, getDataSource: function () {
@@ -243,9 +576,9 @@
         }, verifyVisa: function (doc) {
             return this.__user.verifyVisa(doc)
         }, setIdentifier: function (identifier) {
-            var delegate = this.getDataSource();
+            var facebook = this.getDataSource();
             var user = new BaseUser(identifier);
-            user.setDataSource(delegate);
+            user.setDataSource(facebook);
             this.__user = user
         }, getHost: function () {
             if (!this.__host) {
@@ -264,7 +597,7 @@
             return this.__isp
         }, getProfile: function () {
             var docs = this.getDocuments();
-            return DocumentHelper.lastDocument(docs)
+            return DocumentUtils.lastDocument(docs, '*')
         }, reload: function () {
             var doc = this.getProfile();
             if (doc) {
@@ -278,7 +611,7 @@
                 if (port > 0) {
                     this.__port = port
                 }
-                var isp = doc.getProperty('ISP');
+                var isp = doc.getProperty('provider');
                 isp = ID.parse(isp);
                 if (isp) {
                     this.__isp = isp
@@ -286,28 +619,16 @@
             }
         }
     });
-    var desc = function () {
-        var clazz = Object.getPrototypeOf(this).constructor.name;
-        var id = this.getIdentifier();
-        var network = id.getAddress().getType();
-        return '<' + clazz + ' id="' + id.toString() + '" network="' + network + '" host="' + this.getHost() + '" port=' + this.getPort() + ' />'
-    };
     Station.ANY = Identifier.create('station', Address.ANYWHERE, null);
     Station.EVERY = Identifier.create('stations', Address.EVERYWHERE, null);
-    ns.mkm.Station = Station
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var BaseGroup = ns.mkm.BaseGroup;
-    var DocumentHelper = ns.mkm.DocumentHelper;
-    var ServiceProvider = function (identifier) {
+    mkm.mkm.ServiceProvider = function (identifier) {
         BaseGroup.call(this, identifier)
     };
+    var ServiceProvider = mkm.mkm.ServiceProvider;
     Class(ServiceProvider, BaseGroup, null, {
         getProfile: function () {
             var docs = this.getDocuments();
-            return DocumentHelper.lastDocument(docs)
+            return DocumentUtils.lastDocument(docs, '*')
         }, getStations: function () {
             var doc = this.getProfile();
             if (doc) {
@@ -345,24 +666,61 @@
         }
         return a === b
     };
-    ns.mkm.ServiceProvider = ServiceProvider
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var UTF8 = ns.format.UTF8;
-    var TransportableData = ns.format.TransportableData;
-    var SecureMessage = ns.protocol.SecureMessage;
-    var BaseMessage = ns.msg.BaseMessage;
-    var InstantMessagePacker = function (messenger) {
-        this.__transceiver = messenger
+    sdk.msg.MessageUtils = {
+        setMeta: function (meta, msg) {
+            msg.setMap('meta', meta)
+        }, getMeta: function (msg) {
+            var meta = msg.getValue('meta');
+            return Meta.parse(meta)
+        }, setVisa: function (visa, msg) {
+            msg.setMap('visa', visa)
+        }, getVisa: function (msg) {
+            var visa = msg.getValue('visa');
+            var doc = Document.parse(visa);
+            if (Interface.conforms(doc, Visa)) {
+                return doc
+            }
+            return null
+        }
     };
-    Class(InstantMessagePacker, null, null, null);
-    InstantMessagePacker.prototype.getInstantMessageDelegate = function () {
-        return this.__transceiver
+    var MessageUtils = sdk.msg.MessageUtils;
+    InstantMessage.Delegate = Interface(null, null);
+    var InstantMessageDelegate = InstantMessage.Delegate;
+    InstantMessageDelegate.prototype.serializeContent = function (content, pwd, iMsg) {
+    };
+    InstantMessageDelegate.prototype.encryptContent = function (data, pwd, iMsg) {
+    };
+    InstantMessageDelegate.prototype.serializeKey = function (pwd, iMsg) {
+    };
+    InstantMessageDelegate.prototype.encryptKey = function (data, receiver, iMsg) {
+    };
+    SecureMessage.Delegate = Interface(null, null);
+    var SecureMessageDelegate = SecureMessage.Delegate;
+    SecureMessageDelegate.prototype.decryptKey = function (data, receiver, sMsg) {
+    };
+    SecureMessageDelegate.prototype.deserializeKey = function (data, sMsg) {
+    };
+    SecureMessageDelegate.prototype.decryptContent = function (data, pwd, sMsg) {
+    };
+    SecureMessageDelegate.prototype.deserializeContent = function (data, pwd, sMsg) {
+    };
+    SecureMessageDelegate.prototype.signData = function (data, sMsg) {
+    };
+    ReliableMessage.Delegate = Interface(null, null);
+    var ReliableMessageDelegate = ReliableMessage.Delegate;
+    ReliableMessageDelegate.prototype.verifyDataSignature = function (data, signature, rMsg) {
+    };
+    InstantMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger
+    };
+    var InstantMessagePacker = InstantMessage.Packer;
+    Class(InstantMessagePacker, BaseObject, null, null);
+    InstantMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger
     };
     InstantMessagePacker.prototype.encryptMessage = function (iMsg, password, members) {
-        var transceiver = this.getInstantMessageDelegate();
+        var transceiver = this.getDelegate();
         var body = transceiver.serializeContent(iMsg.getContent(), password, iMsg);
         var ciphertext = transceiver.encryptContent(body, password, iMsg);
         var encodedData;
@@ -395,7 +753,7 @@
                 receiver = members[i];
                 encryptedKey = transceiver.encryptKey(pwd, receiver, iMsg);
                 if (!encryptedKey) {
-                    return null
+                    continue
                 }
                 encodedKey = TransportableData.encode(encryptedKey);
                 keys[receiver.toString()] = encodedKey
@@ -407,23 +765,17 @@
         }
         return SecureMessage.parse(info)
     };
-    ns.msg.InstantMessagePacker = InstantMessagePacker
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var TransportableData = ns.format.TransportableData;
-    var InstantMessage = ns.protocol.InstantMessage;
-    var ReliableMessage = ns.protocol.ReliableMessage;
-    var SecureMessagePacker = function (messenger) {
-        this.__transceiver = messenger
+    SecureMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger
     };
-    Class(SecureMessagePacker, null, null, null);
-    SecureMessagePacker.prototype.getSecureMessageDelegate = function () {
-        return this.__transceiver
+    var SecureMessagePacker = SecureMessage.Packer;
+    Class(SecureMessagePacker, BaseObject, null, null);
+    SecureMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger
     };
     SecureMessagePacker.prototype.decryptMessage = function (sMsg, receiver) {
-        var transceiver = this.getSecureMessageDelegate();
+        var transceiver = this.getDelegate();
         var encryptedKey = sMsg.getEncryptedKey();
         var keyData;
         if (encryptedKey) {
@@ -456,7 +808,7 @@
         return InstantMessage.parse(info)
     };
     SecureMessagePacker.prototype.signMessage = function (sMsg) {
-        var transceiver = this.getSecureMessageDelegate();
+        var transceiver = this.getDelegate();
         var ciphertext = sMsg.getData();
         var signature = transceiver.signData(ciphertext, sMsg);
         var base64 = TransportableData.encode(signature);
@@ -464,21 +816,17 @@
         info['signature'] = base64;
         return ReliableMessage.parse(info)
     };
-    ns.msg.SecureMessagePacker = SecureMessagePacker
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var SecureMessage = ns.protocol.SecureMessage;
-    var ReliableMessagePacker = function (messenger) {
-        this.__transceiver = messenger
+    ReliableMessage.Packer = function (messenger) {
+        BaseObject.call(this);
+        this.__messenger = messenger
     };
-    Class(ReliableMessagePacker, null, null, null);
-    ReliableMessagePacker.prototype.getReliableMessageDelegate = function () {
-        return this.__transceiver
+    var ReliableMessagePacker = ReliableMessage.Packer;
+    Class(ReliableMessagePacker, BaseObject, null, null);
+    ReliableMessagePacker.prototype.getDelegate = function () {
+        return this.__messenger
     };
     ReliableMessagePacker.prototype.verifyMessage = function (rMsg) {
-        var transceiver = this.getReliableMessageDelegate();
+        var transceiver = this.getDelegate();
         var ciphertext = rMsg.getData();
         if (!ciphertext || ciphertext.length === 0) {
             return null
@@ -495,150 +843,36 @@
         delete info['signature'];
         return SecureMessage.parse(info)
     };
-    ns.msg.ReliableMessagePacker = ReliableMessagePacker
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var Meta = ns.protocol.Meta;
-    var Document = ns.protocol.Document;
-    var Visa = ns.protocol.Visa;
-    var setMeta = function (meta, msg) {
-        msg.setMap('meta', meta)
+    sdk.cpu.ContentProcessor = Interface(null, null);
+    var ContentProcessor = sdk.cpu.ContentProcessor;
+    ContentProcessor.prototype.processContent = function (content, rMsg) {
     };
-    var getMeta = function (msg) {
-        var meta = msg.getValue('meta');
-        return Meta.parse(meta)
+    ContentProcessor.Creator = Interface(null, null);
+    var ContentProcessorCreator = ContentProcessor.Creator;
+    ContentProcessorCreator.prototype.createContentProcessor = function (type) {
     };
-    var setVisa = function (visa, msg) {
-        msg.setMap('visa', visa)
+    ContentProcessorCreator.prototype.createCommandProcessor = function (type, cmd) {
     };
-    var getVisa = function (msg) {
-        var visa = msg.getValue('visa');
-        var doc = Document.parse(visa);
-        if (Interface.conforms(doc, Visa)) {
-            return doc
-        }
-        return null
+    ContentProcessor.Factory = Interface(null, null);
+    var ContentProcessorFactory = ContentProcessor.Factory;
+    ContentProcessorFactory.prototype.getContentProcessor = function (content) {
     };
-    ns.msg.MessageHelper = {getMeta: getMeta, setMeta: setMeta, getVisa: getVisa, setVisa: setVisa}
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var Envelope = ns.protocol.Envelope;
-    var InstantMessage = ns.protocol.InstantMessage;
-    var SecureMessage = ns.protocol.SecureMessage;
-    var ReliableMessage = ns.protocol.ReliableMessage;
-    var MessageEnvelope = ns.msg.MessageEnvelope;
-    var PlainMessage = ns.msg.PlainMessage;
-    var EncryptedMessage = ns.msg.EncryptedMessage;
-    var NetworkMessage = ns.msg.NetworkMessage;
-    var random_int = function (max) {
-        return Math.floor(Math.random() * max)
+    ContentProcessorFactory.prototype.getContentProcessorForType = function (type) {
     };
-    var MessageFactory = function () {
-        Object.call(this);
-        this.__sn = random_int(0x7fffffff)
-    };
-    Class(MessageFactory, Object, [Envelope.Factory, InstantMessage.Factory, SecureMessage.Factory, ReliableMessage.Factory], null);
-    MessageFactory.prototype.next = function () {
-        var sn = this.__sn;
-        if (sn < 0x7fffffff) {
-            sn += 1
-        } else {
-            sn = 1
-        }
-        this.__sn = sn;
-        return sn
-    };
-    MessageFactory.prototype.createEnvelope = function (from, to, when) {
-        return new MessageEnvelope(from, to, when)
-    };
-    MessageFactory.prototype.parseEnvelope = function (env) {
-        if (!env['sender']) {
-            return null
-        }
-        return new MessageEnvelope(env)
-    };
-    MessageFactory.prototype.generateSerialNumber = function (msgType, now) {
-        return this.next()
-    };
-    MessageFactory.prototype.createInstantMessage = function (head, body) {
-        return new PlainMessage(head, body)
-    };
-    MessageFactory.prototype.parseInstantMessage = function (msg) {
-        if (!msg["sender"] || !msg["content"]) {
-            return null
-        }
-        return new PlainMessage(msg)
-    };
-    MessageFactory.prototype.parseSecureMessage = function (msg) {
-        if (!msg["sender"] || !msg["data"]) {
-            return null
-        }
-        if (msg['signature']) {
-            return new NetworkMessage(msg)
-        }
-        return new EncryptedMessage(msg)
-    };
-    MessageFactory.prototype.parseReliableMessage = function (msg) {
-        if (!msg['sender'] || !msg['data'] || !msg['signature']) {
-            return null
-        }
-        return new NetworkMessage(msg)
-    };
-    ns.msg.MessageFactory = MessageFactory
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var ContentProcessor = Interface(null, null);
-    ContentProcessor.prototype.process = function (content, rMsg) {
-        throw new Error('ContentProcessor::process');
-    };
-    var Creator = Interface(null, null);
-    Creator.prototype.createContentProcessor = function (type) {
-        throw new Error('Creator::createContentProcessor');
-    };
-    Creator.prototype.createCommandProcessor = function (type, cmd) {
-        throw new Error('Creator::createCommandProcessor');
-    };
-    var Factory = Interface(null, null);
-    Factory.prototype.getProcessor = function (content) {
-        throw new Error('Factory::getProcessor');
-    };
-    Factory.prototype.getContentProcessor = function (type) {
-        throw new Error('Factory::getContentProcessor');
-    };
-    Factory.prototype.getCommandProcessor = function (type, cmd) {
-        throw new Error('Factory::getCommandProcessor');
-    };
-    ContentProcessor.Creator = Creator;
-    ContentProcessor.Factory = Factory;
-    ns.cpu.ContentProcessor = ContentProcessor
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var Class = ns.type.Class;
-    var Command = ns.protocol.Command;
-    var GroupCommand = ns.protocol.GroupCommand;
-    var ContentProcessor = ns.cpu.ContentProcessor;
-    var TwinsHelper = ns.TwinsHelper;
-    var ContentProcessorFactory = function (facebook, messenger, creator) {
-        TwinsHelper.call(this, facebook, messenger);
+    sdk.cpu.GeneralContentProcessorFactory = function (creator) {
+        BaseObject.call(this);
         this.__creator = creator;
         this.__content_processors = {}
         this.__command_processors = {}
     };
-    Class(ContentProcessorFactory, TwinsHelper, [ContentProcessor.Factory], null);
-    ContentProcessorFactory.prototype.getProcessor = function (content) {
+    var GeneralContentProcessorFactory = sdk.cpu.GeneralContentProcessorFactory;
+    Class(GeneralContentProcessorFactory, BaseObject, [ContentProcessorFactory], null);
+    GeneralContentProcessorFactory.prototype.getContentProcessor = function (content) {
         var cpu;
         var type = content.getType();
         if (Interface.conforms(content, Command)) {
-            var name = content.getCmd();
-            cpu = this.getCommandProcessor(type, name);
+            var cmd = content.getCmd();
+            cpu = this.getCommandProcessor(type, cmd);
             if (cpu) {
                 return cpu
             } else if (Interface.conforms(content, GroupCommand)) {
@@ -648,9 +882,9 @@
                 }
             }
         }
-        return this.getContentProcessor(type)
+        return this.getContentProcessorForType(type)
     };
-    ContentProcessorFactory.prototype.getContentProcessor = function (type) {
+    GeneralContentProcessorFactory.prototype.getContentProcessorForType = function (type) {
         var cpu = this.__content_processors[type];
         if (!cpu) {
             cpu = this.__creator.createContentProcessor(type);
@@ -660,7 +894,7 @@
         }
         return cpu
     };
-    ContentProcessorFactory.prototype.getCommandProcessor = function (type, cmd) {
+    GeneralContentProcessorFactory.prototype.getCommandProcessor = function (type, cmd) {
         var cpu = this.__command_processors[cmd];
         if (!cpu) {
             cpu = this.__creator.createCommandProcessor(type, cmd);
@@ -670,30 +904,771 @@
         }
         return cpu
     };
-    ns.cpu.ContentProcessorFactory = ContentProcessorFactory
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ContentProcessor = ns.cpu.ContentProcessor;
-    var TwinsHelper = ns.TwinsHelper;
-    var BaseContentProcessor = function (facebook, messenger) {
+    sdk.core.Barrack = function () {
+        BaseObject.call(this)
+    };
+    var Barrack = sdk.core.Barrack;
+    Class(Barrack, BaseObject, null, null);
+    Barrack.prototype.cacheUser = function (user) {
+    };
+    Barrack.prototype.cacheGroup = function (group) {
+    };
+    Barrack.prototype.getUser = function (identifier) {
+    };
+    Barrack.prototype.getGroup = function (identifier) {
+    };
+    Barrack.prototype.createUser = function (identifier) {
+        var network = identifier.getType();
+        if (EntityType.STATION.equals(network)) {
+            return new Station(identifier)
+        } else if (EntityType.BOT.equals(network)) {
+            return new Bot(identifier)
+        }
+        return new BaseUser(identifier)
+    };
+    Barrack.prototype.createGroup = function (identifier) {
+        var network = identifier.getType();
+        if (EntityType.ISP.equals(network)) {
+            return new ServiceProvider(identifier)
+        }
+        return new BaseGroup(identifier)
+    };
+    sdk.core.Archivist = Interface(null, null);
+    var Archivist = sdk.core.Archivist;
+    Archivist.prototype.saveMeta = function (meta, identifier) {
+    };
+    Archivist.prototype.saveDocument = function (doc) {
+    };
+    Archivist.prototype.getMetaKey = function (identifier) {
+    };
+    Archivist.prototype.getVisaKey = function (identifier) {
+    };
+    Archivist.prototype.getLocalUsers = function () {
+    };
+    sdk.core.Shortener = Interface(null, null);
+    var Shortener = sdk.core.Shortener;
+    Shortener.prototype.compressContent = function (content) {
+    };
+    Shortener.prototype.extractContent = function (content) {
+    };
+    Shortener.prototype.compressSymmetricKey = function (key) {
+    };
+    Shortener.prototype.extractSymmetricKey = function (key) {
+    };
+    Shortener.prototype.compressReliableMessage = function (msg) {
+    };
+    Shortener.prototype.extractReliableMessage = function (msg) {
+    };
+    sdk.core.MessageShortener = function () {
+        BaseObject.call(this)
+    };
+    var MessageShortener = sdk.core.MessageShortener;
+    Class(MessageShortener, BaseObject, [Shortener], null);
+    MessageShortener.prototype.moveKey = function (from, to, info) {
+        var value = info[from];
+        if (value) {
+            delete info[from];
+            info[to] = value
+        }
+    };
+    MessageShortener.prototype.shortenKeys = function (keys, info) {
+        for (var i = 1; i < keys.length; i += 2) {
+            this.moveKey(keys[i], keys[i - 1], info)
+        }
+    };
+    MessageShortener.prototype.restoreKeys = function (keys, info) {
+        for (var i = 1; i < keys.length; i += 2) {
+            this.moveKey(keys[i - 1], keys[i], info)
+        }
+    };
+    MessageShortener.prototype.contentShortKeys = ["T", "type", "N", "sn", "W", "time", "G", "group", "C", "command"];
+    MessageShortener.prototype.compressContent = function (content) {
+        this.shortenKeys(this.contentShortKeys, content);
+        return content
+    };
+    MessageShortener.prototype.extractContent = function (content) {
+        this.restoreKeys(this.contentShortKeys, content);
+        return content
+    };
+    MessageShortener.prototype.cryptoShortKeys = ["A", "algorithm", "D", "data", "I", "iv"];
+    MessageShortener.prototype.compressSymmetricKey = function (key) {
+        this.shortenKeys(this.cryptoShortKeys, key);
+        return key
+    };
+    MessageShortener.prototype.extractSymmetricKey = function (key) {
+        this.restoreKeys(this.cryptoShortKeys, key);
+        return key
+    };
+    MessageShortener.prototype.messageShortKeys = ["F", "sender", "R", "receiver", "W", "time", "T", "type", "G", "group", "K", "key", "D", "data", "V", "signature", "M", "meta", "P", "visa"];
+    MessageShortener.prototype.compressReliableMessage = function (msg) {
+        this.moveKey("keys", "K", msg);
+        this.shortenKeys(this.messageShortKeys, msg);
+        return msg
+    };
+    MessageShortener.prototype.extractReliableMessage = function (msg) {
+        var keys = msg['K'];
+        if (!keys) {
+        } else if (IObject.isString(keys)) {
+            delete msg['K'];
+            msg['key'] = keys
+        } else {
+            delete msg['K'];
+            msg['keys'] = keys
+        }
+        this.restoreKeys(this.messageShortKeys, msg);
+        return msg
+    };
+    sdk.core.Compressor = Interface(null, null);
+    var Compressor = sdk.core.Compressor;
+    Compressor.prototype.compressContent = function (content, key) {
+    };
+    Compressor.prototype.extractContent = function (data, key) {
+    };
+    Compressor.prototype.compressSymmetricKey = function (key) {
+    };
+    Compressor.prototype.extractSymmetricKey = function (data) {
+    };
+    Compressor.prototype.compressReliableMessage = function (msg) {
+    };
+    Compressor.prototype.extractReliableMessage = function (data) {
+    };
+    sdk.core.MessageCompressor = function (shortener) {
+        BaseObject.call(this);
+        this.__shortener = shortener
+    };
+    var MessageCompressor = sdk.core.MessageCompressor;
+    Class(MessageCompressor, BaseObject, [Compressor], null);
+    MessageCompressor.prototype.getShortener = function () {
+        return this.__shortener
+    };
+    MessageCompressor.prototype.compressContent = function (content, key) {
+        var shortener = this.getShortener();
+        content = shortener.compressContent(content);
+        var text = JSONMap.encode(content);
+        return UTF8.encode(text)
+    };
+    MessageCompressor.prototype.extractContent = function (data, key) {
+        var text = UTF8.decode(data);
+        if (!text) {
+            return null
+        }
+        var info = JSONMap.decode(text);
+        if (info) {
+            var shortener = this.getShortener();
+            info = shortener.extractContent(info)
+        }
+        return info
+    };
+    MessageCompressor.prototype.compressSymmetricKey = function (key) {
+        var shortener = this.getShortener();
+        key = shortener.compressSymmetricKey(key);
+        var text = JSONMap.encode(key);
+        return UTF8.encode(text)
+    };
+    MessageCompressor.prototype.extractSymmetricKey = function (data) {
+        var text = UTF8.decode(data);
+        if (!text) {
+            return null
+        }
+        var key = JSONMap.decode(text);
+        if (key) {
+            var shortener = this.getShortener();
+            key = shortener.extractSymmetricKey(key)
+        }
+        return key
+    };
+    MessageCompressor.prototype.compressReliableMessage = function (msg) {
+        var shortener = this.getShortener();
+        msg = shortener.compressReliableMessage(msg);
+        var text = JSONMap.encode(msg);
+        return UTF8.encode(text)
+    };
+    MessageCompressor.prototype.extractReliableMessage = function (data) {
+        var text = UTF8.decode(data);
+        if (!text) {
+            return null
+        }
+        var msg = JSONMap.decode(text);
+        if (msg) {
+            var shortener = this.getShortener();
+            msg = shortener.extractReliableMessage(msg)
+        }
+        return msg
+    };
+    sdk.core.CipherKeyDelegate = Interface(null, null);
+    var CipherKeyDelegate = sdk.core.CipherKeyDelegate;
+    CipherKeyDelegate.getDestinationForMessage = function (msg) {
+        var receiver = msg.getReceiver();
+        var group = ID.parse(msg.getValue('group'));
+        return CipherKeyDelegate.getDestination(receiver, group)
+    };
+    CipherKeyDelegate.getDestination = function (receiver, group) {
+        if (!group && receiver.isGroup()) {
+            group = receiver
+        }
+        if (!group) {
+            return receiver
+        }
+        if (group.isBroadcast()) {
+            return group
+        } else if (receiver.isBroadcast()) {
+            return receiver
+        } else {
+            return group
+        }
+    };
+    CipherKeyDelegate.prototype.getCipherKey = function (sender, receiver, generate) {
+    };
+    CipherKeyDelegate.prototype.cacheCipherKey = function (sender, receiver, key) {
+    };
+    sdk.core.Packer = Interface(null, null);
+    var Packer = sdk.core.Packer;
+    Packer.prototype.encryptMessage = function (iMsg) {
+    };
+    Packer.prototype.signMessage = function (sMsg) {
+    };
+    Packer.prototype.verifyMessage = function (rMsg) {
+    };
+    Packer.prototype.decryptMessage = function (sMsg) {
+    };
+    sdk.core.Processor = Interface(null, null);
+    var Processor = sdk.core.Processor;
+    Processor.prototype.processPackage = function (data) {
+    };
+    Processor.prototype.processReliableMessage = function (rMsg) {
+    };
+    Processor.prototype.processSecureMessage = function (sMsg, rMsg) {
+    };
+    Processor.prototype.processInstantMessage = function (iMsg, rMsg) {
+    };
+    Processor.prototype.processContent = function (content, rMsg) {
+    };
+    sdk.core.Transceiver = function () {
+        BaseObject.call(this)
+    };
+    var Transceiver = sdk.core.Transceiver;
+    Class(Transceiver, BaseObject, [InstantMessageDelegate, SecureMessageDelegate, ReliableMessageDelegate], null);
+    Transceiver.prototype.getFacebook = function () {
+    };
+    Transceiver.prototype.getCompressor = function () {
+    };
+    Transceiver.prototype.serializeMessage = function (rMsg) {
+        var info = rMsg.toMap();
+        var compressor = this.getCompressor();
+        return compressor.compressReliableMessage(info)
+    };
+    Transceiver.prototype.deserializeMessage = function (data) {
+        var compressor = this.getCompressor();
+        var info = compressor.extractReliableMessage(data);
+        return ReliableMessage.parse(info)
+    };
+    Transceiver.prototype.serializeContent = function (content, pwd, iMsg) {
+        var compressor = this.getCompressor();
+        return compressor.compressContent(content.toMap(), pwd.toMap())
+    };
+    Transceiver.prototype.encryptContent = function (data, pwd, iMsg) {
+        return pwd.encrypt(data, iMsg.toMap())
+    };
+    Transceiver.prototype.serializeKey = function (pwd, iMsg) {
+        if (BaseMessage.isBroadcast(iMsg)) {
+            return null
+        }
+        var compressor = this.getCompressor();
+        return compressor.compressSymmetricKey(pwd.toMap())
+    };
+    Transceiver.prototype.encryptKey = function (keyData, receiver, iMsg) {
+        var facebook = this.getEntityDelegate();
+        var contact = facebook.getUser(receiver);
+        if (!contact) {
+            return null
+        }
+        return contact.encrypt(keyData)
+    };
+    Transceiver.prototype.decryptKey = function (keyData, receiver, sMsg) {
+        var facebook = this.getEntityDelegate();
+        var user = facebook.getUser(receiver);
+        if (!user) {
+            return null
+        }
+        return user.decrypt(keyData)
+    };
+    Transceiver.prototype.deserializeKey = function (keyData, sMsg) {
+        if (!keyData) {
+            return null
+        }
+        var compressor = this.getCompressor();
+        var info = compressor.extractSymmetricKey(keyData);
+        return SymmetricKey.parse(info)
+    };
+    Transceiver.prototype.decryptContent = function (data, pwd, sMsg) {
+        return pwd.decrypt(data, sMsg.toMap())
+    };
+    Transceiver.prototype.deserializeContent = function (data, pwd, sMsg) {
+        var compressor = this.getCompressor();
+        var info = compressor.extractContent(data, pwd.toMap());
+        return Content.parse(info)
+    };
+    Transceiver.prototype.signData = function (data, sMsg) {
+        var facebook = this.getEntityDelegate();
+        var sender = sMsg.getSender();
+        var user = facebook.getUser(sender);
+        return user.sign(data)
+    };
+    Transceiver.prototype.verifyDataSignature = function (data, signature, rMsg) {
+        var facebook = this.getEntityDelegate();
+        var sender = rMsg.getSender();
+        var contact = facebook.getUser(sender);
+        if (!contact) {
+            return false
+        }
+        return contact.verify(data, signature)
+    };
+    sdk.TwinsHelper = function (facebook, messenger) {
+        BaseObject.call(this);
+        this.__facebook = facebook;
+        this.__messenger = messenger
+    };
+    var TwinsHelper = sdk.TwinsHelper;
+    Class(TwinsHelper, BaseObject, null, null);
+    TwinsHelper.prototype.getFacebook = function () {
+        return this.__facebook
+    }
+    TwinsHelper.prototype.getMessenger = function () {
+        return this.__messenger
+    }
+    sdk.Facebook = function () {
+        BaseObject.call(this)
+    };
+    var Facebook = sdk.Facebook;
+    Class(Facebook, BaseObject, [EntityDelegate, UserDataSource, GroupDataSource], null);
+    Facebook.prototype.getBarrack = function () {
+    };
+    Facebook.prototype.getArchivist = function () {
+    };
+    Facebook.prototype.selectLocalUser = function (receiver) {
+        var archivist = this.getArchivist();
+        var users = archivist.getLocalUsers();
+        if (!users || users.length === 0) {
+            return null
+        } else if (receiver.isBroadcast()) {
+            return users[0]
+        }
+        var i, uid;
+        if (receiver.isUser()) {
+            for (i = 0; i < users.length; ++i) {
+                uid = users[i];
+                if (!uid) {
+                } else if (uid.equals(receiver)) {
+                    return uid
+                }
+            }
+        } else if (receiver.isGroup()) {
+            var members = this.getMembers(receiver);
+            if (!members || members.length === 0) {
+                return null
+            }
+            var j, mid;
+            for (i = 0; i < users.length; ++i) {
+                uid = users[i];
+                for (j = 0; j < members.length; ++j) {
+                    mid = members[j];
+                    if (!mid) {
+                    } else if (mid.equals(uid)) {
+                        return uid
+                    }
+                }
+            }
+        } else {
+            throw new TypeError('receiver error: ' + receiver);
+        }
+        return null
+    };
+    Facebook.prototype.getUser = function (uid) {
+        var barrack = this.getBarrack();
+        var user = barrack.getUser(uid);
+        if (user) {
+            return user
+        }
+        if (uid.isBroadcast()) {
+        } else {
+            var visaKey = this.getPublicKeyForEncryption(uid);
+            if (!visaKey) {
+                return null
+            }
+        }
+        user = barrack.createUser(uid);
+        if (user) {
+            barrack.cacheUser(user)
+        }
+        return user
+    };
+    Facebook.prototype.getGroup = function (gid) {
+        var barrack = this.getBarrack();
+        var group = barrack.getGroup(gid);
+        if (group) {
+            return group
+        }
+        if (gid.isBroadcast()) {
+        } else {
+            var members = this.getMembers(gid);
+            if (!members || members.length === 0) {
+                return null
+            }
+        }
+        group = barrack.createGroup(gid);
+        if (group) {
+            barrack.cacheGroup(group)
+        }
+        return group
+    };
+    Facebook.prototype.getPublicKeyForEncryption = function (uid) {
+        var archivist = this.getArchivist();
+        var visaKey = archivist.getVisaKey(uid);
+        if (visaKey) {
+            return visaKey
+        }
+        var metaKey = archivist.getMetaKey(uid);
+        if (Interface.conforms(metaKey, EncryptKey)) {
+            return metaKey
+        }
+        return null
+    };
+    Facebook.prototype.getPublicKeysForVerification = function (uid) {
+        var archivist = this.getArchivist();
+        var verifyKeys = [];
+        var visaKey = archivist.getVisaKey(uid);
+        if (Interface.conforms(visaKey, VerifyKey)) {
+            verifyKeys.push(visaKey)
+        }
+        var metaKey = archivist.getMetaKey(uid);
+        if (metaKey) {
+            verifyKeys.push(metaKey)
+        }
+        return verifyKeys
+    };
+    sdk.Messenger = function () {
+        Transceiver.call(this)
+    };
+    var Messenger = sdk.Messenger;
+    Class(Messenger, Transceiver, [Packer, Processor], null);
+    Messenger.prototype.getCipherKeyDelegate = function () {
+    };
+    Messenger.prototype.getPacker = function () {
+    };
+    Messenger.prototype.getProcessor = function () {
+    };
+    Messenger.prototype.deserializeKey = function (keyData, sMsg) {
+        if (!keyData) {
+            return this.getDecryptKey(sMsg)
+        }
+        var password = Transceiver.prototype.deserializeKey.call(this, keyData, sMsg);
+        if (password) {
+            this.cacheDecryptKey(password, sMsg)
+        }
+        return password
+    };
+    Messenger.prototype.getEncryptKey = function (iMsg) {
+        var sender = iMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(iMsg);
+        var db = this.getCipherKeyDelegate();
+        return db.getCipherKey(sender, target, true)
+    };
+    Messenger.prototype.getDecryptKey = function (sMsg) {
+        var sender = sMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
+        var db = this.getCipherKeyDelegate();
+        return db.getCipherKey(sender, target, false)
+    };
+    Messenger.prototype.cacheDecryptKey = function (key, sMsg) {
+        var sender = sMsg.getSender();
+        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
+        var db = this.getCipherKeyDelegate();
+        return db.cacheCipherKey(sender, target, key)
+    };
+    Messenger.prototype.encryptMessage = function (iMsg) {
+        var packer = this.getPacker();
+        return packer.encryptMessage(iMsg)
+    };
+    Messenger.prototype.signMessage = function (sMsg) {
+        var packer = this.getPacker();
+        return packer.signMessage(sMsg)
+    };
+    Messenger.prototype.verifyMessage = function (rMsg) {
+        var packer = this.getPacker();
+        return packer.verifyMessage(rMsg)
+    };
+    Messenger.prototype.decryptMessage = function (sMsg) {
+        var packer = this.getPacker();
+        return packer.decryptMessage(sMsg)
+    };
+    Messenger.prototype.processPackage = function (data) {
+        var processor = this.getProcessor();
+        return processor.processPackage(data)
+    };
+    Messenger.prototype.processReliableMessage = function (rMsg) {
+        var processor = this.getProcessor();
+        return processor.processReliableMessage(rMsg)
+    };
+    Messenger.prototype.processSecureMessage = function (sMsg, rMsg) {
+        var processor = this.getProcessor();
+        return processor.processSecureMessage(sMsg, rMsg)
+    };
+    Messenger.prototype.processInstantMessage = function (iMsg, rMsg) {
+        var processor = this.getProcessor();
+        return processor.processInstantMessage(iMsg, rMsg)
+    };
+    Messenger.prototype.processContent = function (content, rMsg) {
+        var processor = this.getProcessor();
+        return processor.processContent(content, rMsg)
+    };
+    sdk.MessagePacker = function (facebook, messenger) {
+        TwinsHelper.call(this, facebook, messenger);
+        this.__instantPacker = this.createInstantMessagePacker(messenger);
+        this.__securePacker = this.createSecureMessagePacker(messenger);
+        this.__reliablePacker = this.createReliableMessagePacker(messenger)
+    };
+    var MessagePacker = sdk.MessagePacker;
+    Class(MessagePacker, TwinsHelper, [Packer], null);
+    MessagePacker.prototype.createInstantMessagePacker = function (delegate) {
+        return new InstantMessagePacker(delegate)
+    };
+    MessagePacker.prototype.createSecureMessagePacker = function (delegate) {
+        return new SecureMessagePacker(delegate)
+    };
+    MessagePacker.prototype.createReliableMessagePacker = function (delegate) {
+        return new ReliableMessagePacker(delegate)
+    };
+    MessagePacker.prototype.getInstantMessagePacker = function () {
+        return this.__instantPacker
+    };
+    MessagePacker.prototype.getSecureMessagePacker = function () {
+        return this.__securePacker
+    };
+    MessagePacker.prototype.getReliableMessagePacker = function () {
+        return this.__reliablePacker
+    };
+    MessagePacker.prototype.getArchivist = function () {
+        var facebook = this.getFacebook();
+        if (facebook) {
+            return facebook.getArchivist()
+        } else {
+            return null
+        }
+    };
+    MessagePacker.prototype.encryptMessage = function (iMsg) {
+        var facebook = this.getFacebook();
+        var messenger = this.getMessenger();
+        var sMsg;
+        var receiver = iMsg.getReceiver();
+        var password = messenger.getEncryptKey(iMsg);
+        if (!password) {
+            return null
+        }
+        var instantPacker = this.getInstantMessagePacker();
+        if (receiver.isGroup()) {
+            var members = facebook.getMembers(receiver);
+            if (!members || members.length === 0) {
+                return null
+            }
+            sMsg = instantPacker.encryptMessage(iMsg, password, members)
+        } else {
+            sMsg = instantPacker.encryptMessage(iMsg, password, null)
+        }
+        if (sMsg == null) {
+            return null
+        }
+        sMsg.getEnvelope().setType(iMsg.getContent().getType());
+        return sMsg
+    };
+    MessagePacker.prototype.signMessage = function (sMsg) {
+        var securePacker = this.getSecureMessagePacker();
+        return securePacker.signMessage(sMsg)
+    };
+    MessagePacker.prototype.checkAttachments = function (rMsg) {
+        var archivist = this.getArchivist();
+        if (!archivist) {
+            return false
+        }
+        var sender = rMsg.getSender();
+        var meta = MessageUtils.getMeta(rMsg);
+        if (meta) {
+            archivist.saveMeta(meta, sender)
+        }
+        var visa = MessageUtils.getVisa(rMsg);
+        if (visa) {
+            archivist.saveDocument(visa)
+        }
+        return true
+    };
+    MessagePacker.prototype.verifyMessage = function (rMsg) {
+        if (this.checkAttachments(rMsg)) {
+        } else {
+            return null
+        }
+        var reliablePacker = this.getReliableMessagePacker();
+        return reliablePacker.verifyMessage(rMsg)
+    };
+    MessagePacker.prototype.decryptMessage = function (sMsg) {
+        var receiver = sMsg.getReceiver();
+        var facebook = this.getFacebook();
+        var me = facebook.selectLocalUser(receiver);
+        if (me == null) {
+            throw new ReferenceError('receiver error: ' + receiver.toString() + ', from ' + sMsg.getSender().toString() + ', ' + sMsg.getGroup());
+        }
+        var securePacker = this.getSecureMessagePacker();
+        return securePacker.decryptMessage(sMsg, me)
+    };
+    sdk.MessageProcessor = function (facebook, messenger) {
+        TwinsHelper.call(this, facebook, messenger);
+        this.__factory = this.createFactory(facebook, messenger)
+    };
+    var MessageProcessor = sdk.MessageProcessor;
+    Class(MessageProcessor, TwinsHelper, [Processor], null);
+    MessageProcessor.prototype.createFactory = function (facebook, messenger) {
+    };
+    MessageProcessor.prototype.getFactory = function () {
+        return this.__factory
+    };
+    MessageProcessor.prototype.processPackage = function (data) {
+        var messenger = this.getMessenger();
+        var rMsg = messenger.deserializeMessage(data);
+        if (!rMsg) {
+            return []
+        }
+        var responses = messenger.processReliableMessage(rMsg);
+        if (!responses || responses.length === 0) {
+            return []
+        }
+        var packages = [];
+        var res, pack;
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                continue
+            }
+            pack = messenger.serializeMessage(res);
+            if (!pack) {
+                continue
+            }
+            packages.push(pack)
+        }
+        return packages
+    };
+    MessageProcessor.prototype.processReliableMessage = function (rMsg) {
+        var messenger = this.getMessenger();
+        var sMsg = messenger.verifyMessage(rMsg);
+        if (!sMsg) {
+            return []
+        }
+        var responses = messenger.processSecureMessage(sMsg, rMsg);
+        if (!responses || responses.length === 0) {
+            return []
+        }
+        var messages = [];
+        var res, msg;
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                continue
+            }
+            msg = messenger.signMessage(res);
+            if (!msg) {
+                continue
+            }
+            messages.push(msg)
+        }
+        return messages
+    };
+    MessageProcessor.prototype.processSecureMessage = function (sMsg, rMsg) {
+        var messenger = this.getMessenger();
+        var iMsg = messenger.decryptMessage(sMsg);
+        if (!iMsg) {
+            return []
+        }
+        var responses = messenger.processInstantMessage(iMsg, rMsg);
+        if (!responses || responses.length === 0) {
+            return []
+        }
+        var messages = [];
+        var res, msg;
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                continue
+            }
+            msg = messenger.encryptMessage(res);
+            if (!msg) {
+                continue
+            }
+            messages.push(msg)
+        }
+        return messages
+    };
+    MessageProcessor.prototype.processInstantMessage = function (iMsg, rMsg) {
+        var facebook = this.getFacebook();
+        var messenger = this.getMessenger();
+        var responses = messenger.processContent(iMsg.getContent(), rMsg);
+        if (!responses || responses.length === 0) {
+            return []
+        }
+        var sender = iMsg.getSender();
+        var receiver = iMsg.getReceiver();
+        var me = facebook.selectLocalUser(receiver);
+        if (!me) {
+            return []
+        }
+        var messages = [];
+        var res, env, msg;
+        for (var i = 0; i < responses.length; ++i) {
+            res = responses[i];
+            if (!res) {
+                continue
+            }
+            env = Envelope.create(me, sender, null);
+            msg = InstantMessage.create(env, res);
+            if (!msg) {
+                continue
+            }
+            messages.push(msg)
+        }
+        return messages
+    };
+    MessageProcessor.prototype.processContent = function (content, rMsg) {
+        var factory = this.getFactory();
+        var cpu = factory.getContentProcessor(content);
+        if (!cpu) {
+            cpu = factory.getContentProcessorForType(ContentType.ANY)
+        }
+        return cpu.processContent(content, rMsg)
+    };
+    sdk.cpu.BaseContentProcessor = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger)
     };
-    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], {
-        process: function (content, rMsg) {
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Content (type: ${type}) not support yet!',
-                'replacements': {'type': content.getType()}
-            })
+    var BaseContentProcessor = sdk.cpu.BaseContentProcessor;
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+    BaseContentProcessor.prototype.processContent = function (content, rMsg) {
+        var text = 'Content not support.';
+        return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+            'template': 'Content (type: ${type}) not support yet!',
+            'replacements': {'type': content.getType()}
+        })
+    };
+    BaseContentProcessor.prototype.respondReceipt = function (text, envelope, content, extra) {
+        return [BaseContentProcessor.createReceipt(text, envelope, content, extra)]
+    };
+    BaseContentProcessor.createReceipt = function (text, envelope, content, extra) {
+        var res = ReceiptCommand.create(text, envelope, content);
+        if (extra) {
+            Mapper.addAll(res, extra)
         }
-    });
-    var BaseCommandProcessor = function (facebook, messenger) {
+        return res
+    };
+    sdk.cpu.BaseCommandProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger)
     };
+    var BaseCommandProcessor = sdk.cpu.BaseCommandProcessor;
     Class(BaseCommandProcessor, BaseContentProcessor, null, {
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var text = 'Command not support.';
             return this.respondReceipt(text, rMsg.getEnvelope(), content, {
                 'template': 'Command (name: ${command}) not support yet!',
@@ -701,20 +1676,12 @@
             })
         }
     });
-    ns.cpu.BaseContentProcessor = BaseContentProcessor;
-    ns.cpu.BaseCommandProcessor = BaseCommandProcessor
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ForwardContent = ns.protocol.ForwardContent;
-    var ArrayContent = ns.protocol.ArrayContent;
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-    var ForwardContentProcessor = function (facebook, messenger) {
+    sdk.cpu.ForwardContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger)
     };
+    var ForwardContentProcessor = sdk.cpu.ForwardContentProcessor;
     Class(ForwardContentProcessor, BaseContentProcessor, null, {
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var secrets = content.getSecrets();
             if (!secrets) {
                 return null
@@ -737,11 +1704,12 @@
             return responses
         }
     });
-    var ArrayContentProcessor = function (facebook, messenger) {
+    sdk.cpu.ArrayContentProcessor = function (facebook, messenger) {
         BaseContentProcessor.call(this, facebook, messenger)
     };
+    var ArrayContentProcessor = sdk.cpu.ArrayContentProcessor;
     Class(ArrayContentProcessor, BaseContentProcessor, null, {
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var array = content.getContents();
             if (!array) {
                 return null
@@ -764,21 +1732,12 @@
             return responses
         }
     });
-    ns.cpu.ForwardContentProcessor = ForwardContentProcessor;
-    ns.cpu.ArrayContentProcessor = ArrayContentProcessor
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var MetaCommand = ns.protocol.MetaCommand;
-    var DocumentCommand = ns.protocol.DocumentCommand;
-    var DocumentHelper = ns.mkm.DocumentHelper;
-    var BaseCommandProcessor = ns.cpu.BaseCommandProcessor;
-    var MetaCommandProcessor = function (facebook, messenger) {
+    sdk.cpu.MetaCommandProcessor = function (facebook, messenger) {
         BaseCommandProcessor.call(this, facebook, messenger)
     };
+    var MetaCommandProcessor = sdk.cpu.MetaCommandProcessor;
     Class(MetaCommandProcessor, BaseCommandProcessor, null, {
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var identifier = content.getIdentifier();
             if (!identifier) {
                 var text = 'Meta command error.';
@@ -794,13 +1753,12 @@
             var facebook = this.getFacebook();
             var meta = facebook.getMeta(identifier);
             if (meta) {
-                var res = MetaCommand.response(identifier, meta);
-                return [res]
+                return [MetaCommand.response(identifier, meta)]
             }
             var text = 'Meta not found.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Meta not found: ${ID}.',
-                'replacements': {'ID': identifier.toString()}
+                'template': 'Meta not found: ${did}.',
+                'replacements': {'did': identifier.toString()}
             })
         }, updateMeta: function (meta, identifier, content, envelope) {
             var errors = this.saveMeta(meta, identifier, content, envelope);
@@ -809,83 +1767,84 @@
             }
             var text = 'Meta received.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Meta received: ${ID}.',
-                'replacements': {'ID': identifier.toString()}
+                'template': 'Meta received: ${did}.',
+                'replacements': {'did': identifier.toString()}
             })
         }, saveMeta: function (meta, identifier, content, envelope) {
             var text;
             if (!this.checkMeta(meta, identifier)) {
                 text = 'Meta not valid.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Meta not valid: ${ID}.',
-                    'replacements': {'ID': identifier.toString()}
+                    'template': 'Meta not valid: ${did}.',
+                    'replacements': {'did': identifier.toString()}
                 })
-            } else if (!this.getFacebook().saveMeta(meta, identifier)) {
+            } else if (!this.getArchivist().saveMeta(meta, identifier)) {
                 text = 'Meta not accepted.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Meta not accepted: ${ID}.',
-                    'replacements': {'ID': identifier.toString()}
+                    'template': 'Meta not accepted: ${did}.',
+                    'replacements': {'did': identifier.toString()}
                 })
             }
             return null
         }, checkMeta: function (meta, identifier) {
-            return meta.isValid() && meta.matchIdentifier(identifier)
+            return meta.isValid() && MetaUtils.matchIdentifier(identifier, meta)
         }
     });
-    var DocumentCommandProcessor = function (facebook, messenger) {
+    sdk.cpu.DocumentCommandProcessor = function (facebook, messenger) {
         MetaCommandProcessor.call(this, facebook, messenger)
     };
+    var DocumentCommandProcessor = sdk.cpu.DocumentCommandProcessor;
     Class(DocumentCommandProcessor, MetaCommandProcessor, null, {
-        process: function (content, rMsg) {
+        processContent: function (content, rMsg) {
             var text;
             var identifier = content.getIdentifier();
             if (!identifier) {
                 text = 'Document command error.';
                 return this.respondReceipt(text, rMsg.getEnvelope(), content)
             }
-            var doc = content.getDocument();
-            if (!doc) {
+            var documents = content.getDocuments();
+            if (!documents) {
                 return this.queryDocument(identifier, content, rMsg.getEnvelope())
-            } else if (identifier.equals(doc.getIdentifier())) {
-                return this.updateDocument(doc, identifier, content, rMsg.getEnvelope())
             }
-            text = 'Document ID not match.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Document ID not match: ${ID}.',
-                'replacements': {'ID': identifier.toString()}
-            })
+            var doc;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                if (identifier.equals(doc.getIdentifier())) {
+                } else {
+                    text = 'Document ID not match.';
+                    return this.respondReceipt(text, rMsg.getEnvelope(), content, {
+                        'template': 'Document ID not match: ${did}.',
+                        'replacements': {'did': identifier.toString()}
+                    })
+                }
+            }
+            return this.updateDocuments(documents, identifier, content, rMsg.getEnvelope())
         }, queryDocument: function (identifier, content, envelope) {
             var text;
-            var docs = this.getFacebook().getDocuments(identifier);
-            if (!docs || docs.length === 0) {
+            var documents = this.getFacebook().getDocuments(identifier);
+            if (!documents || documents.length === 0) {
                 text = 'Document not found.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not found: ${ID}.',
-                    'replacements': {'ID': identifier.toString()}
+                    'template': 'Document not found: ${did}.',
+                    'replacements': {'did': identifier.toString()}
                 })
             }
             var queryTime = content.getLastTime();
             if (queryTime) {
-                var last = DocumentHelper.lastDocument(docs);
+                var last = DocumentUtils.lastDocument(documents);
                 var lastTime = !last ? null : last.getTime();
                 if (!lastTime) {
-                } else if (lastTime.getTime() > queryTime.getTime()) {
+                } else if (lastTime.getTime() <= queryTime.getTime()) {
                     text = 'Document not updated.';
                     return this.respondReceipt(text, envelope, content, {
-                        'template': 'Document not updated: ${ID}, last time: ${time}.',
-                        'replacements': {'ID': identifier.toString(), 'time': lastTime.getTime()}
+                        'template': 'Document not updated: ${did}, last time: ${time}.',
+                        'replacements': {'did': identifier.toString(), 'time': lastTime.getTime()}
                     })
                 }
             }
             var meta = this.getFacebook().getMeta(identifier);
-            var command = DocumentCommand.response(identifier, meta, docs[0]);
-            var responses = [command];
-            for (var i = 1; i < docs.length; ++i) {
-                command = DocumentCommand.response(identifier, null, docs[i]);
-                responses.push(command)
-            }
-            return responses
-        }, updateDocument: function (doc, identifier, content, envelope) {
+            return [DocumentCommand.response(identifier, meta, documents)]
+        }, updateDocuments: function (documents, identifier, content, envelope) {
             var errors;
             var meta = content.getMeta();
             var text;
@@ -894,8 +1853,8 @@
                 if (!meta) {
                     text = 'Meta not found.';
                     return this.respondReceipt(text, envelope, content, {
-                        'template': 'Meta not found: ${ID}.',
-                        'replacements': {'ID': identifier.toString()}
+                        'template': 'Meta not found: ${did}.',
+                        'replacements': {'did': identifier.toString()}
                     })
                 }
             } else {
@@ -904,28 +1863,39 @@
                     return errors
                 }
             }
-            errors = this.saveDocument(doc, meta, identifier, content, envelope);
-            if (errors) {
+            errors = [];
+            var array;
+            var doc;
+            for (var i = 0; i < documents.length; ++i) {
+                doc = documents[i];
+                array = this.saveDocument(doc, meta, identifier, content, envelope);
+                if (array) {
+                    for (var j = 0; j < array.length; ++j) {
+                        errors.push(array[j])
+                    }
+                }
+            }
+            if (array.length > 0) {
                 return errors
             }
             text = 'Document received.';
             return this.respondReceipt(text, envelope, content, {
-                'template': 'Document received: ${ID}.',
-                'replacements': {'ID': identifier.toString()}
+                'template': 'Document received: ${did}.',
+                'replacements': {'did': identifier.toString()}
             })
         }, saveDocument: function (doc, meta, identifier, content, envelope) {
             var text;
             if (!this.checkDocument(doc, meta)) {
                 text = 'Document not accepted.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not accepted: ${ID}.',
-                    'replacements': {'ID': identifier.toString()}
+                    'template': 'Document not accepted: ${did}.',
+                    'replacements': {'did': identifier.toString()}
                 })
-            } else if (!this.getFacebook().saveDocument(doc)) {
+            } else if (!this.getArchivist().saveDocument(doc)) {
                 text = 'Document not changed.';
                 return this.respondReceipt(text, envelope, content, {
-                    'template': 'Document not changed: ${ID}.',
-                    'replacements': {'ID': identifier.toString()}
+                    'template': 'Document not changed: ${did}.',
+                    'replacements': {'did': identifier.toString()}
                 })
             }
             return null
@@ -936,827 +1906,83 @@
             return doc.verify(meta.getPublicKey())
         }
     });
-    ns.cpu.MetaCommandProcessor = MetaCommandProcessor;
-    ns.cpu.DocumentCommandProcessor = DocumentCommandProcessor
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var Class = ns.type.Class;
-    var BaseContentProcessor = ns.cpu.BaseContentProcessor;
-    var CustomizedContentHandler = Interface(null, null);
+    sdk.cpu.CustomizedContentHandler = Interface(null, null);
+    var CustomizedContentHandler = sdk.cpu.CustomizedContentHandler;
     CustomizedContentHandler.prototype.handleAction = function (act, sender, content, rMsg) {
     };
-    var CustomizedContentProcessor = function (facebook, messenger) {
-        BaseContentProcessor.call(this, facebook, messenger)
-    };
-    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], {
-        process: function (content, rMsg) {
-            var app = content.getApplication();
-            var res = this.filterApplication(app, content, rMsg);
-            if (res) {
-                return res
-            }
-            var mod = content.getModule();
-            var handler = this.fetchHandler(mod, content, rMsg);
-            if (!handler) {
-                return null
-            }
-            var act = rMsg.getAction();
-            var sender = rMsg.getSender();
-            return handler.handleAction(act, sender, content, rMsg)
-        }, filterApplication: function (app, content, rMsg) {
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Customized content (app: ${app}) not support yet!',
-                'replacements': {'app': app}
-            })
-        }, fetchHandler: function (mod, content, rMsg) {
-            return this
-        }, handleAction: function (act, sender, content, rMsg) {
-            var app = content.getApplication();
-            var mod = content.getModule();
-            var text = 'Content not support.';
-            return this.respondReceipt(text, rMsg.getEnvelope(), content, {
-                'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
-                'replacements': {'app': app, 'mod': mod, 'act': act}
-            })
-        }
-    });
-    ns.cpu.CustomizedContentHandler = CustomizedContentHandler;
-    ns.cpu.CustomizedContentProcessor = CustomizedContentProcessor
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ContentType = ns.protocol.ContentType;
-    var Command = ns.protocol.Command;
-    var ContentProcessor = ns.cpu.ContentProcessor;
-    var TwinsHelper = ns.TwinsHelper;
-    var ContentProcessorCreator = function (facebook, messenger) {
+    sdk.cpu.BaseCustomizedHandler = function (facebook, messenger) {
         TwinsHelper.call(this, facebook, messenger)
     };
-    Class(ContentProcessorCreator, TwinsHelper, [ContentProcessor.Creator], {
+    var BaseCustomizedHandler = sdk.cpu.BaseCustomizedHandler;
+    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler], null);
+    BaseCustomizedHandler.prototype.handleAction = function (act, sender, content, rMsg) {
+        var app = content.getApplication();
+        var mod = content.getModule();
+        var text = 'Content not support.';
+        return this.respondReceipt(text, content, rMsg.getEnvelope(), {
+            'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
+            'replacements': {'app': app, 'mod': mod, 'act': act}
+        })
+    };
+    BaseCustomizedHandler.prototype.respondReceipt = function (text, envelope, content, extra) {
+        return [BaseContentProcessor.createReceipt(text, envelope, content, extra)]
+    };
+    sdk.cpu.CustomizedContentProcessor = function (facebook, messenger) {
+        BaseContentProcessor.call(this, facebook, messenger);
+        this.__defaultHandler = this.createDefaultHandler(facebook, messenger)
+    };
+    var CustomizedContentProcessor = sdk.cpu.CustomizedContentProcessor;
+    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], null);
+    CustomizedContentProcessor.prototype.createDefaultHandler = function (facebook, messenger) {
+        return new BaseCustomizedHandler(facebook, messenger)
+    };
+    CustomizedContentProcessor.prototype.getDefaultHandler = function () {
+        return this.__defaultHandler
+    };
+    CustomizedContentProcessor.prototype.processContent = function (content, rMsg) {
+        var app = content.getApplication();
+        var mod = content.getModule();
+        var handler = this.filter(app, mod, content, rMsg);
+        var act = content.getAction();
+        var sender = rMsg.getSender();
+        return handler.handleAction(act, sender, content, rMsg)
+    };
+    CustomizedContentProcessor.prototype.filter = function (app, mod, content, rMsg) {
+        return this.getDefaultHandler()
+    };
+    sdk.cpu.BaseContentProcessorCreator = function (facebook, messenger) {
+        TwinsHelper.call(this, facebook, messenger)
+    };
+    var BaseContentProcessorCreator = sdk.cpu.BaseContentProcessorCreator;
+    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessorCreator], {
         createContentProcessor: function (type) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();
-            if (ContentType.FORWARD.equals(type)) {
-                return new ns.cpu.ForwardContentProcessor(facebook, messenger)
-            }
-            if (ContentType.ARRAY.equals(type)) {
-                return new ns.cpu.ArrayContentProcessor(facebook, messenger)
-            }
-            if (ContentType.COMMAND.equals(type)) {
-                return new ns.cpu.BaseCommandProcessor(facebook, messenger)
+            switch (type) {
+                case ContentType.FORWARD:
+                case'forward':
+                    return ForwardContentProcessor(facebook, messenger);
+                case ContentType.ARRAY:
+                case'array':
+                    return ArrayContentProcessor(facebook, messenger);
+                case ContentType.COMMAND:
+                case'command':
+                    return new BaseCommandProcessor(facebook, messenger);
+                case ContentType.ANY:
+                case'*':
+                    return new BaseContentProcessor(facebook, messenger)
             }
             return null
         }, createCommandProcessor: function (type, cmd) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();
-            if (cmd === Command.META) {
-                return new ns.cpu.MetaCommandProcessor(facebook, messenger)
-            } else if (cmd === Command.DOCUMENT) {
-                return new ns.cpu.DocumentCommandProcessor(facebook, messenger)
+            switch (cmd) {
+                case Command.META:
+                    return new MetaCommandProcessor(facebook, messenger);
+                case Command.DOCUMENTS:
+                    return new DocumentCommandProcessor(facebook, messenger)
             }
             return null
         }
-    });
-    ns.cpu.ContentProcessorCreator = ContentProcessorCreator
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var KEYWORDS = ["all", "everyone", "anyone", "owner", "founder", "dkd", "mkm", "dimp", "dim", "dimt", "rsa", "ecc", "aes", "des", "btc", "eth", "crypto", "key", "symmetric", "asymmetric", "public", "private", "secret", "password", "id", "address", "meta", "profile", "document", "entity", "user", "group", "contact", "member", "admin", "administrator", "assistant", "main", "polylogue", "chatroom", "social", "organization", "company", "school", "government", "department", "provider", "station", "thing", "bot", "robot", "message", "instant", "secure", "reliable", "envelope", "sender", "receiver", "time", "content", "forward", "command", "history", "keys", "data", "signature", "type", "serial", "sn", "text", "file", "image", "audio", "video", "page", "handshake", "receipt", "block", "mute", "register", "suicide", "found", "abdicate", "invite", "expel", "join", "quit", "reset", "query", "hire", "fire", "resign", "server", "client", "terminal", "local", "remote", "barrack", "cache", "transceiver", "ans", "facebook", "store", "messenger", "root", "supervisor"];
-    var AddressNameService = Interface(null, null);
-    AddressNameService.KEYWORDS = KEYWORDS;
-    AddressNameService.prototype.isReserved = function (name) {
-        throw new Error('AddressNameService::isReserved: ' + name);
-    };
-    AddressNameService.prototype.getIdentifier = function (name) {
-        throw new Error('AddressNameService::getIdentifier: ' + name);
-    };
-    AddressNameService.prototype.getNames = function (identifier) {
-        throw new Error('AddressNameService::getNames: ' + identifier);
-    };
-    ns.AddressNameService = AddressNameService
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var Entity = ns.mkm.Entity;
-    var FrequencyChecker = ns.utils.FrequencyChecker;
-    var RecentTimeChecker = ns.utils.RecentTimeChecker;
-    var Archivist = function (lifeSpan) {
-        Object.call(this);
-        this.__metaQueries = new FrequencyChecker(lifeSpan);
-        this.__docsQueries = new FrequencyChecker(lifeSpan);
-        this.__membersQueries = new FrequencyChecker(lifeSpan);
-        this.__lastDocumentTimes = new RecentTimeChecker();
-        this.__lastHistoryTimes = new RecentTimeChecker()
-    };
-    Class(Archivist, Object, [Entity.DataSource], null);
-    Archivist.kQueryExpires = 600.0;
-    Archivist.prototype.isMetaQueryExpired = function (identifier) {
-        return this.__metaQueries.isExpired(identifier)
-    };
-    Archivist.prototype.isDocumentQueryExpired = function (identifier) {
-        return this.__docsQueries.isExpired(identifier)
-    };
-    Archivist.prototype.isMembersQueryExpired = function (identifier) {
-        return this.__membersQueries.isExpired(identifier)
-    };
-    Archivist.prototype.needsQueryMeta = function (identifier, meta) {
-        if (identifier.isBroadcast()) {
-            return false
-        } else if (!meta) {
-            return true
-        }
-        return false
-    };
-    Archivist.prototype.setLastDocumentTime = function (identifier, lastTime) {
-        return this.__lastDocumentTimes.setLastTime(identifier, lastTime)
-    };
-    Archivist.prototype.needsQueryDocuments = function (identifier, docs) {
-        if (identifier.isBroadcast()) {
-            return false
-        } else if (!docs || docs.length === 0) {
-            return true
-        }
-        var currentTime = this.getLastDocumentTime(identifier, docs);
-        return this.__lastDocumentTimes.isExpired(identifier, currentTime)
-    };
-    Archivist.prototype.getLastDocumentTime = function (identifier, docs) {
-        if (!docs || docs.length === 0) {
-            return null
-        }
-        var docTime, lastTime = null;
-        for (var i = 0; i < docs.length; ++i) {
-            docTime = docs[i].getTime();
-            if (!docTime) {
-            } else if (!lastTime || lastTime.getTime() < docTime.getTime()) {
-                lastTime = docTime
-            }
-        }
-        return lastTime
-    };
-    Archivist.prototype.setLastGroupHistoryTime = function (identifier, lastTime) {
-        return this.__lastHistoryTimes.setLastTime(identifier, lastTime)
-    };
-    Archivist.prototype.needsQueryMembers = function (identifier, members) {
-        if (identifier.isBroadcast()) {
-            return false
-        } else if (!members || members.length === 0) {
-            return true
-        }
-        var currentTime = this.getLastGroupHistoryTime(identifier);
-        return this.__lastHistoryTimes.isExpired(identifier, currentTime)
-    };
-    Archivist.prototype.getLastGroupHistoryTime = function (identifier) {
-        throw new Error('Archivist::getLastGroupHistoryTime: ' + identifier);
-    };
-    Archivist.prototype.checkMeta = function (identifier, meta) {
-        if (this.needsQueryMeta(identifier, meta)) {
-            return this.queryMeta(identifier)
-        } else {
-            return false
-        }
-    };
-    Archivist.prototype.checkDocuments = function (identifier, docs) {
-        if (this.needsQueryDocuments(identifier, docs)) {
-            return this.queryDocuments(identifier, docs)
-        } else {
-            return false
-        }
-    };
-    Archivist.prototype.checkMembers = function (identifier, members) {
-        if (this.needsQueryMembers(identifier, members)) {
-            if (!this.isMembersQueryExpired(identifier)) {
-                return false
-            }
-            return this.queryMembers(identifier, members)
-        } else {
-            return false
-        }
-    };
-    Archivist.prototype.queryMeta = function (identifier) {
-        throw new Error('Archivist::queryMeta: ' + identifier);
-    };
-    Archivist.prototype.queryDocuments = function (identifier, docs) {
-        throw new Error('Archivist::queryMeta: ' + identifier + ', ' + docs);
-    };
-    Archivist.prototype.queryMembers = function (identifier, members) {
-        throw new Error('Archivist::queryMeta: ' + identifier + ', ' + members);
-    };
-    Archivist.prototype.saveMeta = function (meta, identifier) {
-        throw new Error('Archivist::saveMeta: ' + identifier + ', ' + meta);
-    };
-    Archivist.prototype.saveDocument = function (doc) {
-        throw new Error('Archivist::saveDocument: ' + doc);
-    };
-    ns.Archivist = Archivist
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Interface = ns.type.Interface;
-    var ID = ns.protocol.ID;
-    var getDestination = function (receiver, group) {
-        if (!group && receiver.isGroup()) {
-            group = receiver
-        }
-        if (!group) {
-            return receiver
-        }
-        if (group.isBroadcast()) {
-            return group
-        } else if (receiver.isBroadcast()) {
-            return receiver
-        } else {
-            return group
-        }
-    };
-    var CipherKeyDelegate = Interface(null, null);
-    CipherKeyDelegate.getDestinationForMessage = function (msg) {
-        var group = ID.parse(msg.getValue('group'));
-        return getDestination(msg.getReceiver(), group)
-    };
-    CipherKeyDelegate.getDestination = getDestination;
-    CipherKeyDelegate.prototype.getCipherKey = function (sender, receiver, generate) {
-    };
-    CipherKeyDelegate.prototype.cacheCipherKey = function (sender, receiver, key) {
-    };
-    ns.CipherKeyDelegate = CipherKeyDelegate
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var EntityType = ns.protocol.EntityType;
-    var DocumentHelper = ns.mkm.DocumentHelper;
-    var BaseUser = ns.mkm.BaseUser;
-    var BaseGroup = ns.mkm.BaseGroup;
-    var Bot = ns.mkm.Bot;
-    var Station = ns.mkm.Station;
-    var ServiceProvider = ns.mkm.ServiceProvider;
-    var Barrack = ns.Barrack;
-    var Facebook = function () {
-        Barrack.call(this)
-    };
-    Class(Facebook, Barrack, null, {
-        getArchivist: function () {
-            throw new Error('Facebook::getArchivist');
-        }, createUser: function (identifier) {
-            if (!identifier.isBroadcast()) {
-                var pKey = this.getPublicKeyForEncryption(identifier);
-                if (!pKey) {
-                    return null
-                }
-            }
-            var network = identifier.getType();
-            if (EntityType.STATION.equals(network)) {
-                return new Station(identifier)
-            } else if (EntityType.BOT.equals(network)) {
-                return new Bot(identifier)
-            }
-            return new BaseUser(identifier)
-        }, createGroup: function (identifier) {
-            if (!identifier.isBroadcast()) {
-                var members = this.getMembers(identifier);
-                if (!members || members.length === 0) {
-                    return null
-                }
-            }
-            var network = identifier.getType();
-            if (EntityType.ISP.equals(network)) {
-                return new ServiceProvider(identifier)
-            }
-            return new BaseGroup(identifier)
-        }, getLocalUsers: function () {
-            throw new Error('Facebook::getLocalUsers');
-        }, selectLocalUser: function (receiver) {
-            var users = this.getLocalUsers();
-            if (!users || users.length === 0) {
-                throw new Error("local users should not be empty");
-            } else if (receiver.isBroadcast()) {
-                return users[0]
-            }
-            var i, user, uid;
-            if (receiver.isGroup()) {
-                var members = this.getMembers(receiver);
-                if (!members || members.length === 0) {
-                    return null
-                }
-                var j, member;
-                for (i = 0; i < users.length; ++i) {
-                    user = users[i];
-                    uid = user.getIdentifier();
-                    for (j = 0; j < members.length; ++j) {
-                        member = members[j];
-                        if (member.equals(uid)) {
-                            return user
-                        }
-                    }
-                }
-            } else {
-                for (i = 0; i < users.length; ++i) {
-                    user = users[i];
-                    uid = user.getIdentifier();
-                    if (receiver.equals(uid)) {
-                        return user
-                    }
-                }
-            }
-            return null
-        }, saveMeta: function (meta, identifier) {
-            if (meta.isValid() && meta.matchIdentifier(identifier)) {
-            } else {
-                return false
-            }
-            var old = this.getMeta(identifier);
-            if (old) {
-                return true
-            }
-            var archivist = this.getArchivist();
-            return archivist.saveMeta(meta, identifier)
-        }, saveDocument: function (doc) {
-            var identifier = doc.getIdentifier();
-            if (!identifier) {
-                return false
-            }
-            if (!doc.isValid()) {
-                var meta = this.getMeta(identifier);
-                if (!meta) {
-                    return false
-                } else if (doc.verify(meta.getPublicKey())) {
-                } else {
-                    return false
-                }
-            }
-            var type = doc.getType();
-            if (!type) {
-                type = '*'
-            }
-            var documents = this.getDocuments(identifier);
-            var old = DocumentHelper.lastDocument(documents, type);
-            if (old && DocumentHelper.isExpired(doc, old)) {
-                return false
-            }
-            var archivist = this.getArchivist();
-            return archivist.saveDocument(doc)
-        }, getMeta: function (identifier) {
-            var archivist = this.getArchivist();
-            var meta = archivist.getMeta(identifier);
-            archivist.checkMeta(identifier, meta);
-            return meta
-        }, getDocuments: function (identifier) {
-            var archivist = this.getArchivist();
-            var docs = archivist.getDocuments(identifier);
-            archivist.checkDocuments(identifier, docs);
-            return docs
-        }
-    });
-    ns.Facebook = Facebook
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var ReliableMessage = ns.protocol.ReliableMessage;
-    var InstantMessagePacker = ns.msg.InstantMessagePacker;
-    var SecureMessagePacker = ns.msg.SecureMessagePacker;
-    var ReliableMessagePacker = ns.msg.ReliableMessagePacker
-    var MessageHelper = ns.msg.MessageHelper;
-    var TwinsHelper = ns.TwinsHelper;
-    var Packer = ns.Packer;
-    var MessagePacker = function (facebook, messenger) {
-        TwinsHelper.call(this, facebook, messenger);
-        this.instantPacker = new InstantMessagePacker(messenger);
-        this.securePacker = new SecureMessagePacker(messenger);
-        this.reliablePacker = new ReliableMessagePacker(messenger)
-    };
-    Class(MessagePacker, TwinsHelper, [Packer], {
-        encryptMessage: function (iMsg) {
-            var facebook = this.getFacebook();
-            var messenger = this.getMessenger();
-            var sMsg;
-            var receiver = iMsg.getReceiver();
-            var password = messenger.getEncryptKey(iMsg);
-            if (receiver.isGroup()) {
-                var members = facebook.getMembers(receiver);
-                sMsg = this.instantPacker.encryptMessage(iMsg, password, members)
-            } else {
-                sMsg = this.instantPacker.encryptMessage(iMsg, password, null)
-            }
-            if (sMsg == null) {
-                return null
-            }
-            sMsg.getEnvelope().setType(iMsg.getContent().getType());
-            return sMsg
-        }, signMessage: function (sMsg) {
-            return this.securePacker.signMessage(sMsg)
-        }, serializeMessage: function (rMsg) {
-            var dict = rMsg.toMap();
-            var json = ns.format.JSON.encode(dict);
-            return ns.format.UTF8.encode(json)
-        }, deserializeMessage: function (data) {
-            var json = ns.format.UTF8.decode(data);
-            if (!json) {
-                return null
-            }
-            var dict = ns.format.JSON.decode(json);
-            return ReliableMessage.parse(dict)
-        }, checkAttachments: function (rMsg) {
-            var sender = rMsg.getSender();
-            var facebook = this.getFacebook();
-            var meta = MessageHelper.getMeta(rMsg);
-            if (meta) {
-                facebook.saveMeta(meta, sender)
-            }
-            var visa = MessageHelper.getVisa(rMsg);
-            if (visa) {
-                facebook.saveDocument(visa)
-            }
-            return true
-        }, verifyMessage: function (rMsg) {
-            if (this.checkAttachments(rMsg)) {
-            } else {
-                return null
-            }
-            return this.reliablePacker.verifyMessage(rMsg)
-        }, decryptMessage: function (sMsg) {
-            var receiver = sMsg.getReceiver();
-            var facebook = this.getFacebook();
-            var user = facebook.selectLocalUser(receiver);
-            if (user == null) {
-                throw new ReferenceError('receiver error: $receiver, from ${sMsg.sender}, ${sMsg.group}');
-            }
-            return this.securePacker.decryptMessage(sMsg, user.getIdentifier());
-        }
-    });
-    ns.MessagePacker = MessagePacker;
-})(DIMP);
-;(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var Envelope = ns.protocol.Envelope;
-    var InstantMessage = ns.protocol.InstantMessage;
-    var Processor = ns.Processor;
-    var TwinsHelper = ns.TwinsHelper;
-    var MessageProcessor = function (facebook, messenger) {
-        TwinsHelper.call(this, facebook, messenger);
-        this.__factory = this.createFactory();
-    };
-    Class(MessageProcessor, TwinsHelper, [Processor], {
-        createFactory: function () {
-            var facebook = this.getFacebook();
-            var messenger = this.getMessenger();
-            var creator = this.createCreator();
-            return new ns.cpu.ContentProcessorFactory(facebook, messenger, creator);
-        }, createCreator: function () {
-            var facebook = this.getFacebook();
-            var messenger = this.getMessenger();
-            return new ns.cpu.ContentProcessorCreator(facebook, messenger);
-        }, getProcessor: function (content) {
-            return this.__factory.getProcessor(content);
-        }, getContentProcessor: function (type) {
-            return this.__factory.getContentProcessor(type);
-        }, getCommandProcessor: function (type, cmd) {
-            return this.__factory.getCommandProcessor(type, cmd);
-        }, processPackage: function (data) {
-            var messenger = this.getMessenger();
-            var rMsg = messenger.deserializeMessage(data);
-            if (!rMsg) {
-                return [];
-            }
-            var responses = messenger.processReliableMessage(rMsg);
-            if (!responses || responses.length === 0) {
-                return [];
-            }
-            var packages = [];
-            var pack;
-            for (var i = 0; i < responses.length; ++i) {
-                pack = messenger.serializeMessage(responses[i]);
-                if (!pack) {
-                    continue;
-                }
-                packages.push(pack);
-            }
-            return packages;
-        }, processReliableMessage: function (rMsg) {
-            var messenger = this.getMessenger();
-            var sMsg = messenger.verifyMessage(rMsg);
-            if (!sMsg) {
-                return [];
-            }
-            var responses = messenger.processSecureMessage(sMsg, rMsg);
-            if (!responses || responses.length === 0) {
-                return [];
-            }
-            var messages = [];
-            var msg;
-            for (var i = 0; i < responses.length; ++i) {
-                msg = messenger.signMessage(responses[i]);
-                if (!msg) {
-                    continue;
-                }
-                messages.push(msg);
-            }
-            return messages;
-        }, processSecureMessage: function (sMsg, rMsg) {
-            var messenger = this.getMessenger();
-            var iMsg = messenger.decryptMessage(sMsg);
-            if (!iMsg) {
-                return [];
-            }
-            var responses = messenger.processInstantMessage(iMsg, rMsg);
-            if (!responses || responses.length === 0) {
-                return [];
-            }
-            var messages = [];
-            var msg;
-            for (var i = 0; i < responses.length; ++i) {
-                msg = messenger.encryptMessage(responses[i]);
-                if (!msg) {
-                    continue;
-                }
-                messages.push(msg);
-            }
-            return messages;
-        }, processInstantMessage: function (iMsg, rMsg) {
-            var messenger = this.getMessenger();
-            var responses = messenger.processContent(iMsg.getContent(), rMsg);
-            if (!responses || responses.length === 0) {
-                return [];
-            }
-            var sender = iMsg.getSender();
-            var receiver = iMsg.getReceiver();
-            var facebook = this.getFacebook();
-            var user = facebook.selectLocalUser(receiver);
-            if (!user) {
-                return [];
-            }
-            var uid = user.getIdentifier();
-            var messages = [];
-            var res, env, msg;
-            for (var i = 0; i < responses.length; ++i) {
-                res = responses[i];
-                if (!res) {
-                    continue;
-                }
-                env = Envelope.create(uid, sender, null);
-                msg = InstantMessage.create(env, res);
-                if (!msg) {
-                    continue;
-                }
-                messages.push(msg);
-            }
-            return messages;
-        }, processContent: function (content, rMsg) {
-            var cpu = this.getProcessor(content);
-            if (!cpu) {
-                cpu = this.getContentProcessor(0);
-            }
-            return cpu.process(content, rMsg);
-        }
-    });
-    ns.MessageProcessor = MessageProcessor;
-})(DIMP);
-;(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var Packer = ns.Packer;
-    var Processor = ns.Processor;
-    var CipherKeyDelegate = ns.CipherKeyDelegate;
-    var Transceiver = ns.Transceiver;
-    var Messenger = function () {
-        Transceiver.call(this);
-    };
-    Class(Messenger, Transceiver, [Packer, Processor], null);
-    Messenger.prototype.getCipherKeyDelegate = function () {
-        throw new Error('Messenger::getCipherKeyDelegate');
-    };
-    Messenger.prototype.getPacker = function () {
-        throw new Error('Messenger::getPacker');
-    };
-    Messenger.prototype.getProcessor = function () {
-        throw new Error('Messenger::getProcessor');
-    };
-    Messenger.prototype.getEncryptKey = function (iMsg) {
-        var sender = iMsg.getSender();
-        var target = CipherKeyDelegate.getDestinationForMessage(iMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.getCipherKey(sender, target, true);
-    };
-    Messenger.prototype.getDecryptKey = function (sMsg) {
-        var sender = sMsg.getSender();
-        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.getCipherKey(sender, target, false);
-    };
-    Messenger.prototype.cacheDecryptKey = function (key, sMsg) {
-        var sender = sMsg.getSender();
-        var target = CipherKeyDelegate.getDestinationForMessage(sMsg);
-        var delegate = this.getCipherKeyDelegate();
-        return delegate.cacheCipherKey(sender, target, key);
-    };
-    Messenger.prototype.encryptMessage = function (iMsg) {
-        var packer = this.getPacker();
-        return packer.encryptMessage(iMsg);
-    };
-    Messenger.prototype.signMessage = function (sMsg) {
-        var packer = this.getPacker();
-        return packer.signMessage(sMsg);
-    };
-    Messenger.prototype.serializeMessage = function (rMsg) {
-        var packer = this.getPacker();
-        return packer.serializeMessage(rMsg);
-    };
-    Messenger.prototype.deserializeMessage = function (data) {
-        var packer = this.getPacker();
-        return packer.deserializeMessage(data);
-    };
-    Messenger.prototype.verifyMessage = function (rMsg) {
-        var packer = this.getPacker();
-        return packer.verifyMessage(rMsg);
-    };
-    Messenger.prototype.decryptMessage = function (sMsg) {
-        var packer = this.getPacker();
-        return packer.decryptMessage(sMsg);
-    };
-    Messenger.prototype.processPackage = function (data) {
-        var processor = this.getProcessor();
-        return processor.processPackage(data);
-    };
-    Messenger.prototype.processReliableMessage = function (rMsg) {
-        var processor = this.getProcessor();
-        return processor.processReliableMessage(rMsg);
-    };
-    Messenger.prototype.processSecureMessage = function (sMsg, rMsg) {
-        var processor = this.getProcessor();
-        return processor.processSecureMessage(sMsg, rMsg);
-    };
-    Messenger.prototype.processInstantMessage = function (iMsg, rMsg) {
-        var processor = this.getProcessor();
-        return processor.processInstantMessage(iMsg, rMsg);
-    };
-    Messenger.prototype.processContent = function (content, rMsg) {
-        var processor = this.getProcessor();
-        return processor.processContent(content, rMsg);
-    };
-    Messenger.prototype.deserializeKey = function (data, sMsg) {
-        if (!data) {
-            return this.getDecryptKey(sMsg);
-        }
-        return Transceiver.prototype.deserializeKey.call(this, data, sMsg);
-    };
-    Messenger.prototype.deserializeContent = function (data, pwd, sMsg) {
-        var content = Transceiver.prototype.deserializeContent.call(this, data, pwd, sMsg);
-        if (!content) {
-        } else {
-            this.cacheDecryptKey(pwd, sMsg);
-        }
-        return content;
-    };
-    ns.Messenger = Messenger;
-})(DIMP);
-;(function (ns) {
-    'use strict';
-    var Class = ns.type.Class;
-    var Content = ns.protocol.Content;
-    var Command = ns.protocol.Command;
-    var BaseCommand = ns.dkd.cmd.BaseCommand;
-    var BaseHistoryCommand = ns.dkd.cmd.BaseHistoryCommand;
-    var BaseGroupCommand = ns.dkd.cmd.BaseGroupCommand;
-    var ContentParser = function (clazz) {
-        Object.call(this);
-        this.__class = clazz;
-    };
-    Class(ContentParser, Object, [Content.Factory], null);
-    ContentParser.prototype.parseContent = function (content) {
-        return new this.__class(content);
-    };
-    var CommandParser = function (clazz) {
-        Object.call(this);
-        this.__class = clazz;
-    };
-    Class(CommandParser, Object, [Command.Factory], null);
-    CommandParser.prototype.parseCommand = function (content) {
-        return new this.__class(content);
-    };
-    var GeneralCommandFactory = function () {
-        Object.call(this);
-    };
-    Class(GeneralCommandFactory, Object, [Content.Factory, Command.Factory], null);
-    var general_factory = function () {
-        var man = ns.dkd.cmd.CommandFactoryManager;
-        return man.generalFactory;
-    };
-    GeneralCommandFactory.prototype.parseContent = function (content) {
-        var gf = general_factory();
-        var cmd = gf.getCmd(content, '*');
-        var factory = gf.getCommandFactory(cmd);
-        if (!factory) {
-            if (content['group']) {
-                factory = gf.getCommandFactory('group');
-            }
-            if (!factory) {
-                factory = this;
-            }
-        }
-        return factory.parseCommand(content);
-    };
-    GeneralCommandFactory.prototype.parseCommand = function (cmd) {
-        return new BaseCommand(cmd);
-    };
-    var HistoryCommandFactory = function () {
-        GeneralCommandFactory.call(this);
-    };
-    Class(HistoryCommandFactory, GeneralCommandFactory, null, null);
-    HistoryCommandFactory.prototype.parseCommand = function (cmd) {
-        return new BaseHistoryCommand(cmd);
-    };
-    var GroupCommandFactory = function () {
-        HistoryCommandFactory.call(this);
-    };
-    Class(GroupCommandFactory, HistoryCommandFactory, null, null);
-    GroupCommandFactory.prototype.parseContent = function (content) {
-        var gf = general_factory();
-        var cmd = gf.getCmd(content, '*');
-        var factory = gf.getCommandFactory(cmd);
-        if (!factory) {
-            factory = this;
-        }
-        return factory.parseCommand(content);
-    };
-    GroupCommandFactory.prototype.parseCommand = function (cmd) {
-        return new BaseGroupCommand(cmd);
-    };
-    ns.ContentParser = ContentParser;
-    ns.CommandParser = CommandParser;
-    ns.GeneralCommandFactory = GeneralCommandFactory;
-    ns.HistoryCommandFactory = HistoryCommandFactory;
-    ns.GroupCommandFactory = GroupCommandFactory;
-})(DIMP);
-(function (ns) {
-    'use strict';
-    var Envelope = ns.protocol.Envelope;
-    var InstantMessage = ns.protocol.InstantMessage;
-    var SecureMessage = ns.protocol.SecureMessage;
-    var ReliableMessage = ns.protocol.ReliableMessage;
-    var ContentType = ns.protocol.ContentType;
-    var Content = ns.protocol.Content;
-    var Command = ns.protocol.Command;
-    var GroupCommand = ns.protocol.GroupCommand;
-    var MessageFactory = ns.msg.MessageFactory;
-    var ContentParser = ns.ContentParser;
-    var CommandParser = ns.CommandParser;
-    var GeneralCommandFactory = ns.GeneralCommandFactory;
-    var HistoryCommandFactory = ns.HistoryCommandFactory;
-    var GroupCommandFactory = ns.GroupCommandFactory;
-    var registerMessageFactories = function () {
-        var factory = new MessageFactory();
-        Envelope.setFactory(factory);
-        InstantMessage.setFactory(factory);
-        SecureMessage.setFactory(factory);
-        ReliableMessage.setFactory(factory);
-    };
-    var registerContentFactories = function () {
-        Content.setFactory(ContentType.TEXT, new ContentParser(ns.dkd.BaseTextContent));
-        Content.setFactory(ContentType.FILE, new ContentParser(ns.dkd.BaseFileContent));
-        Content.setFactory(ContentType.IMAGE, new ContentParser(ns.dkd.ImageFileContent));
-        Content.setFactory(ContentType.AUDIO, new ContentParser(ns.dkd.AudioFileContent));
-        Content.setFactory(ContentType.VIDEO, new ContentParser(ns.dkd.VideoFileContent));
-        Content.setFactory(ContentType.PAGE, new ContentParser(ns.dkd.WebPageContent));
-        Content.setFactory(ContentType.NAME_CARD, new ContentParser(ns.dkd.NameCardContent));
-        Content.setFactory(ContentType.MONEY, new ContentParser(ns.dkd.BaseMoneyContent));
-        Content.setFactory(ContentType.TRANSFER, new ContentParser(ns.dkd.TransferMoneyContent));
-        Content.setFactory(ContentType.COMMAND, new GeneralCommandFactory());
-        Content.setFactory(ContentType.HISTORY, new HistoryCommandFactory());
-        Content.setFactory(ContentType.ARRAY, new ContentParser(ns.dkd.ListContent));
-        Content.setFactory(ContentType.FORWARD, new ContentParser(ns.dkd.SecretContent));
-        Content.setFactory(0, new ContentParser(ns.dkd.BaseContent));
-    };
-    var registerCommandFactories = function () {
-        Command.setFactory(Command.META, new CommandParser(ns.dkd.cmd.BaseMetaCommand));
-        Command.setFactory(Command.DOCUMENT, new CommandParser(ns.dkd.cmd.BaseDocumentCommand));
-        Command.setFactory(Command.RECEIPT, new CommandParser(ns.dkd.cmd.BaseReceiptCommand));
-        Command.setFactory('group', new GroupCommandFactory());
-        Command.setFactory(GroupCommand.INVITE, new CommandParser(ns.dkd.cmd.InviteGroupCommand));
-        Command.setFactory(GroupCommand.EXPEL, new CommandParser(ns.dkd.cmd.ExpelGroupCommand));
-        Command.setFactory(GroupCommand.JOIN, new CommandParser(ns.dkd.cmd.JoinGroupCommand));
-        Command.setFactory(GroupCommand.QUIT, new CommandParser(ns.dkd.cmd.QuitGroupCommand));
-        Command.setFactory(GroupCommand.QUERY, new CommandParser(ns.dkd.cmd.QueryGroupCommand));
-        Command.setFactory(GroupCommand.RESET, new CommandParser(ns.dkd.cmd.ResetGroupCommand));
-        Command.setFactory(GroupCommand.HIRE, new CommandParser(ns.dkd.cmd.HireGroupCommand));
-        Command.setFactory(GroupCommand.FIRE, new CommandParser(ns.dkd.cmd.FireGroupCommand));
-        Command.setFactory(GroupCommand.RESIGN, new CommandParser(ns.dkd.cmd.ResignGroupCommand))
-    };
-    var registerAllFactories = function () {
-        registerMessageFactories();
-        registerContentFactories();
-        registerCommandFactories();
-        Content.setFactory(ContentType.CUSTOMIZED, new ContentParser(ns.dkd.AppCustomizedContent));
-        Content.setFactory(ContentType.APPLICATION, new ContentParser(ns.dkd.AppCustomizedContent))
-    };
-    ns.registerMessageFactories = registerMessageFactories;
-    ns.registerContentFactories = registerContentFactories;
-    ns.registerCommandFactories = registerCommandFactories;
-    ns.registerAllFactories = registerAllFactories
-})(DIMP);
+    })
+})(DIMP, DIMP, DIMP, DIMP);
