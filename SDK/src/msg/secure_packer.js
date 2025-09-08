@@ -38,7 +38,7 @@
     };
     var SecureMessagePacker = SecureMessage.Packer;
 
-    Class(SecureMessagePacker, BaseObject, null, null);
+    Class(SecureMessagePacker, BaseObject, null);
 
     SecureMessagePacker.prototype.getDelegate = function () {
         return this.__messenger;

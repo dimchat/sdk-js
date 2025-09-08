@@ -40,7 +40,7 @@
     };
     var MessagePacker = sdk.MessagePacker;
 
-    Class(MessagePacker, TwinsHelper, [Packer], null);
+    Class(MessagePacker, TwinsHelper, [Packer]);
 
     // protected
     MessagePacker.prototype.createInstantMessagePacker = function (delegate) {

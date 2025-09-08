@@ -44,7 +44,7 @@
     };
     var GeneralContentProcessorFactory = sdk.cpu.GeneralContentProcessorFactory;
 
-    Class(GeneralContentProcessorFactory, BaseObject, [ContentProcessorFactory], null);
+    Class(GeneralContentProcessorFactory, BaseObject, [ContentProcessorFactory]);
 
     // Override
     GeneralContentProcessorFactory.prototype.getContentProcessor = function (content) {

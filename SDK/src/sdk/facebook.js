@@ -44,7 +44,7 @@
 
     Class(Facebook, BaseObject, [
         EntityDelegate, UserDataSource, GroupDataSource
-    ], null);
+    ]);
 
     // protected
     Facebook.prototype.getBarrack = function () {};

@@ -45,7 +45,7 @@
     };
     var BaseContentProcessor = sdk.cpu.BaseContentProcessor;
 
-    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor]);
 
     // Override
     BaseContentProcessor.prototype.processContent = function (content, rMsg) {
@@ -100,7 +100,9 @@
     };
     var BaseCommandProcessor = sdk.cpu.BaseCommandProcessor;
 
-    Class(BaseCommandProcessor, BaseContentProcessor, null, {
+    Class(BaseCommandProcessor, BaseContentProcessor, null);
+
+    Implementation(BaseCommandProcessor, {
 
         // Override
         processContent: function (content, rMsg) {

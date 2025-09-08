@@ -44,7 +44,9 @@
     };
     var BaseContentProcessorCreator = sdk.cpu.BaseContentProcessorCreator;
 
-    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessorCreator], {
+    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessorCreator]);
+
+    Implementation(BaseContentProcessorCreator, {
 
         // Override
         createContentProcessor: function (type) {

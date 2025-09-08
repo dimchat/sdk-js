@@ -134,7 +134,9 @@
     };
     var BaseGroup = mkm.mkm.BaseGroup;
 
-    Class(BaseGroup, BaseEntity, [Group], {
+    Class(BaseGroup, BaseEntity, [Group]);
+
+    Implementation(BaseGroup, {
 
         // Override
         getBulletin: function () {

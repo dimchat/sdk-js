@@ -41,7 +41,9 @@
     };
     var ServiceProvider = mkm.mkm.ServiceProvider;
 
-    Class(ServiceProvider, BaseGroup, null, {
+    Class(ServiceProvider, BaseGroup, null);
+
+    Implementation(ServiceProvider, {
 
         // Provider Document
         getProfile: function () {

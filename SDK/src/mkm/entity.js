@@ -145,7 +145,7 @@
     };
     var BaseEntity = mkm.mkm.BaseEntity;
 
-    Class(BaseEntity, BaseObject, [Entity], null);
+    Class(BaseEntity, BaseObject, [Entity]);
 
     // Override
     BaseEntity.prototype.equals = function (other) {

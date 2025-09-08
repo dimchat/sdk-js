@@ -19,92 +19,32 @@
     }
     var Interface = mk.type.Interface;
     var Class = mk.type.Class;
+    var Implementation = mk.type.Implementation;
     var Converter = mk.type.Converter;
-    var Wrapper = mk.type.Wrapper;
     var Mapper = mk.type.Mapper;
-    var Stringer = mk.type.Stringer;
     var IObject = mk.type.Object;
     var BaseObject = mk.type.BaseObject;
-    var ConstantString = mk.type.ConstantString;
-    var Dictionary = mk.type.Dictionary;
-    var Arrays = mk.type.Arrays;
-    var StringCoder = mk.format.StringCoder;
     var UTF8 = mk.format.UTF8;
-    var ObjectCoder = mk.format.ObjectCoder;
     var JSONMap = mk.format.JSONMap;
-    var DataCoder = mk.format.DataCoder;
-    var Base58 = mk.format.Base58;
-    var Base64 = mk.format.Base64;
-    var Hex = mk.format.Hex;
-    var BaseDataWrapper = mk.format.BaseDataWrapper;
-    var BaseFileWrapper = mk.format.BaseFileWrapper;
-    var MessageDigester = mk.digest.MessageDigester;
-    var SHA256 = mk.digest.SHA256;
-    var RIPEMD160 = mk.digest.RIPEMD160;
-    var KECCAK256 = mk.digest.KECCAK256;
-    var EncodeAlgorithms = mk.protocol.EncodeAlgorithms;
     var TransportableData = mk.protocol.TransportableData;
-    var PortableNetworkFile = mk.protocol.PortableNetworkFile;
-    var SymmetricAlgorithms = mk.protocol.SymmetricAlgorithms;
-    var AsymmetricAlgorithms = mk.protocol.AsymmetricAlgorithms;
     var EncryptKey = mk.protocol.EncryptKey;
-    var DecryptKey = mk.protocol.DecryptKey;
     var VerifyKey = mk.protocol.VerifyKey;
     var SymmetricKey = mk.protocol.SymmetricKey;
-    var SymmetricKeyFactory = mk.protocol.SymmetricKey.Factory;
-    var AsymmetricKey = mk.protocol.AsymmetricKey;
-    var PublicKey = mk.protocol.PublicKey;
-    var PublicKeyFactory = mk.protocol.PublicKey.Factory;
-    var PrivateKey = mk.protocol.PrivateKey;
-    var PrivateKeyFactory = mk.protocol.PrivateKey.Factory;
-    var BaseSymmetricKey = mk.crypto.BaseSymmetricKey;
-    var BasePublicKey = mk.crypto.BasePublicKey;
-    var BasePrivateKey = mk.crypto.BasePrivateKey;
-    var GeneralCryptoHelper = mk.ext.GeneralCryptoHelper;
-    var SymmetricKeyHelper = mk.ext.SymmetricKeyHelper;
-    var PrivateKeyHelper = mk.ext.PrivateKeyHelper;
-    var PublicKeyHelper = mk.ext.PublicKeyHelper;
-    var GeneralFormatHelper = mk.ext.GeneralFormatHelper;
-    var PortableNetworkFileHelper = mk.ext.PortableNetworkFileHelper;
-    var TransportableDataHelper = mk.ext.TransportableDataHelper;
-    var SharedCryptoExtensions = mk.ext.SharedCryptoExtensions;
-    var SharedFormatExtensions = mk.ext.SharedFormatExtensions;
     var EntityType = mkm.protocol.EntityType;
     var Address = mkm.protocol.Address;
-    var AddressFactory = mkm.protocol.Address.Factory;
     var ID = mkm.protocol.ID;
-    var IDFactory = mkm.protocol.ID.Factory;
     var Meta = mkm.protocol.Meta;
-    var MetaFactory = mkm.protocol.Meta.Factory;
     var Document = mkm.protocol.Document;
-    var DocumentFactory = mkm.protocol.Document.Factory;
     var Visa = mkm.protocol.Visa;
     var Bulletin = mkm.protocol.Bulletin;
-    var MetaType = mkm.protocol.MetaType;
-    var DocumentType = mkm.protocol.DocumentType;
     var Identifier = mkm.mkm.Identifier;
-    var BaseMeta = mkm.mkm.BaseMeta;
-    var BaseDocument = mkm.mkm.BaseDocument;
-    var BaseBulletin = mkm.mkm.BaseBulletin;
-    var BaseVisa = mkm.mkm.BaseVisa;
-    var GeneralAccountHelper = mkm.ext.GeneralAccountHelper;
-    var AddressHelper = mkm.ext.AddressHelper;
-    var IdentifierHelper = mkm.ext.IdentifierHelper;
-    var MetaHelper = mkm.ext.MetaHelper;
-    var DocumentHelper = mkm.ext.DocumentHelper;
     var SharedAccountExtensions = mkm.ext.SharedAccountExtensions;
     var InstantMessage = dkd.protocol.InstantMessage;
-    var InstantMessageFactory = dkd.protocol.InstantMessage.Factory;
     var SecureMessage = dkd.protocol.SecureMessage;
-    var SecureMessageFactory = dkd.protocol.SecureMessage.Factory;
     var ReliableMessage = dkd.protocol.ReliableMessage;
-    var ReliableMessageFactory = dkd.protocol.ReliableMessage.Factory;
     var Envelope = dkd.protocol.Envelope;
-    var EnvelopeFactory = dkd.protocol.Envelope.Factory;
     var Content = dkd.protocol.Content;
-    var ContentFactory = dkd.protocol.Content.Factory;
     var Command = dkd.protocol.Command;
-    var CommandFactory = dkd.protocol.Command.Factory;
     var ContentType = dkd.protocol.ContentType;
     var ForwardContent = dkd.protocol.ForwardContent;
     var ArrayContent = dkd.protocol.ArrayContent;
@@ -112,50 +52,7 @@
     var DocumentCommand = dkd.protocol.DocumentCommand;
     var GroupCommand = dkd.protocol.GroupCommand;
     var ReceiptCommand = dkd.protocol.ReceiptCommand;
-    var MessageEnvelope = dkd.msg.MessageEnvelope;
     var BaseMessage = dkd.msg.BaseMessage;
-    var PlainMessage = dkd.msg.PlainMessage;
-    var EncryptedMessage = dkd.msg.EncryptedMessage;
-    var NetworkMessage = dkd.msg.NetworkMessage;
-    var BaseContent = dkd.dkd.BaseContent;
-    var BaseTextContent = dkd.dkd.BaseTextContent;
-    var BaseFileContent = dkd.dkd.BaseFileContent;
-    var ImageFileContent = dkd.dkd.ImageFileContent;
-    var AudioFileContent = dkd.dkd.AudioFileContent;
-    var VideoFileContent = dkd.dkd.VideoFileContent;
-    var WebPageContent = dkd.dkd.WebPageContent;
-    var NameCardContent = dkd.dkd.NameCardContent;
-    var BaseQuoteContent = dkd.dkd.BaseQuoteContent;
-    var BaseMoneyContent = dkd.dkd.BaseMoneyContent;
-    var TransferMoneyContent = dkd.dkd.TransferMoneyContent;
-    var ListContent = dkd.dkd.ListContent;
-    var CombineForwardContent = dkd.dkd.CombineForwardContent;
-    var SecretContent = dkd.dkd.SecretContent;
-    var AppCustomizedContent = dkd.dkd.AppCustomizedContent;
-    var BaseCommand = dkd.dkd.BaseCommand;
-    var BaseMetaCommand = dkd.dkd.BaseMetaCommand;
-    var BaseDocumentCommand = dkd.dkd.BaseDocumentCommand;
-    var BaseReceiptCommand = dkd.dkd.BaseReceiptCommand;
-    var BaseHistoryCommand = dkd.dkd.BaseHistoryCommand;
-    var BaseGroupCommand = dkd.dkd.BaseGroupCommand;
-    var InviteGroupCommand = dkd.dkd.InviteGroupCommand;
-    var ExpelGroupCommand = dkd.dkd.ExpelGroupCommand;
-    var JoinGroupCommand = dkd.dkd.JoinGroupCommand;
-    var QuitGroupCommand = dkd.dkd.QuitGroupCommand;
-    var ResetGroupCommand = dkd.dkd.ResetGroupCommand;
-    var HireGroupCommand = dkd.dkd.HireGroupCommand;
-    var FireGroupCommand = dkd.dkd.FireGroupCommand;
-    var ResignGroupCommand = dkd.dkd.ResignGroupCommand;
-    var GeneralMessageHelper = dkd.ext.GeneralMessageHelper;
-    var ContentHelper = dkd.ext.ContentHelper;
-    var EnvelopeHelper = dkd.ext.EnvelopeHelper;
-    var InstantMessageHelper = dkd.ext.InstantMessageHelper;
-    var SecureMessageHelper = dkd.ext.SecureMessageHelper;
-    var ReliableMessageHelper = dkd.ext.ReliableMessageHelper;
-    var GeneralCommandHelper = dkd.ext.GeneralCommandHelper;
-    var CommandHelper = dkd.ext.CommandHelper;
-    var SharedCommandExtensions = dkd.ext.SharedCommandExtensions;
-    var SharedMessageExtensions = dkd.ext.SharedMessageExtensions;
     mkm.mkm.MetaUtils = {
         matchIdentifier: function (identifier, meta) {
             if (!meta.isValid()) {
@@ -297,7 +194,7 @@
         this.__facebook = null
     };
     var BaseEntity = mkm.mkm.BaseEntity;
-    Class(BaseEntity, BaseObject, [Entity], null);
+    Class(BaseEntity, BaseObject, [Entity]);
     BaseEntity.prototype.equals = function (other) {
         if (this === other) {
             return true
@@ -367,7 +264,8 @@
         this.__founder = null
     };
     var BaseGroup = mkm.mkm.BaseGroup;
-    Class(BaseGroup, BaseEntity, [Group], {
+    Class(BaseGroup, BaseEntity, [Group]);
+    Implementation(BaseGroup, {
         getBulletin: function () {
             var docs = this.getDocuments();
             return DocumentUtils.lastBulletin(docs)
@@ -430,7 +328,8 @@
         BaseEntity.call(this, identifier)
     };
     var BaseUser = mkm.mkm.BaseUser;
-    Class(BaseUser, BaseEntity, [User], {
+    Class(BaseUser, BaseEntity, [User]);
+    Implementation(BaseUser, {
         getVisa: function () {
             var docs = this.getDocuments();
             return DocumentUtils.lastVisa(docs)
@@ -493,7 +392,8 @@
         BaseUser.call(this, identifier)
     };
     var Bot = mkm.mkm.Bot;
-    Class(Bot, BaseUser, null, {
+    Class(Bot, BaseUser, null);
+    Implementation(Bot, {
         getProfile: function () {
             return this.getVisa()
         }, getProvider: function () {
@@ -528,7 +428,8 @@
         this.__isp = null
     };
     var Station = mkm.mkm.Station;
-    Class(Station, BaseObject, [User], {
+    Class(Station, BaseObject, [User]);
+    Implementation(Station, {
         equals: function (other) {
             if (this === other) {
                 return true
@@ -625,7 +526,8 @@
         BaseGroup.call(this, identifier)
     };
     var ServiceProvider = mkm.mkm.ServiceProvider;
-    Class(ServiceProvider, BaseGroup, null, {
+    Class(ServiceProvider, BaseGroup, null);
+    Implementation(ServiceProvider, {
         getProfile: function () {
             var docs = this.getDocuments();
             return DocumentUtils.lastDocument(docs, '*')
@@ -715,7 +617,7 @@
         this.__messenger = messenger
     };
     var InstantMessagePacker = InstantMessage.Packer;
-    Class(InstantMessagePacker, BaseObject, null, null);
+    Class(InstantMessagePacker, BaseObject, null);
     InstantMessagePacker.prototype.getDelegate = function () {
         return this.__messenger
     };
@@ -770,7 +672,7 @@
         this.__messenger = messenger
     };
     var SecureMessagePacker = SecureMessage.Packer;
-    Class(SecureMessagePacker, BaseObject, null, null);
+    Class(SecureMessagePacker, BaseObject, null);
     SecureMessagePacker.prototype.getDelegate = function () {
         return this.__messenger
     };
@@ -821,7 +723,7 @@
         this.__messenger = messenger
     };
     var ReliableMessagePacker = ReliableMessage.Packer;
-    Class(ReliableMessagePacker, BaseObject, null, null);
+    Class(ReliableMessagePacker, BaseObject, null);
     ReliableMessagePacker.prototype.getDelegate = function () {
         return this.__messenger
     };
@@ -866,7 +768,7 @@
         this.__command_processors = {}
     };
     var GeneralContentProcessorFactory = sdk.cpu.GeneralContentProcessorFactory;
-    Class(GeneralContentProcessorFactory, BaseObject, [ContentProcessorFactory], null);
+    Class(GeneralContentProcessorFactory, BaseObject, [ContentProcessorFactory]);
     GeneralContentProcessorFactory.prototype.getContentProcessor = function (content) {
         var cpu;
         var type = content.getType();
@@ -908,7 +810,7 @@
         BaseObject.call(this)
     };
     var Barrack = sdk.core.Barrack;
-    Class(Barrack, BaseObject, null, null);
+    Class(Barrack, BaseObject, null);
     Barrack.prototype.cacheUser = function (user) {
     };
     Barrack.prototype.cacheGroup = function (group) {
@@ -919,16 +821,16 @@
     };
     Barrack.prototype.createUser = function (identifier) {
         var network = identifier.getType();
-        if (EntityType.STATION.equals(network)) {
+        if (EntityType.STATION === network) {
             return new Station(identifier)
-        } else if (EntityType.BOT.equals(network)) {
+        } else if (EntityType.BOT === network) {
             return new Bot(identifier)
         }
         return new BaseUser(identifier)
     };
     Barrack.prototype.createGroup = function (identifier) {
         var network = identifier.getType();
-        if (EntityType.ISP.equals(network)) {
+        if (EntityType.ISP === network) {
             return new ServiceProvider(identifier)
         }
         return new BaseGroup(identifier)
@@ -963,7 +865,7 @@
         BaseObject.call(this)
     };
     var MessageShortener = sdk.core.MessageShortener;
-    Class(MessageShortener, BaseObject, [Shortener], null);
+    Class(MessageShortener, BaseObject, [Shortener]);
     MessageShortener.prototype.moveKey = function (from, to, info) {
         var value = info[from];
         if (value) {
@@ -1037,7 +939,7 @@
         this.__shortener = shortener
     };
     var MessageCompressor = sdk.core.MessageCompressor;
-    Class(MessageCompressor, BaseObject, [Compressor], null);
+    Class(MessageCompressor, BaseObject, [Compressor]);
     MessageCompressor.prototype.getShortener = function () {
         return this.__shortener
     };
@@ -1147,7 +1049,7 @@
         BaseObject.call(this)
     };
     var Transceiver = sdk.core.Transceiver;
-    Class(Transceiver, BaseObject, [InstantMessageDelegate, SecureMessageDelegate, ReliableMessageDelegate], null);
+    Class(Transceiver, BaseObject, [InstantMessageDelegate, SecureMessageDelegate, ReliableMessageDelegate]);
     Transceiver.prototype.getFacebook = function () {
     };
     Transceiver.prototype.getCompressor = function () {
@@ -1177,7 +1079,7 @@
         return compressor.compressSymmetricKey(pwd.toMap())
     };
     Transceiver.prototype.encryptKey = function (keyData, receiver, iMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var contact = facebook.getUser(receiver);
         if (!contact) {
             return null
@@ -1185,7 +1087,7 @@
         return contact.encrypt(keyData)
     };
     Transceiver.prototype.decryptKey = function (keyData, receiver, sMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var user = facebook.getUser(receiver);
         if (!user) {
             return null
@@ -1209,13 +1111,13 @@
         return Content.parse(info)
     };
     Transceiver.prototype.signData = function (data, sMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var sender = sMsg.getSender();
         var user = facebook.getUser(sender);
         return user.sign(data)
     };
     Transceiver.prototype.verifyDataSignature = function (data, signature, rMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var sender = rMsg.getSender();
         var contact = facebook.getUser(sender);
         if (!contact) {
@@ -1229,7 +1131,7 @@
         this.__messenger = messenger
     };
     var TwinsHelper = sdk.TwinsHelper;
-    Class(TwinsHelper, BaseObject, null, null);
+    Class(TwinsHelper, BaseObject, null);
     TwinsHelper.prototype.getFacebook = function () {
         return this.__facebook
     }
@@ -1240,7 +1142,7 @@
         BaseObject.call(this)
     };
     var Facebook = sdk.Facebook;
-    Class(Facebook, BaseObject, [EntityDelegate, UserDataSource, GroupDataSource], null);
+    Class(Facebook, BaseObject, [EntityDelegate, UserDataSource, GroupDataSource]);
     Facebook.prototype.getBarrack = function () {
     };
     Facebook.prototype.getArchivist = function () {
@@ -1350,7 +1252,7 @@
         Transceiver.call(this)
     };
     var Messenger = sdk.Messenger;
-    Class(Messenger, Transceiver, [Packer, Processor], null);
+    Class(Messenger, Transceiver, [Packer, Processor]);
     Messenger.prototype.getCipherKeyDelegate = function () {
     };
     Messenger.prototype.getPacker = function () {
@@ -1428,7 +1330,7 @@
         this.__reliablePacker = this.createReliableMessagePacker(messenger)
     };
     var MessagePacker = sdk.MessagePacker;
-    Class(MessagePacker, TwinsHelper, [Packer], null);
+    Class(MessagePacker, TwinsHelper, [Packer]);
     MessagePacker.prototype.createInstantMessagePacker = function (delegate) {
         return new InstantMessagePacker(delegate)
     };
@@ -1523,7 +1425,7 @@
         this.__factory = this.createFactory(facebook, messenger)
     };
     var MessageProcessor = sdk.MessageProcessor;
-    Class(MessageProcessor, TwinsHelper, [Processor], null);
+    Class(MessageProcessor, TwinsHelper, [Processor]);
     MessageProcessor.prototype.createFactory = function (facebook, messenger) {
     };
     MessageProcessor.prototype.getFactory = function () {
@@ -1645,7 +1547,7 @@
         TwinsHelper.call(this, facebook, messenger)
     };
     var BaseContentProcessor = sdk.cpu.BaseContentProcessor;
-    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor], null);
+    Class(BaseContentProcessor, TwinsHelper, [ContentProcessor]);
     BaseContentProcessor.prototype.processContent = function (content, rMsg) {
         var text = 'Content not support.';
         return this.respondReceipt(text, rMsg.getEnvelope(), content, {
@@ -1667,7 +1569,8 @@
         BaseContentProcessor.call(this, facebook, messenger)
     };
     var BaseCommandProcessor = sdk.cpu.BaseCommandProcessor;
-    Class(BaseCommandProcessor, BaseContentProcessor, null, {
+    Class(BaseCommandProcessor, BaseContentProcessor, null);
+    Implementation(BaseCommandProcessor, {
         processContent: function (content, rMsg) {
             var text = 'Command not support.';
             return this.respondReceipt(text, rMsg.getEnvelope(), content, {
@@ -1680,7 +1583,8 @@
         BaseContentProcessor.call(this, facebook, messenger)
     };
     var ForwardContentProcessor = sdk.cpu.ForwardContentProcessor;
-    Class(ForwardContentProcessor, BaseContentProcessor, null, {
+    Class(ForwardContentProcessor, BaseContentProcessor, null);
+    Implementation(ForwardContentProcessor, {
         processContent: function (content, rMsg) {
             var secrets = content.getSecrets();
             if (!secrets) {
@@ -1708,7 +1612,8 @@
         BaseContentProcessor.call(this, facebook, messenger)
     };
     var ArrayContentProcessor = sdk.cpu.ArrayContentProcessor;
-    Class(ArrayContentProcessor, BaseContentProcessor, null, {
+    Class(ArrayContentProcessor, BaseContentProcessor, null);
+    Implementation(ArrayContentProcessor, {
         processContent: function (content, rMsg) {
             var array = content.getContents();
             if (!array) {
@@ -1736,12 +1641,19 @@
         BaseCommandProcessor.call(this, facebook, messenger)
     };
     var MetaCommandProcessor = sdk.cpu.MetaCommandProcessor;
-    Class(MetaCommandProcessor, BaseCommandProcessor, null, {
-        processContent: function (content, rMsg) {
+    Class(MetaCommandProcessor, BaseCommandProcessor, null);
+    Implementation(MetaCommandProcessor, {
+        getArchivist: function () {
+            var facebook = this.getFacebook();
+            if (!facebook) {
+                return null
+            }
+            return facebook.getArchivist()
+        }, processContent: function (content, rMsg) {
             var identifier = content.getIdentifier();
             if (!identifier) {
                 var text = 'Meta command error.';
-                return this.respondReceipt(text, rMsg.getEnvelope(), content)
+                return this.respondReceipt(text, rMsg.getEnvelope(), content, null)
             }
             var meta = content.getMeta();
             if (meta) {
@@ -1794,7 +1706,8 @@
         MetaCommandProcessor.call(this, facebook, messenger)
     };
     var DocumentCommandProcessor = sdk.cpu.DocumentCommandProcessor;
-    Class(DocumentCommandProcessor, MetaCommandProcessor, null, {
+    Class(DocumentCommandProcessor, MetaCommandProcessor, null);
+    Implementation(DocumentCommandProcessor, {
         processContent: function (content, rMsg) {
             var text;
             var identifier = content.getIdentifier();
@@ -1875,7 +1788,7 @@
                     }
                 }
             }
-            if (array.length > 0) {
+            if (errors.length > 0) {
                 return errors
             }
             text = 'Document received.';
@@ -1914,12 +1827,12 @@
         TwinsHelper.call(this, facebook, messenger)
     };
     var BaseCustomizedHandler = sdk.cpu.BaseCustomizedHandler;
-    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler], null);
+    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler]);
     BaseCustomizedHandler.prototype.handleAction = function (act, sender, content, rMsg) {
         var app = content.getApplication();
         var mod = content.getModule();
         var text = 'Content not support.';
-        return this.respondReceipt(text, content, rMsg.getEnvelope(), {
+        return this.respondReceipt(text, rMsg.getEnvelope(), content, {
             'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
             'replacements': {'app': app, 'mod': mod, 'act': act}
         })
@@ -1932,7 +1845,7 @@
         this.__defaultHandler = this.createDefaultHandler(facebook, messenger)
     };
     var CustomizedContentProcessor = sdk.cpu.CustomizedContentProcessor;
-    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], null);
+    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler]);
     CustomizedContentProcessor.prototype.createDefaultHandler = function (facebook, messenger) {
         return new BaseCustomizedHandler(facebook, messenger)
     };
@@ -1954,7 +1867,8 @@
         TwinsHelper.call(this, facebook, messenger)
     };
     var BaseContentProcessorCreator = sdk.cpu.BaseContentProcessorCreator;
-    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessorCreator], {
+    Class(BaseContentProcessorCreator, TwinsHelper, [ContentProcessorCreator]);
+    Implementation(BaseContentProcessorCreator, {
         createContentProcessor: function (type) {
             var facebook = this.getFacebook();
             var messenger = this.getMessenger();

@@ -38,7 +38,7 @@
     };
     var ReliableMessagePacker = ReliableMessage.Packer;
 
-    Class(ReliableMessagePacker, BaseObject, null, null);
+    Class(ReliableMessagePacker, BaseObject, null);
 
     ReliableMessagePacker.prototype.getDelegate = function () {
         return this.__messenger;

@@ -42,7 +42,7 @@
     };
     var Messenger = sdk.Messenger;
 
-    Class(Messenger, Transceiver, [Packer, Processor], null);
+    Class(Messenger, Transceiver, [Packer, Processor]);
 
     // protected
     Messenger.prototype.getCipherKeyDelegate = function () {};

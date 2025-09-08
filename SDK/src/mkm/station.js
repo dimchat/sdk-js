@@ -66,7 +66,9 @@
     };
     var Station = mkm.mkm.Station;
 
-    Class(Station, BaseObject, [User], {
+    Class(Station, BaseObject, [User]);
+
+    Implementation(Station, {
 
         // Override
         equals: function (other) {

@@ -194,7 +194,9 @@
     };
     var BaseUser = mkm.mkm.BaseUser;
 
-    Class(BaseUser, BaseEntity, [User], {
+    Class(BaseUser, BaseEntity, [User]);
+
+    Implementation(BaseUser, {
 
         // Override
         getVisa: function () {

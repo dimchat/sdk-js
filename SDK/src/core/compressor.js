@@ -72,7 +72,7 @@
     };
     var MessageCompressor = sdk.core.MessageCompressor;
 
-    Class(MessageCompressor, BaseObject, [Compressor], null);
+    Class(MessageCompressor, BaseObject, [Compressor]);
 
     MessageCompressor.prototype.getShortener = function () {
         return this.__shortener;

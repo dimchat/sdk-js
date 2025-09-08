@@ -24,7 +24,6 @@
     'use strict';
 
     var Class = ns.type.Class;
-    var Archivist = ns.Archivist;
     var Facebook = ns.Facebook;
 
     var Archivist = ns.core.Archivist;
@@ -96,7 +95,7 @@
     };
     Class(ClientMessenger, Messenger, null, {
         // Override
-        getEntityDelegate: function () {
+        getFacebook: function () {
             return this.__facebook;
         },
         // Override

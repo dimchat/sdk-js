@@ -93,7 +93,7 @@
     };
     var MessageShortener = sdk.core.MessageShortener;
 
-    Class(MessageShortener, BaseObject, [Shortener], null);
+    Class(MessageShortener, BaseObject, [Shortener]);
 
     // protected
     MessageShortener.prototype.moveKey = function (from, to, info) {

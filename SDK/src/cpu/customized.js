@@ -56,14 +56,14 @@
     };
     var BaseCustomizedHandler = sdk.cpu.BaseCustomizedHandler;
 
-    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler], null);
+    Class(BaseCustomizedHandler, TwinsHelper, [CustomizedContentHandler]);
 
     // Override
     BaseCustomizedHandler.prototype.handleAction = function (act, sender, content, rMsg) {
         var app = content.getApplication();
         var mod = content.getModule();
         var text = 'Content not support.';
-        return this.respondReceipt(text, content, rMsg.getEnvelope(), {
+        return this.respondReceipt(text, rMsg.getEnvelope(), content, {
             'template': 'Customized content (app: ${app}, mod: ${mod}, act: ${act}) not support yet!',
             'replacements': {
                 'app': app,
@@ -96,7 +96,7 @@
     };
     var CustomizedContentProcessor = sdk.cpu.CustomizedContentProcessor;
 
-    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler], null);
+    Class(CustomizedContentProcessor, BaseContentProcessor, [CustomizedContentHandler]);
 
     /**
      *  Create default customized handler

@@ -39,7 +39,7 @@
     };
     var TwinsHelper = sdk.TwinsHelper;
 
-    Class(TwinsHelper, BaseObject, null, null);
+    Class(TwinsHelper, BaseObject, null);
 
     TwinsHelper.prototype.getFacebook = function () {
         return this.__facebook;

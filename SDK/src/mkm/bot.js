@@ -41,7 +41,9 @@
     };
     var Bot = mkm.mkm.Bot;
 
-    Class(Bot, BaseUser, null, {
+    Class(Bot, BaseUser, null);
+
+    Implementation(Bot, {
 
         // Bot Document
         getProfile: function () {

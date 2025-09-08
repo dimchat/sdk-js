@@ -37,7 +37,18 @@
     };
     var MetaCommandProcessor = sdk.cpu.MetaCommandProcessor;
 
-    Class(MetaCommandProcessor, BaseCommandProcessor, null, {
+    Class(MetaCommandProcessor, BaseCommandProcessor, null);
+
+    Implementation(MetaCommandProcessor, {
+
+        // protected
+        getArchivist: function () {
+            var facebook = this.getFacebook();
+            if (!facebook) {
+                return null;
+            }
+            return facebook.getArchivist();
+        },
 
         // Override
         processContent: function (content, rMsg) {
@@ -45,7 +56,7 @@
             if (!identifier) {
                 // error
                 var text = 'Meta command error.';
-                return this.respondReceipt(text, rMsg.getEnvelope(), content);
+                return this.respondReceipt(text, rMsg.getEnvelope(), content, null);
             }
             var meta = content.getMeta();
             if (meta) {
@@ -132,7 +143,9 @@
     };
     var DocumentCommandProcessor = sdk.cpu.DocumentCommandProcessor;
 
-    Class(DocumentCommandProcessor, MetaCommandProcessor, null, {
+    Class(DocumentCommandProcessor, MetaCommandProcessor, null);
+
+    Implementation(DocumentCommandProcessor, {
 
         // Override
         processContent: function (content, rMsg) {
@@ -245,7 +258,7 @@
                     }
                 }
             }
-            if (array.length > 0) {
+            if (errors.length > 0) {
                 // failed
                 return errors;
             }

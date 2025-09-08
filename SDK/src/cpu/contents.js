@@ -37,7 +37,9 @@
     };
     var ForwardContentProcessor = sdk.cpu.ForwardContentProcessor;
 
-    Class(ForwardContentProcessor, BaseContentProcessor, null, {
+    Class(ForwardContentProcessor, BaseContentProcessor, null);
+
+    Implementation(ForwardContentProcessor, {
 
         // Override
         processContent: function (content, rMsg) {
@@ -71,7 +73,9 @@
     };
     var ArrayContentProcessor = sdk.cpu.ArrayContentProcessor;
 
-    Class(ArrayContentProcessor, BaseContentProcessor, null, {
+    Class(ArrayContentProcessor, BaseContentProcessor, null);
+
+    Implementation(ArrayContentProcessor, {
 
         // Override
         processContent: function (content, rMsg) {

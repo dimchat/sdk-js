@@ -1,270 +1,196 @@
 # Decentralized Instant Messaging (JavaScript SDK)
 
-
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/dimchat/sdk-js/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/alpha-0.1.0-red.svg)](https://github.com/dimchat/sdk-js/archive/master.zip)
+[![License](https://img.shields.io/github/license/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/dimchat/sdk-js/pulls)
 [![Platform](https://img.shields.io/badge/Platform-ECMAScript%205.1-brightgreen.svg)](https://github.com/dimchat/sdk-js/wiki)
+[![Issues](https://img.shields.io/github/issues/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/issues)
+[![Repo Size](https://img.shields.io/github/repo-size/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/archive/refs/heads/main.zip)
+[![Tags](https://img.shields.io/github/tag/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/tags)
 
+[![Watchers](https://img.shields.io/github/watchers/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/watchers)
+[![Forks](https://img.shields.io/github/forks/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/forks)
+[![Stars](https://img.shields.io/github/stars/dimchat/sdk-js)](https://github.com/dimchat/sdk-js/stargazers)
+[![Followers](https://img.shields.io/github/followers/dimchat)](https://github.com/orgs/dimchat/followers)
 
-### Dependencies
+## Dependencies
 
-1. DIMP - <https://github.com/dimchat/core-js/blob/master/DIMP/dist/dimp.js>
-2. SDK - <https://github.com/dimchat/sdk-js/blob/master/SDK/dist/sdk.js>
+* Latest Versions
 
-Patches:
+| Name | Version | Description |
+|------|---------|-------------|
+| [Cryptography](https://github.com/dimchat/mkm-js) | [![Tags](https://img.shields.io/github/tag/dimchat/mkm-js)](https://github.com/dimchat/mkm-js) | Crypto Keys |
+| [Ming Ke Ming (名可名)](https://github.com/dimchat/mkm-js) | [![Tags](https://img.shields.io/github/tag/dimchat/mkm-js)](https://github.com/dimchat/mkm-js) | Decentralized User Identity Authentication |
+| [Dao Ke Dao (道可道)](https://github.com/dimchat/dkd-js) | [![Tags](https://img.shields.io/github/tag/dimchat/dkd-js)](https://github.com/dimchat/dkd-js) | Universal Message Module |
+| [DIMP (去中心化通讯协议)](https://github.com/dimchat/core-js) | [![Tags](https://img.shields.io/github/tag/dimchat/core-js)](https://github.com/dimchat/core-js) | Decentralized Instant Messaging Protocol |
 
-1. [Plugins for Crypto & Address, Meta](https://github.com/dimchat/sdk-js/blob/master/Plugins/dist/plugins.js)
-2. [Extensions for local storage, notifications & connections](https://github.com/dimchat/sdk-js/blob/master/StarGate/dist/stargate.js)
-
-All in one - <https://github.com/dimchat/sdk-js/blob/master/SDK/dist/all.js>
-
-## Account
-
-User private key, ID, meta, and profile are generated in client,
-and broadcast only ```meta``` & ```profile``` onto DIM station.
-
-### Register User Account
-
-_Step 1_. generate private key (with asymmetric algorithm)
-
-```javascript
-var PrivateKey = DIMP.crypto.PrivateKey;
-
-var sk = PrivateKey.generate(PrivateKey.RSA);
-```
-
-**NOTICE**: After registered, the client should save the private key in secret storage.
-
-_Step 2_. generate meta with private key (and meta seed)
-
-```javascript
-var MetaType = DIMP.protocol.MetaType;
-var Meta     = DIMP.Meta;
-
-var seed = "username";
-var meta = Meta.generate(MetaType.Default, sk, seed);
-```
-
-_Step 3_. generate ID with meta (and network type)
-
-```javascript
-var NetworkType = DIMP.protocol.NetworkType;
-
-var identifier = meta.generateIdentifier(NetworkType.Main);
-```
-
-### Create and upload User Profile
-
-_Step 4_. create profile with ID and sign with private key
-
-```javascript
-var Profile = DIMP.Profile;
-
-var profile = new Profile(identifier);
-// set nickname and avatar URL
-profile.setName("Albert Moky");
-profile.setProperty("avatar", "https://secure.gravatar.com/avatar/34aa0026f924d017dcc7a771f495c086");
-// sign
-profile.sign(privateKey);
-```
-
-_Step 5_. send meta & profile to station
-
-```javascript
-var ProfileCommand = DIMP.protocol.ProfileCommand;
-
-var messenger = Messenger.getInstance();
-
-var cmd = ProfileCommand.response(identifier, profile, meta);
-messenger.sendCommand(cmd);
-```
-
-The profile should be sent to station after connected
-and handshake accepted, details are provided in later chapters
-
-## Connect and Handshake
-
-_Step 1_. connect to DIM station (TCP)
-
-_Step 2_. prepare for receiving message data package
-
-```javascript
-var onReceive = function (responseData) {
-    var response = messenger.onReceivePackage(responseData);
-    if (response != null && response.length > 0) {
-        // send processing result back to the station
-        send(response);
-    }
-}
-```
-
-_Step 3_. send first **handshake** command
-
-(1) create handshake command
-
-```javascript
-var HandshakeCommand = DIMP.protocol.HandshakeCommand;
-
-// first handshake will have no session key
-var cmd = HandshakeCommand.start();
-```
-
-(2) pack, encrypt and sign
-
-```javascript
-var Envelope       = DIMP.Envelope;
-var InstantMessage = DIMP.InstantMessage;
-
-var env = Envelope.newEnvelope(userId, stationId);
-var iMsg = InstantMessage.newMessage(cmd, env);
-var sMsg = messenger.encryptMessage(iMsg);
-var rMsg = messenger.signMessage(sMsg);
-```
-
-(3) Meta protocol
-
-Attaching meta in the first message package is to make sure the station can find it,
-particularly when it's first time the user connect to this station.
-
-```javascript
-rMsg.setMeta(user.getMeta());
-```
-
-(4) send out serialized message data package
-
-```javascript
-var data = messenger.serializeMessage(rMsg);
-send(data);
-```
-
-_Step 4_. waiting handshake response
-
-The CPU (Command Processing Units) will catch the handshake command response from station, and CPU will process them automatically, so just wait untill handshake success or network error.
-
-## Message
+## Extensions
 
 ### Content
 
-* Text message
+extends [CustomizedContent](https://github.com/dimchat/core-js#extends-content)
 
-```javascript
-var TextContent = DIMP.protocol.TextContent;
-
-var content = new TextContent("Hey, girl!");
-```
-
-**NOTICE**: file message content (Image, Audio, Video)
-will be sent out only includes the filename and a URL
-where the file data (encrypted with the same symmetric key) be stored.
-
-### Command
-
-* Query meta with contact ID
-
-```javascript
-var MetaCommand = DIMP.protocol.MetaCommand;
-
-var cmd = new MetaCommand(identifier);
-```
-
-* Query profile with contact ID
-
-```javascript
-var ProfileCommand = DIMP.protocol.ProfileCommand;
-
-var cmd = new ProfileCommand(identifier);
-```
-
-### Send command
+### ContentProcessor
 
 ```javascript
 /**
- *  Pack and send command to station
- *
- * @param cmd - command
- * @return true on success
+ *  Customized Content Processing Unit
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Handle content for application customized
  */
-Messenger.prototype.sendCommand(Command cmd) {
-    console.assert(server !== null, 'station not connect');
-    return this.sendContent(cmd, server.identifier);
-}
-```
-
-MetaCommand or ProfileCommand with only ID means querying, and the CPUs will catch and process all the response automatically.
-
-## Command Processing Units
-
-You can send a customized command (such as **search command**) and prepare a processor to handle the response.
-
-### Search command processor
-
-```javascript
-var CommandProcessor = DIMP.cpu.CommandProcessor;
-
-/**
- *  Search Command Processor
- */
-var SearchCommandProcessor = function (messenger) {
-    CommandProcessor.call(this, messenger);
+app.cpu.AppCustomizedProcessor = function (facebook, messenger) {
+    CustomizedContentProcessor.call(this, facebook, messenger);
+    this.__handlers = {};  // String => CustomizedContentHandler
 };
-SearchCommandProcessor.inherits(CommandProcessor);
+var AppCustomizedProcessor = app.cpu.AppCustomizedProcessor;
 
-//
-//  Main
-//
-SearchCommandProcessor.prototype.process = function (cmd, sender, msg) {
-	// TODO: 
-};
-```
+Class(AppCustomizedProcessor, CustomizedContentProcessor, null);
 
-### Handshake command processor
-
-```javascript
-/**
- *  Handshake Command Processor
- */
-var HandshakeCommandProcessor = function (messenger) {
-    CommandProcessor.call(this, messenger);
-};
-HandshakeCommandProcessor.inherits(CommandProcessor);
-
-var success = function () {
-    var session = this.getContext('session_key');
-    var server = this.messenger.server;
-    server.handshakeAccepted(session, true);
-    return null;
+AppCustomizedProcessor.prototype.setHandler = function (app, mod, handler) {
+    this.__handlers[app + ':' + mod] = handler;
 };
 
-var restart = function (session) {
-    this.setContext('session_key', session);
-    return new HandshakeCommand.restart(session)
+// protected
+AppCustomizedProcessor.prototype.getHandler = function (app, mod) {
+    return this.__handlers[app + ':' + mod];
 };
 
-//
-//  Main
-//
-HandshakeCommandProcessor.prototype.process = function (cmd, sender, msg) {
-    var message = cmd.getMessage();
-    if (message === 'DIM!' || message === 'OK!') {
-        // S -> C
-        return success.call(this);
-    } else if (message === 'DIM?') {
-        // S -> C
-        return restart.call(this, cmd.getSessionKey());
-    } else {
-        // C -> S: Hello world!
-        throw Error('handshake command error: ' + cmd);
+// Override
+AppCustomizedProcessor.prototype.filter = function (app, mod, content, rMsg) {
+    var handler = this.getHandler(app, mod);
+    if (handler) {
+        return handler;
     }
+    // default handler
+    return CustomizedContentProcessor.prototype.filter.call(this, app, mod, content, rMsg);
 };
 ```
 
-And don't forget to register them.
-
 ```javascript
-CommandProcessor.register(Command.HANDSHAKE, HandshakeCommandProcessor);
-CommandProcessor.register(SearchCommand.SEARCH, SearchCommandProcessor);
-CommandProcessor.register(SearchCommand.ONLINE_USERS, SearchCommandProcessor);
+/*  Command Transform:
+
+    +===============================+===============================+
+    |      Customized Content       |      Group Query Command      |
+    +-------------------------------+-------------------------------+
+    |   "type" : i2s(0xCC)          |   "type" : i2s(0x88)          |
+    |   "sn"   : 123                |   "sn"   : 123                |
+    |   "time" : 123.456            |   "time" : 123.456            |
+    |   "app"  : "chat.dim.group"   |                               |
+    |   "mod"  : "history"          |                               |
+    |   "act"  : "query"            |                               |
+    |                               |   "command"   : "query"       |
+    |   "group"     : "{GROUP_ID}"  |   "group"     : "{GROUP_ID}"  |
+    |   "last_time" : 0             |   "last_time" : 0             |
+    +===============================+===============================+
+ */
+app.cpu.GroupHistoryHandler = function (facebook, messenger) {
+    BaseCustomizedHandler.call(this, facebook, messenger);
+};
+var GroupHistoryHandler = app.cpu.GroupHistoryHandler;
+
+Class(GroupHistoryHandler, BaseCustomizedHandler, null);
+
+// Override
+GroupHistoryHandler.prototype.handleAction = function (act, sender, content, rMsg) {
+    if (content.getGroup() === null) {
+        var text = 'Group command error.';
+        return this.respondReceipt(text, rMsg.getEnvelope(), content, null);
+    } else if (GroupHistory.ACT_QUERY === act) {
+        return transformQueryCommand.call(this, content, rMsg);
+    }
+    return BaseCustomizedHandler.prototype.handleAction.call(this, act, sender, content, rMsg);
+};
+
+var transformQueryCommand = function (content, rMsg) {
+    var transceiver = this.getMessenger();
+    if (!transceiver) {
+        return [];
+    }
+    var info = content.copyMap(false);
+    info['type'] = ContentType.COMMAND;
+    info['command'] = GroupCommand.QUERY;
+    var query = Content.parse(info);
+    if (Interface.conforms(query, QueryCommand)) {
+        return transceiver.processContent(query, rMsg);
+    }
+    var text = 'Query command error.';
+    return this.respondReceipt(text, rMsg.getEnvelope(), content, null);
+};
 ```
 
-Copyright &copy; 2019 Albert Moky
+### ContentProcessorCreator
+
+```javascript
+app.cpu.ClientContentProcessorCreator = function (facebook, messenger) {
+    BaseContentProcessorCreator.call(this, facebook, messenger);
+};
+var ClientContentProcessorCreator = app.cpu.ClientContentProcessorCreator;
+
+Class(ClientContentProcessorCreator, BaseContentProcessorCreator, null);
+
+Implementation(ClientContentProcessorCreator, {
+
+    // protected
+    createCustomizedContentProcessor: function (facebook, messenger) {
+        var cpu = new AppCustomizedProcessor(facebook, messenger);
+
+        // 'chat.dim.group:history'
+        cpu.setHandler(
+            GroupHistory.APP,
+            GroupHistory.MOD,
+            new GroupHistoryHandler(facebook, messenger)
+        );
+
+        return cpu;
+    },
+
+    // Override
+    createContentProcessor: function (type) {
+        var facebook = this.getFacebook();
+        var messenger = this.getMessenger();
+        switch (type) {
+
+            // application customized
+            case ContentType.APPLICATION:
+            case 'application':
+            case ContentType.CUSTOMIZED:
+            case 'customized':
+                return this.createCustomizedContentProcessor(facebook, messenger);
+
+            // ...
+        }
+        // others
+        return BaseContentProcessorCreator.prototype.createContentProcessor.call(this, type);
+    },
+
+    // Override
+    createCommandProcessor: function (type, cmd) {
+        var facebook = this.getFacebook();
+        var messenger = this.getMessenger();
+        switch (cmd) {
+        
+            // handshake
+            case Command.HANDSHAKE:
+                return new HandshakeCommandProcessor(facebook, messenger);
+                
+            // ...
+        }
+        // others
+        return BaseContentProcessorCreator.prototype.createCommandProcessor.call(this, type, cmd);
+    }
+});
+```
+
+## Usage
+
+To let your **AppCustomizedProcessor** start to work,
+you must override ```BaseContentProcessorCreator``` for message types:
+
+1. ContentType.APPLICATION 
+2. ContentType.CUSTOMIZED
+
+and then set your **creator** for ```GeneralContentProcessorFactory``` in the ```MessageProcessor```.
+
+----
+
+Copyright &copy; 2023-2025 Albert Moky
+[![Followers](https://img.shields.io/github/followers/moky)](https://github.com/moky?tab=followers)

@@ -38,7 +38,7 @@
     };
     var MessageProcessor = sdk.MessageProcessor;
 
-    Class(MessageProcessor, TwinsHelper, [Processor], null);
+    Class(MessageProcessor, TwinsHelper, [Processor]);
 
     // protected
     MessageProcessor.prototype.createFactory = function (facebook, messenger) {};

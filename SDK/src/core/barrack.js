@@ -42,7 +42,7 @@
     };
     var Barrack = sdk.core.Barrack;
 
-    Class(Barrack, BaseObject, null, null);
+    Class(Barrack, BaseObject, null);
 
     Barrack.prototype.cacheUser = function (user) {};
 
@@ -61,9 +61,9 @@
     Barrack.prototype.createUser = function (identifier) {
         var network = identifier.getType();
         // check user type
-        if (EntityType.STATION.equals(network)) {
+        if (EntityType.STATION === network) {
             return new Station(identifier);
-        } else if (EntityType.BOT.equals(network)) {
+        } else if (EntityType.BOT === network) {
             return new Bot(identifier);
         }
         // general user, or 'anyone@anywhere'
@@ -73,7 +73,7 @@
     Barrack.prototype.createGroup = function (identifier) {
         var network = identifier.getType();
         // check group type
-        if (EntityType.ISP.equals(network)) {
+        if (EntityType.ISP === network) {
             return new ServiceProvider(identifier);
         }
         // general group, or 'everyone@everywhere'

@@ -46,7 +46,7 @@
 
     Class(Transceiver, BaseObject, [
         InstantMessageDelegate, SecureMessageDelegate, ReliableMessageDelegate
-    ], null);
+    ]);
 
     // protected
     Transceiver.prototype.getFacebook = function () {};
@@ -118,7 +118,7 @@
 
     // Override
     Transceiver.prototype.encryptKey = function (keyData, receiver, iMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         // TODO: make sure the receiver's public key exists
         var contact = facebook.getUser(receiver);
         if (!contact) {
@@ -147,7 +147,7 @@
     Transceiver.prototype.decryptKey = function (keyData, receiver, sMsg) {
         // NOTICE: the receiver must be a member ID
         //         if it's a group message
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var user = facebook.getUser(receiver);
         if (!user) {
             // error
@@ -198,7 +198,7 @@
 
     // Override
     Transceiver.prototype.signData = function (data, sMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var sender = sMsg.getSender();
         var user = facebook.getUser(sender);
         return user.sign(data);
@@ -218,7 +218,7 @@
 
     // Override
     Transceiver.prototype.verifyDataSignature = function (data, signature, rMsg) {
-        var facebook = this.getEntityDelegate();
+        var facebook = this.getFacebook();
         var sender = rMsg.getSender();
         var contact = facebook.getUser(sender);
         if (!contact) {

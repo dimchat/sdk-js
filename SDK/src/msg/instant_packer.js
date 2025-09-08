@@ -38,7 +38,7 @@
     };
     var InstantMessagePacker = InstantMessage.Packer;
 
-    Class(InstantMessagePacker, BaseObject, null, null);
+    Class(InstantMessagePacker, BaseObject, null);
 
     InstantMessagePacker.prototype.getDelegate = function () {
         return this.__messenger;
